@@ -1,0 +1,130 @@
+# ==============================================================================
+# Git Ignore Configuration for Local Voice Agent
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Private Credentials, Secrets, and Environment Variables
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Dedicated Credentials & Private Folders
+credentials/
+secrets/
+private/
+.secrets/
+
+# Private Keys, Certificates, and Sensitive Tokens
+*.pem
+*.key
+*.pfx
+*.pkcs12
+*.crt
+*.cert
+*.p12
+*.token
+token.json
+client_secret*.json
+service-account*.json
+
+# ------------------------------------------------------------------------------
+# 2. Python & Virtual Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# ------------------------------------------------------------------------------
+# 3. Testing, Caches, & Temporary Scratchpads
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+htmlcov/
+scratch/
+.system_generated/
+*.log
+
+# ------------------------------------------------------------------------------
+# 4. Audio Recordings & Voice Data (Private User Audio)
+# ------------------------------------------------------------------------------
+audio/*.wav
+audio/*.mp3
+audio/*.ogg
+audio/*.pcm
+audio/*.flac
+!audio/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 5. Heavy Local AI Models & Weights (Downloaded dynamically)
+# ------------------------------------------------------------------------------
+models/*.onnx
+models/*.bin
+models/*.gguf
+models/whisper/
+models/piper/
+!models/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 6. Databases and Persistent SQLite
+# ------------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# ------------------------------------------------------------------------------
+# 7. Operating System & IDE Specific Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+app/data/*.json
+app/data/chat_media/
+audio/*
+!audio/.gitkeep
+app/data/campaigns.json

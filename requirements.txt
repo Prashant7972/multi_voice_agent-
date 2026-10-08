@@ -1,0 +1,13 @@
+ollama>=0.3.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+piper-tts>=1.2.0
+faster-whisper>=1.0.0
+sounddevice>=0.4.6
+soundfile>=0.12.1
+numpy>=1.26.0
+onnxruntime>=1.17.0
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-multipart>=0.0.9
+twilio>=9.0.0
