@@ -27,3 +27,6 @@ jobs:
       - name: Check Python syntax
         run: |
           python -m compileall -q app
+
+      - name: Build Docker image
+        run: docker build -t local-voice-agent:ci .
