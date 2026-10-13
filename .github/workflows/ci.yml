@@ -52,4 +52,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/multi-voice-agent:latest
+          tags: ghcr.io/prashant7972/multi-voice-agent:latest
