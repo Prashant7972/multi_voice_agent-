@@ -39,7 +39,7 @@ jobs:
           pip install "av>=12.0.0,<14.0.0"
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
-          
+
       - name: Download Piper Voice Model for CI
         run: |
           mkdir -p models/piper
