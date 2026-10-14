@@ -40,22 +40,29 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
 
-      - name: Download Piper Voice Model for CI
+      - name: Download Voice Models for CI
         run: |
           mkdir -p models/piper
+          mkdir -p ~/.cache/pipecat/piper
           curl -L -o models/piper/en_US-lessac-medium.onnx \
             https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx
           curl -L -o models/piper/en_US-lessac-medium.onnx.json \
             https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+          cp models/piper/en_US-lessac-medium.onnx ~/.cache/pipecat/piper/
+          cp models/piper/en_US-lessac-medium.onnx.json ~/.cache/pipecat/piper/
+          python -c "import importlib.resources as r, shutil; p = r.files('pipecat.audio.vad.data').joinpath('silero_vad.onnx'); shutil.copy(str(p), 'models/silero_vad.onnx')" || true
 
       - name: Check Python syntax
         run: python -m compileall -q app
 
       - name: Run Pytest
         env:
+          JWT_SECRET_KEY: "test-secret-key-32-bytes-long-for-ci-runs"
           JWT_SECRET: "test-secret-key-32-bytes-long-for-ci-runs"
           SECRET_KEY: "test-secret-key-32-bytes-long-for-ci-runs"
+          ENVIRONMENT: "test"
           ENV: "test"
+          CI: "true"
         run: |
           pytest -v
 

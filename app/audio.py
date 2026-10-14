@@ -98,6 +98,22 @@ class SileroVAD:
         self.model_path = Path(model_path)
         self.threshold = threshold
         if not self.model_path.exists():
+            try:
+                import importlib.resources as r
+                bundled = Path(str(r.files("pipecat.audio.vad.data").joinpath("silero_vad.onnx")))
+                if bundled.is_file():
+                    if self.model_path == VAD_MODEL_PATH:
+                        try:
+                            self.model_path.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy(str(bundled), str(self.model_path))
+                        except Exception:
+                            self.model_path = bundled
+                    else:
+                        self.model_path = bundled
+            except Exception:
+                pass
+
+        if not self.model_path.exists():
             raise FileNotFoundError(f"Silero VAD model not found at {self.model_path}")
 
         opts = ort.SessionOptions()

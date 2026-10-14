@@ -176,7 +176,7 @@ class CampaignManager:
             if all_org_contacts:
                 contacts = all_org_contacts
 
-        campaign_id = f"cmp-{int(time.time() * 1000)}"
+        campaign_id = f"cmp-{int(time.time() * 1000)}-{random.randint(1000, 9999)}"
         now = time.time()
 
         # Build initial call logs for each contact in group

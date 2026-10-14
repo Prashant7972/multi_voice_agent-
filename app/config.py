@@ -105,9 +105,10 @@ PUBLIC_WEBHOOK_URL = os.getenv("PUBLIC_WEBHOOK_URL", "")  # e.g., https://xxxx.n
 
 # JWT Authentication Settings
 _DEFAULT_JWT_SECRET = "voicing-ai-production-hmac-sha256-jwt-secret-signing-key-32bytes-min-2026"
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", _DEFAULT_JWT_SECRET)
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY") or _DEFAULT_JWT_SECRET
 
-if os.getenv("ENVIRONMENT", "").lower() == "production" and JWT_SECRET_KEY == _DEFAULT_JWT_SECRET:
+_effective_env = (os.getenv("ENVIRONMENT") or os.getenv("ENV") or "").lower()
+if _effective_env == "production" and JWT_SECRET_KEY == _DEFAULT_JWT_SECRET:
     raise ValueError(
         "FATAL SECURITY CONFIGURATION: In production, JWT_SECRET_KEY must be explicitly set "
         "to a unique, high-entropy secret in your environment or credentials/.env file."
