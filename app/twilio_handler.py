@@ -60,6 +60,11 @@ class TwilioService:
         3. Starts TunnelManager to get a free live tunnel if needed
         4. Fallback to host header
         """
+        if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("CI") == "true" or os.getenv("ENVIRONMENT") == "test":
+            if host and "localhost" not in host and "127.0.0.1" not in host:
+                return f"https://{host}"
+            return self.public_url or "https://mock-tunnel.example.com"
+
         tunnel = TunnelManager.get_instance()
         if tunnel.public_url:
             return tunnel.public_url

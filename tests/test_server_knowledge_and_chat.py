@@ -556,8 +556,6 @@ def test_agent_telemetry_endpoint_security_and_payload():
 
     # 3. Analyst user (kamon52701@hiredify.com has role: Analyst in apex-ai-innovations) -> 200 OK
     analyst = um.get_user_by_email("kamon52701@hiredify.com")
-    # 3. Analyst user (kamon52701@hiredify.com has role: Analyst in apex-ai-innovations) -> 200 OK
-    analyst = um.get_user_by_email("kamon52701@hiredify.com")
     if not analyst:
         analyst = um.register_user(
             email="kamon52701@hiredify.com",
