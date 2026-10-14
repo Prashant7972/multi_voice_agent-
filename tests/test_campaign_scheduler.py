@@ -35,6 +35,7 @@ def test_campaign_scheduler_trigger():
         )
         assert camp_future["status"] == "scheduled"
 
+        time.sleep(1.1)  
         # 2. Past/due campaign: SHOULD be triggered
         past_time = (datetime.now() - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M")
         camp_due = campaign_manager.create_campaign(

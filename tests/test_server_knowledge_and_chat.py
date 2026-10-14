@@ -556,13 +556,14 @@ def test_agent_telemetry_endpoint_security_and_payload():
 
     # 3. Analyst user (kamon52701@hiredify.com has role: Analyst in apex-ai-innovations) -> 200 OK
     analyst = um.get_user_by_email("kamon52701@hiredify.com")
+    # 3. Analyst user (kamon52701@hiredify.com has role: Analyst in apex-ai-innovations) -> 200 OK
+    analyst = um.get_user_by_email("kamon52701@hiredify.com")
     if not analyst:
         analyst = um.register_user(
             email="kamon52701@hiredify.com",
             password="password123",
             name="Analyst User",
             role="Analyst",
-            org_id=org_id,
         )
 
     analyst_token = create_access_token({
@@ -575,7 +576,6 @@ def test_agent_telemetry_endpoint_security_and_payload():
     analyst_client.headers["Authorization"] = f"Bearer {analyst_token}"
     res_analyst = analyst_client.get(f"/api/organizations/{org_id}/agent-telemetry")
     assert res_analyst.status_code == 200, f"Expected 200 for analyst, got {res_analyst.status_code}"
-
     # 4. Admin / Owner user -> 200 OK & verify payload structure
     res_admin = client.get(f"/api/organizations/{org_id}/agent-telemetry")
     assert res_admin.status_code == 200
