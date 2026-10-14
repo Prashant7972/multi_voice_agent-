@@ -130,8 +130,6 @@ def test_knowledge_base_endpoints_and_permissions():
 
 def test_analyst_and_regular_user_forbidden_from_ingestion():
     org_id = "apex-ai-innovations"
-    # Ensure analyst exists in org
-    org = org_manager.get_organization(org_id)
     analyst_email = "analyst@apexai.io"
     standard_user_email = "member@apexai.io"
 
@@ -211,7 +209,6 @@ def test_chat_text_endpoint_with_rag():
     )
 
     try:
-        # Chat inquiry asking about the quantum cryptography guidelines
         chat_res = client.post("/api/chat/text", json={
             "message": "What cipher must be used for all data at rest under Quantum Cryptography Guidelines?",
             "org_id": org_id,
@@ -397,11 +394,9 @@ def test_chat_stream_endpoint():
         kb_manager.delete_source(org_id, src["id"])
 
 def test_voice_endpoint_brevity_capping():
-    # Verify twiml respond voice prompt construction & capping
     from unittest.mock import MagicMock
     import app.server as server_module
 
-    # Mock llm methods to verify max_tokens is passed
     mock_llm = MagicMock()
     mock_llm.chat_messages.return_value = "This is a crisp, two-sentence spoken response for voice."
     mock_llm.chat.return_value = "This is a crisp, two-sentence spoken response for voice."
@@ -436,17 +431,14 @@ def test_multi_turn_conversation_memory_window():
     from unittest.mock import MagicMock
     import app.server as server_module
 
-    # Test that multi-turn history is sent to LLM
     mock_llm = MagicMock()
     mock_llm.chat_messages.return_value = "Your name is Alice."
     original_llm = server_module.llm
     server_module.llm = mock_llm
 
     try:
-        # Clear previous memory
         client.post("/api/clear")
 
-        # Turn 1: Client tells the agent its name
         res1 = client.post("/api/chat/text", json={
             "message": "My name is Alice and I am a backend engineer.",
             "agent_id": "general-voice-assistant",
@@ -455,7 +447,6 @@ def test_multi_turn_conversation_memory_window():
         })
         assert res1.status_code == 200
 
-        # Verify that memory_manager recorded Turn 1
         session_key = "chat_general-voice-assistant_admin@apexai.io"
         window = server_module.memory_manager.get_window(session_key)
         assert len(window) == 2
@@ -463,7 +454,6 @@ def test_multi_turn_conversation_memory_window():
         assert "Alice" in window[0]["content"]
         assert window[1]["role"] == "assistant"
 
-        # Turn 2: Follow-up question asking "What is my name?"
         res2 = client.post("/api/chat/text", json={
             "message": "What is my name?",
             "agent_id": "general-voice-assistant",
@@ -472,14 +462,12 @@ def test_multi_turn_conversation_memory_window():
         })
         assert res2.status_code == 200
 
-        # Check call_args of chat_messages: messages must contain Turn 1!
         call_args, call_kwargs = mock_llm.chat_messages.call_args
         messages_sent = call_args[0]
         user_messages = [m for m in messages_sent if m["role"] == "user"]
         assert len(user_messages) >= 2, f"Expected at least 2 user messages in context window, got {user_messages}"
         assert any("Alice" in m["content"] for m in user_messages), "Turn 1 context must be present in Turn 2 query window!"
 
-        # Turn 3: Streaming follow-up with explicit history passed from frontend
         mock_llm.stream_prompt.return_value = iter(["You ", "are ", "Alice."])
         stream_res = client.post("/api/chat/stream", json={
             "message": "Confirm my role.",
@@ -501,16 +489,7 @@ def test_multi_turn_conversation_memory_window():
     finally:
         server_module.llm = original_llm
 
-
 def test_track_section_simplification_and_telemetry_ui():
-    """
-    Verifies:
-    1. Track section displays ONLY Spoken Interaction Volume and Channel Distribution.
-    2. Redundant KPI cards (statTotalCalls, statAvgDuration, statAvgLatency, statSuccessRate) are removed.
-    3. Messaging section contains the Agent Telemetry button at the bottom.
-    4. Organization Agent Telemetry modal contains Latencies, Conversation History, and Test Runs tabs.
-    5. Knowledge Base testing modal is upgraded to a dual-mode Chatbot (Chatting & Voice options).
-    """
     res = client.get("/")
     assert res.status_code == 200
     html = res.text
@@ -528,7 +507,7 @@ def test_track_section_simplification_and_telemetry_ui():
     assert 'id="statAvgLatency"' not in html, "statAvgLatency card should be removed from Track section"
     assert 'id="statSuccessRate"' not in html, "statSuccessRate card should be removed from Track section"
 
-    # 3. Dedicated Agent Telemetry Button (Standalone, rather than integrated inside Messaging)
+    # 3. Dedicated Agent Telemetry Button
     assert 'id="sidebarNavTelemetry"' in html, "Dedicated sidebarNavTelemetry button must exist"
     assert 'id="btnSubnavTelemetry"' in html, "Dedicated btnSubnavTelemetry button must exist in workspace subnav"
     assert 'id="btnTrackAgentTelemetry"' in html, "Dedicated btnTrackAgentTelemetry button must exist in Track header"
@@ -545,7 +524,7 @@ def test_track_section_simplification_and_telemetry_ui():
     assert 'id="telemetryConversationFeed"' in html
     assert 'id="telemetryTestsFeed"' in html
 
-    # 5. Knowledge Base testing modal with Chatbot interface (Voice & Chatting modes)
+    # 5. Knowledge Base testing modal with Chatbot interface
     assert 'id="testKnowledgeModal"' in html, "testKnowledgeModal must exist"
     assert 'id="testKbChatFeed"' in html, "Chatbot feed container must exist"
     assert 'id="tabKbModeChat"' in html, "Chat mode switcher tab must exist"
@@ -555,15 +534,7 @@ def test_track_section_simplification_and_telemetry_ui():
     assert 'id="btnKbVoiceMic"' in html, "Voice recording mic button must exist"
     print("✅ Track simplification, Standalone telemetry button, and KB Chatbot UI elements verified!")
 
-
 def test_agent_telemetry_endpoint_security_and_payload():
-    """
-    Verifies:
-    1. 401 Unauthorized when unauthenticated.
-    2. 403 Forbidden for standard user role (not owner/admin/analyst).
-    3. 200 OK for Admin/Owner/Analyst.
-    4. Payload contains scoped agents with latencies, conversation history, and test runs.
-    """
     org_id = "apex-ai-innovations"
 
     # 1. Unauthenticated request -> 401
@@ -583,8 +554,23 @@ def test_agent_telemetry_endpoint_security_and_payload():
     res_user = user_client.get(f"/api/organizations/{org_id}/agent-telemetry")
     assert res_user.status_code == 403, f"Expected 403 for standard user, got {res_user.status_code}"
 
-    # 3. Analyst user (kamon52701@hiredify.com has role: analyst in apex-ai-innovations) -> 200 OK
-    analyst_token = create_access_token({"sub": "user-1790251130", "email": "kamon52701@hiredify.com", "role": "Member"})
+    # 3. Analyst user (kamon52701@hiredify.com has role: Analyst in apex-ai-innovations) -> 200 OK
+    analyst = um.get_user_by_email("kamon52701@hiredify.com")
+    if not analyst:
+        analyst = um.register_user(
+            email="kamon52701@hiredify.com",
+            password="password123",
+            name="Analyst User",
+            role="Analyst",
+            org_id=org_id,
+        )
+
+    analyst_token = create_access_token({
+        "sub": analyst["id"],
+        "email": analyst["email"],
+        "role": "Analyst",
+        "org_id": org_id,
+    })
     analyst_client = TestClient(app)
     analyst_client.headers["Authorization"] = f"Bearer {analyst_token}"
     res_analyst = analyst_client.get(f"/api/organizations/{org_id}/agent-telemetry")
@@ -617,14 +603,7 @@ def test_agent_telemetry_endpoint_security_and_payload():
     assert len(conversations) > 0
     print("✅ Agent telemetry endpoint security (401/403/200) and payload structure verified!")
 
-
 def test_agent_knowledge_chatbot_interactive_testing_without_auto_telemetry_logging():
-    """
-    Verifies that testing an agent against a knowledge source:
-    1. Supports chat and voice verification queries.
-    2. Returns grounded answers, citations, and chunks cleanly.
-    3. Does NOT automatically log or pollute telemetry history with test trials (as requested by user).
-    """
     org_id = "apex-ai-innovations"
 
     # Get count of tests before running queries
@@ -648,7 +627,6 @@ def test_agent_knowledge_chatbot_interactive_testing_without_auto_telemetry_logg
     assert chat_data["success"] is True
     assert "grounded_response_preview" in chat_data
     assert "matched_chunks" in chat_data
-    # Ensure no auto-generated test_record is appended
     assert "test_record" not in chat_data
 
     # 2. Voice mode test
@@ -662,7 +640,7 @@ def test_agent_knowledge_chatbot_interactive_testing_without_auto_telemetry_logg
     assert voice_data["success"] is True
     assert "test_record" not in voice_data
 
-    # 3. Verify that telemetry tests count has NOT increased (no auto-logging)
+    # 3. Verify that telemetry tests count has NOT increased
     telemetry_after = client.get(f"/api/organizations/{org_id}/agent-telemetry")
     count_after = len(telemetry_after.json()["tests"])
     assert count_after == count_before, f"Auto telemetry logging should be disabled! Expected {count_before}, got {count_after}"
@@ -684,4 +662,3 @@ if __name__ == "__main__":
     test_agent_telemetry_endpoint_security_and_payload()
     test_agent_knowledge_chatbot_interactive_testing_without_auto_telemetry_logging()
     print("🎉 All Knowledge Base, Chatbot Streaming, Voice Brevity, Memory Window, Track, and Telemetry tests passed with 100% success!")
-
