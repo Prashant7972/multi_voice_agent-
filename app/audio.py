@@ -51,12 +51,42 @@ def detect_audio_devices() -> Tuple[Optional[int], Optional[int]]:
     Intelligently detects working capture (microphone) and playback (speaker) devices.
     Returns (input_device_index, output_device_index).
     """
-    devices = sd.query_devices()
     input_idx = None
     output_idx = None
+    try:
+        devices = sd.query_devices()
+        for idx, dev in enumerate(devices):
+            name = dev.get("name", "").lower()
+            max_in = dev.get("max_input_channels", 0)
+            max_out = dev.get("max_output_channels", 0)
 
-    # Preferred search for internal AMD ACP microphone or DMIC
+            if max_in > 0:
+                if any(k in name for k in ["acp", "dmic", "mic", "analog", "default"]):
+                    if input_idx is None or "acp" in name or "dmic" in name:
+                        input_idx = idx
+                elif input_idx is None:
+                    input_idx = idx
 
+            if max_out > 0:
+                if any(k in name for k in ["speaker", "analog", "alc", "default"]):
+                    if output_idx is None or "speaker" in name or "analog" in name:
+                        output_idx = idx
+                elif output_idx is None:
+                    output_idx = idx
+
+        if input_idx is None and hasattr(sd, "default") and sd.default.device:
+            default_in = sd.default.device[0]
+            if default_in is not None and default_in >= 0:
+                input_idx = default_in
+
+        if output_idx is None and hasattr(sd, "default") and sd.default.device:
+            default_out = sd.default.device[1]
+            if default_out is not None and default_out >= 0:
+                output_idx = default_out
+    except Exception as e:
+        print(f"⚠️ [Audio] Could not query audio devices: {e}")
+
+    return input_idx, output_idx
 
 
 class SileroVAD:
@@ -153,11 +183,67 @@ class AudioRecorder:
         self.sample_rate = sample_rate
         self.alsa_device = alsa_device
         self.input_device, self.output_device = detect_audio_devices()
-        dev_info = sd.query_devices(self.input_device) if self.input_device is not None else {}
+        dev_info = {}
+        if self.input_device is not None:
+            try:
+                dev_info = sd.query_devices(self.input_device)
+            except Exception:
+                dev_info = {}
         self.native_sr = 48000
-        self.channels = min(dev_info.get("max_input_channels", 2), 2)
-        dev_name = dev_info.get("name", "Default")
+        self.channels = min(dev_info.get("max_input_channels", 2), 2) if dev_info else 1
+        dev_name = dev_info.get("name", "Default") if dev_info else "None/Headless"
         print(f"🎤 Audio Capture Device: [{self.input_device}] {dev_name} ({self.channels}ch @ {self.native_sr}Hz)")
+
+    def record_fixed_duration(self, output_path: Optional[Path] = None, duration: float = 1.5) -> Path:
+        """
+        Records audio from the microphone for a fixed duration in seconds.
+        """
+        if output_path is None:
+            output_path = AUDIO_DIR / "fixed_record.wav"
+        else:
+            output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if self.input_device is None:
+            silence = np.zeros(int(self.sample_rate * duration), dtype=np.int16)
+            with wave.open(str(output_path), "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(self.sample_rate)
+                wf.writeframes(silence.tobytes())
+            return output_path
+
+        recorded_blocks = []
+        def audio_callback(indata, frames, time_info, status):
+            recorded_blocks.append(indata.copy())
+
+        try:
+            stream = sd.InputStream(
+                samplerate=self.native_sr,
+                channels=self.channels,
+                dtype="float32",
+                device=self.input_device,
+                callback=audio_callback,
+                blocksize=1536,
+            )
+            with stream:
+                time.sleep(duration)
+        except Exception as e:
+            print(f"⚠️ [AudioRecorder] Fixed recording note: {e}")
+
+        if not recorded_blocks:
+            raw_audio = np.zeros((int(self.native_sr * duration), self.channels), dtype=np.float32)
+        else:
+            raw_audio = np.concatenate(recorded_blocks, axis=0)
+
+        audio_int16 = process_raw_audio_to_16k_mono(raw_audio, self.native_sr)
+        with wave.open(str(output_path), "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(self.sample_rate)
+            wf.writeframes(audio_int16.tobytes())
+
+        return output_path
 
     def listen_and_record_speech(
         self,

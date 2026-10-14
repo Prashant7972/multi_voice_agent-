@@ -104,7 +104,17 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
 PUBLIC_WEBHOOK_URL = os.getenv("PUBLIC_WEBHOOK_URL", "")  # e.g., https://xxxx.ngrok-free.app
 
 # JWT Authentication Settings
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "voicing-ai-production-hmac-sha256-jwt-secret-signing-key-32bytes-min-2026")
+_DEFAULT_JWT_SECRET = "voicing-ai-production-hmac-sha256-jwt-secret-signing-key-32bytes-min-2026"
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", _DEFAULT_JWT_SECRET)
+
+if os.getenv("ENVIRONMENT", "").lower() == "production" and JWT_SECRET_KEY == _DEFAULT_JWT_SECRET:
+    raise ValueError(
+        "FATAL SECURITY CONFIGURATION: In production, JWT_SECRET_KEY must be explicitly set "
+        "to a unique, high-entropy secret in your environment or credentials/.env file."
+    )
+elif JWT_SECRET_KEY == _DEFAULT_JWT_SECRET and not os.getenv("PYTEST_CURRENT_TEST"):
+    print("⚠️ [Security Warning] Running with default JWT_SECRET_KEY. Set a unique JWT_SECRET_KEY before deploying to production.")
+
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))

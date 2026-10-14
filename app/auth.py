@@ -4,6 +4,8 @@ Provides credential validation, session user management, and user persistence.
 """
 import json
 import hashlib
+import hmac
+import secrets
 import time
 import random
 from datetime import datetime, timedelta, timezone
@@ -20,12 +22,49 @@ from app.config import (
 )
 
 USERS_FILE = Path(__file__).resolve().parent / "data" / "users.json"
-SALT = "local_voice_agent_salt_2026"
+LEGACY_SALT = "local_voice_agent_salt_2026"
+PBKDF2_ITERATIONS = 100000
 
 
 def hash_password(password: str) -> str:
-    """Hashes a password with salt using SHA-256."""
-    return hashlib.sha256((SALT + password).encode("utf-8")).hexdigest()
+    """Hashes a password using PBKDF2-HMAC-SHA256 with a unique random salt."""
+    salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        bytes.fromhex(salt),
+        PBKDF2_ITERATIONS,
+    )
+    return f"pbkdf2:sha256:{PBKDF2_ITERATIONS}${salt}${key.hex()}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """
+    Verifies a password against a stored hash.
+    Supports secure PBKDF2-HMAC-SHA256 and backward-compatible legacy SHA-256 hashes.
+    """
+    if not stored_hash or not password:
+        return False
+
+    if stored_hash.startswith("pbkdf2:sha256:"):
+        try:
+            parts = stored_hash.split("$")
+            if len(parts) == 3:
+                header, salt_hex, key_hex = parts
+                iterations = int(header.split(":")[-1])
+                key = hashlib.pbkdf2_hmac(
+                    "sha256",
+                    password.encode("utf-8"),
+                    bytes.fromhex(salt_hex),
+                    iterations,
+                )
+                return hmac.compare_digest(key.hex(), key_hex)
+        except Exception:
+            return False
+
+    # Legacy SHA-256 fallback for existing accounts
+    legacy_hash = hashlib.sha256((LEGACY_SALT + password).encode("utf-8")).hexdigest()
+    return hmac.compare_digest(stored_hash, legacy_hash)
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
@@ -133,10 +172,14 @@ class UserManager:
     def authenticate(self, email: str, password: str) -> Optional[Dict[str, Any]]:
         """Validates email and password credentials. Returns sanitized user if valid."""
         email = email.strip().lower()
-        target_hash = hash_password(password)
         for u in self.users:
             if u.get("email", "").lower() == email:
-                if u.get("password_hash") == target_hash:
+                stored_hash = u.get("password_hash", "")
+                if verify_password(password, stored_hash):
+                    # Opportunistically upgrade legacy SHA-256 hash to PBKDF2
+                    if not stored_hash.startswith("pbkdf2:"):
+                        u["password_hash"] = hash_password(password)
+                        self.save()
                     return self._sanitize(u)
                 return None
         return None
@@ -318,9 +361,7 @@ class UserManager:
 
         # 2. Password change validation
         if new_password:
-            if not current_password:
-                raise ValueError("Current password is required to change your password.")
-            if user.get("password_hash") != hash_password(current_password):
+            if not verify_password(current_password, user.get("password_hash", "")):
                 raise ValueError("Current password does not match.")
             if len(new_password) < 4:
                 raise ValueError("New password must be at least 4 characters.")

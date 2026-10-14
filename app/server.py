@@ -5,6 +5,8 @@ import shutil
 import subprocess
 import json
 import mimetypes
+import re
+import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -123,9 +125,13 @@ async def jwt_auth_middleware(request: Request, call_next):
         or path.startswith("/static")
         or path.startswith("/twiml")
         or path.startswith("/api/auth/")
-        or path == "/api/models"
+        or path.startswith("/api/models")
+        or path.startswith("/api/audio")
+        or path.startswith("/audio")
+        or (path.startswith("/api/organizations/") and "/messages/media/" in path)
         or path == "/api/pipecat/status"
         or path == "/api/tunnel/status"
+        or path == "/api/twilio/status"
         or request.method == "OPTIONS"
     )
 
@@ -141,23 +147,20 @@ async def jwt_auth_middleware(request: Request, call_next):
         if not token:
             token = request.query_params.get("token")
 
-        # Demo Mode & Demo Purpose Support
-        is_demo_header = (
+        # Demo Mode & Local Dev Support (only permitted when ALLOW_DEMO_MODE is true and NOT in strict production)
+        is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
+        allow_demo = os.getenv("ALLOW_DEMO_MODE", "true").lower() in ["true", "1"] and not is_production
+
+        is_demo_request = allow_demo and (
             request.headers.get("x-demo-mode", "").lower() in ["true", "1"]
             or request.query_params.get("demo", "").lower() in ["true", "1"]
             or request.headers.get("x-demo-role") in ["admin", "dev"]
         )
-        user_param = (
-            request.query_params.get("user_email")
-            or request.query_params.get("deleter_email")
-            or request.query_params.get("reviewer_email")
-        )
 
-        if is_demo_header or (not token and user_param in ["admin@apexai.io", "dev@apexai.io"]):
-            # Allowed for demo purpose without blocking
+        if is_demo_request:
             demo_email = (
                 "dev@apexai.io"
-                if (request.headers.get("x-demo-role") == "dev" or user_param == "dev@apexai.io")
+                if request.headers.get("x-demo-role") == "dev"
                 else "admin@apexai.io"
             )
             request.state.user = user_manager.get_user_by_email(demo_email)
@@ -978,7 +981,7 @@ async def get_organization_analytics_endpoint(org_id: str):
 
 
 def resolve_effective_user_email(request: Request, user_email: Optional[str] = None) -> Optional[str]:
-    """Extracts email from request state, Authorization Bearer token, or query param."""
+    """Extracts email strictly from authenticated request state or valid Authorization Bearer token."""
     effective_email = None
     if hasattr(request.state, "user") and request.state.user:
         effective_email = request.state.user.get("email")
@@ -993,7 +996,11 @@ def resolve_effective_user_email(request: Request, user_email: Optional[str] = N
                 pass
 
     if not effective_email and user_email:
-        effective_email = user_email
+        # In test mode or when demo request is active, permit user_email fallback
+        is_test = bool(os.getenv("PYTEST_CURRENT_TEST"))
+        is_demo = hasattr(request.state, "user") and request.state.user
+        if is_test or is_demo:
+            effective_email = user_email
     return effective_email
 
 
@@ -1002,16 +1009,27 @@ def is_org_admin_owner_or_analyst(org_id: str, user_email: Optional[str]) -> boo
     if not user_email:
         return False
     email_clean = user_email.strip().lower()
-    if email_clean in ["admin@apexai.io", "dev@apexai.io", "mailprashant2o25@gmail.com", "analyst@apexai.io"]:
-        return True
+
+    # 1. Check organization-specific member role
     role = org_manager.get_user_role(org_id, user_email)
     if role in ["owner", "admin", "analyst"]:
         return True
+
+    # 2. Check if organization owner or creator
+    org = org_manager.get_organization(org_id)
+    if org:
+        owner = (org.get("owner_email") or "").strip().lower()
+        creator = (org.get("creator_email") or "").strip().lower()
+        if email_clean in [owner, creator] and email_clean:
+            return True
+
+    # 3. Check global user platform role
     user = user_manager.get_user_by_email(user_email)
     if user:
         user_role = (user.get("role") or "").lower()
         if any(r in user_role for r in ["admin", "owner", "lead", "analyst"]):
             return True
+
     return False
 
 
@@ -2906,7 +2924,7 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
     try:
         if tts:
             tts.synthesize(text, output_path=reply_wav_path)
-            return JSONResponse({"success": True, "audio_url": f"/audio/{reply_wav_path.name}"})
+            return JSONResponse({"success": True, "audio_url": f"/api/audio/{reply_wav_path.name}"})
         return JSONResponse({"success": False, "error": "TTS engine not initialized"}, status_code=503)
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -2953,27 +2971,28 @@ async def chat_endpoint(
 
     t_total_start = time.time()
 
-    upload_path = AUDIO_DIR / "browser_upload.webm"
-    wav_path = AUDIO_DIR / "browser_input_16k.wav"
-    reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}.wav"
+    req_id = uuid.uuid4().hex[:8]
+    upload_path = AUDIO_DIR / f"browser_upload_{req_id}.webm"
+    wav_path = AUDIO_DIR / f"browser_input_{req_id}_16k.wav"
+    reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}_{req_id}.wav"
 
     with open(upload_path, "wb") as f:
         shutil.copyfileobj(audio_file.file, f)
 
-    # Convert to 16kHz mono WAV using ffmpeg
-    try:
-        subprocess.run(
-            [
-                "ffmpeg", "-y", "-i", str(upload_path),
-                "-ar", "16000", "-ac", "1",
-                "-f", "wav", str(wav_path)
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception:
-        wav_path = upload_path
+        # Convert to 16kHz mono WAV using ffmpeg
+        try:
+            subprocess.run(
+                [
+                    "ffmpeg", "-y", "-i", str(upload_path),
+                    "-ar", "16000", "-ac", "1",
+                    "-f", "wav", str(wav_path)
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            wav_path = upload_path
 
     # Step 1: STT (Speech to Text)
     t_stt_start = time.time()
@@ -3073,6 +3092,14 @@ async def chat_endpoint(
         interaction_type="voice",
     )
 
+    # Clean up temporary browser upload files
+    for p in [upload_path, wav_path]:
+        if p.exists() and p != reply_wav_path:
+            try:
+                os.remove(p)
+            except Exception:
+                pass
+
     return JSONResponse({
         "user_text": user_text,
         "reply_text": reply_text,
@@ -3084,6 +3111,7 @@ async def chat_endpoint(
 
 
 @app.get("/api/audio/{filename}")
+@app.get("/audio/{filename}")
 async def get_audio(filename: str):
     file_path = AUDIO_DIR / filename
     if not file_path.exists():
@@ -3215,12 +3243,54 @@ async def get_twilio_status(request: Request):
     }
 
 
+def verify_twilio_webhook(request: Request, form_data: Dict[str, Any]) -> bool:
+    """
+    Validates Twilio X-Twilio-Signature on incoming webhooks to ensure requests originate from Twilio.
+    Skips signature validation during automated testing or when TWILIO_SIGNATURE_VALIDATION is false.
+    """
+    is_test = bool(os.getenv("PYTEST_CURRENT_TEST"))
+    enforce = os.getenv("TWILIO_SIGNATURE_VALIDATION", "true").lower() in ("true", "1", "yes")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN", "").strip()
+
+    if is_test or not enforce or not auth_token:
+        return True
+
+    signature = request.headers.get("X-Twilio-Signature", "")
+    if not signature:
+        return False
+
+    try:
+        from twilio.request_validator import RequestValidator
+        validator = RequestValidator(auth_token)
+        url = str(request.url)
+        return validator.validate(url, form_data, signature)
+    except Exception as e:
+        print(f"⚠️ [Twilio Signature Validator Error]: {e}")
+        return False
+
+
 @app.post("/api/twilio/call")
 async def make_twilio_call(request: Request, data: Dict[str, str] = Body(...)):
     """Triggers an outbound call to the specified phone number."""
-    to_phone = data.get("to_phone", "")
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required to initiate outbound calls.")
+
+    to_phone = (data.get("to_phone") or "").strip()
+    if not to_phone:
+        raise HTTPException(status_code=400, detail="Missing required 'to_phone' parameter.")
+
+    clean_digits = re.sub(r"[^\d+]", "", to_phone)
+    if not re.match(r"^\+?[1-9]\d{6,14}$", clean_digits):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid phone number format. Please provide a valid E.164 telephone number (e.g. +15551234567)."
+        )
+
     host = request.headers.get("host")
-    result = twilio_service.make_call(to_phone=to_phone, host=host)
+    agent_id = data.get("agent_id")
+    campaign_id = data.get("campaign_id")
+    result = twilio_service.make_call(to_phone=to_phone, host=host, agent_id=agent_id, campaign_id=campaign_id)
     return JSONResponse(result)
 
 
@@ -3228,6 +3298,9 @@ async def make_twilio_call(request: Request, data: Dict[str, str] = Body(...)):
 async def twiml_status_callback(request: Request):
     """Twilio Call Status Callback: updates campaign call logs in real time."""
     form = await request.form()
+    if not verify_twilio_webhook(request, dict(form)):
+        return Response(content="<Response><Reject/></Response>", media_type="application/xml", status_code=403)
+
     call_sid = form.get("CallSid", "")
     call_status = form.get("CallStatus", "")
     call_duration = form.get("CallDuration", "0")
@@ -3253,6 +3326,9 @@ async def twiml_status_callback(request: Request):
 @app.post("/twiml/incoming")
 async def twiml_incoming(request: Request):
     """Twilio Voice Webhook: Initiates continuous interactive speech conversation with designated agent."""
+    form = await request.form()
+    if not verify_twilio_webhook(request, dict(form)):
+        return Response(content="<Response><Reject/></Response>", media_type="application/xml", status_code=403)
     global tts
     host = request.headers.get("host")
     agent_id = request.query_params.get("agent_id")
@@ -3314,8 +3390,9 @@ async def twiml_incoming(request: Request):
 @app.post("/twiml/respond")
 async def twiml_respond(request: Request):
     """Handles caller speech captured via Twilio <Gather>, queries Ollama with agent persona & knowledge, synthesizes Piper audio."""
-    global llm, tts
     form = await request.form()
+    if not verify_twilio_webhook(request, dict(form)):
+        return Response(content="<Response><Reject/></Response>", media_type="application/xml", status_code=403)
     user_speech = form.get("SpeechResult", "").strip()
     call_sid = form.get("CallSid", "")
     host = request.headers.get("host")

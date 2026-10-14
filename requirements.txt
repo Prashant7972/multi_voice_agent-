@@ -11,3 +11,4 @@ fastapi>=0.110.0
 uvicorn>=0.28.0
 python-multipart>=0.0.9
 twilio>=9.0.0
+pipecat-ai==1.11.0

@@ -1,14 +1,13 @@
+name: Python CI/CD
 
-name: Python CI
-
-"on":
+on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  check:
+  check-and-build:
     runs-on: ubuntu-latest
 
     permissions:
@@ -19,25 +18,44 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # 1. Native system packages needed for audio C-extensions
+      - name: Install system audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            libsndfile1 \
+            libportaudio2 \
+            portaudio19-dev
+
+      # 2. Set up Python 3.12 with pip cache
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
 
+      # 3. Install dependencies from requirements.txt
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
 
+      # 4. Syntax check
       - name: Check Python syntax
         run: python -m compileall -q app
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
+      # 5. Run your existing tests
+      - name: Run Pytest
+        run: |
+          pytest -v
 
+      # 6. Set up Docker Buildx for layer caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 7. Log in to GitHub Container Registry (ghcr.io)
       - name: Log in to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
@@ -46,10 +64,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 8. Single Build & Push Step
       - name: Build and push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          tags: ghcr.io/prashant7972/multi-voice-agent:latest
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ghcr.io/prashant7972/multi-voice-agent:latest
+            ghcr.io/prashant7972/multi-voice-agent:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
