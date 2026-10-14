@@ -161,6 +161,22 @@ class UserManager:
                     "role": "Lead Developer",
                     "created_at": time.time(),
                 },
+                {
+                    "id": "user-analyst",
+                    "email": "kamon52701@hiredify.com",
+                    "password_hash": hash_password("password123"),
+                    "name": "Alex Analyst",
+                    "role": "Analyst",
+                    "created_at": time.time(),
+                },
+                {
+                    "id": "user-qa",
+                    "email": "qa@apexai.io",
+                    "password_hash": hash_password("password123"),
+                    "name": "QA Lead",
+                    "role": "Member",
+                    "created_at": time.time(),
+                },
             ]
             self.save()
 

@@ -564,6 +564,7 @@ def test_agent_telemetry_endpoint_security_and_payload():
             role="Analyst",
         )
 
+    org_manager.assign_role(org_id, "kamon52701@hiredify.com", "analyst", assigned_by="admin@apexai.io")
     analyst_token = create_access_token({
         "sub": analyst["id"],
         "email": analyst["email"],

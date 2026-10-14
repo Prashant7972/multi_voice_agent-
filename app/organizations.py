@@ -63,7 +63,28 @@ class OrganizationManager:
                             "role": "owner",
                             "status": "approved",
                             "joined_at": 1789990000,
-                        }
+                        },
+                        {
+                            "email": "dev@apexai.io",
+                            "name": "AI Engineer",
+                            "role": "admin",
+                            "status": "approved",
+                            "joined_at": 1789990000,
+                        },
+                        {
+                            "email": "kamon52701@hiredify.com",
+                            "name": "Alex Analyst",
+                            "role": "analyst",
+                            "status": "approved",
+                            "joined_at": 1789990000,
+                        },
+                        {
+                            "email": "qa@apexai.io",
+                            "name": "QA Lead",
+                            "role": "user",
+                            "status": "approved",
+                            "joined_at": 1789990000,
+                        },
                     ],
                     "applications": [],
                     "created_at": time.time(),
@@ -587,6 +608,30 @@ class OrganizationManager:
         target["role"] = role_clean
         self.save()
         return target
+
+    def assign_role(
+        self,
+        org_id: str,
+        email: str,
+        role: str,
+        assigned_by: str = "admin@apexai.io",
+    ) -> Dict[str, Any]:
+        """Assigns or updates a member's role in the organization."""
+        email_clean = email.strip().lower()
+        if not self.is_member(org_id, email_clean):
+            return self.add_member(
+                org_id=org_id,
+                email=email_clean,
+                name=email_clean.split("@")[0].title(),
+                role=role,
+                adder_email=assigned_by,
+            )
+        return self.update_member_role(
+            org_id=org_id,
+            email=email_clean,
+            new_role=role,
+            updater_email=assigned_by,
+        )
 
     def remove_member(self, org_id: str, email: str, remover_email: str) -> bool:
         """Removes a member from the organization (owner or admin only; owner cannot be removed)."""

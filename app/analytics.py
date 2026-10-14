@@ -243,8 +243,21 @@ class AnalyticsManager:
                     "avg_latency_ms": metrics.get("avg_latency_ms", 320),
                     "resolution_rate_pct": metrics.get("resolution_rate_pct", 98.5)
                 })
+        elif stored_agent_metrics:
+            for ag_id, metrics in stored_agent_metrics.items():
+                agents_breakdown.append({
+                    "id": ag_id,
+                    "name": ag_id.replace("-", " ").title(),
+                    "role": "Specialized AI",
+                    "status": "Active",
+                    "is_active": True,
+                    "calls": metrics.get("calls", 0),
+                    "minutes": metrics.get("minutes", 0.0),
+                    "avg_latency_ms": metrics.get("avg_latency_ms", 320),
+                    "resolution_rate_pct": metrics.get("resolution_rate_pct", 98.5)
+                })
 
-        summary["active_agents_count"] = len(org_agents) if org_agents is not None else 0
+        summary["active_agents_count"] = len(agents_breakdown)
 
         return {
             "org_id": org_id,

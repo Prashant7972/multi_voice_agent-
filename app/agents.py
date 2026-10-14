@@ -148,6 +148,9 @@ class AgentManager:
                     "is_active": False,
                 },
             ]
+            for ag in self.agents:
+                if "org_id" not in ag:
+                    ag["org_id"] = "apex-ai-innovations"
             self.save()
 
     def save(self) -> None:
@@ -161,7 +164,11 @@ class AgentManager:
     def list_agents(self, org_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Returns list of all available agents, optionally filtered by org_id."""
         if org_id:
-            return [ag for ag in self.agents if ag.get("org_id") == org_id]
+            org_id_clean = org_id.strip().lower()
+            return [
+                ag for ag in self.agents
+                if (ag.get("org_id") or "apex-ai-innovations").strip().lower() == org_id_clean
+            ]
         return self.agents
 
     def get_agent(self, agent_id: str) -> Optional[Dict[str, Any]]:

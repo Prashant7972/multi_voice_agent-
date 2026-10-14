@@ -152,7 +152,11 @@ def test_conversations_api_endpoints_permissions_and_scoping():
     assert res_member.status_code == 403, f"Expected 403 for member, got {res_member.status_code}"
 
     # 3. Analyst user -> 200 OK
-    analyst_token = create_access_token({"sub": "user-1790251130", "email": "kamon52701@hiredify.com", "role": "Member"})
+    analyst = um.get_user_by_email("kamon52701@hiredify.com")
+    if not analyst:
+        analyst = um.register_user("kamon52701@hiredify.com", "password123", "Analyst User", role="Analyst")
+    org_manager.assign_role(org_id, "kamon52701@hiredify.com", "analyst", assigned_by="admin@apexai.io")
+    analyst_token = create_access_token({"sub": analyst["id"], "email": analyst["email"], "role": "Analyst", "org_id": org_id})
     analyst_client = TestClient(app)
     analyst_client.headers["Authorization"] = f"Bearer {analyst_token}"
     res_analyst = analyst_client.get(f"/api/organizations/{org_id}/conversations")
