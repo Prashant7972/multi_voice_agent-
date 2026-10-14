@@ -4,6 +4,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.organizations import OrganizationManager
 
+
 def test_organization_crud():
     print("🧪 Testing OrganizationManager...")
     mgr = OrganizationManager.get_instance()
@@ -23,7 +24,7 @@ def test_organization_crud():
         "description": "Medical and clinical voice assistants for patients.",
         "industry": "Healthcare"
     })
-    print(f"   Created organization: {new_org['id']} - {new_org['name']}")
+    print(f"   Created organization: {new_org['id']} ({new_org['name']})")
     assert new_org["id"].startswith("global-health-ai")
 
     # 3. Activate organization
@@ -48,6 +49,7 @@ def test_organization_crud():
     # Reset default organization to active
     mgr.set_active_organization("apex-ai-innovations")
     print("🎉 All OrganizationManager tests passed successfully!")
+
 
 if __name__ == "__main__":
     test_organization_crud()
