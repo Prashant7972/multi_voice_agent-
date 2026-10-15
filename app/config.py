@@ -1,6 +1,8 @@
 import os
+import json
 import urllib.request
 from pathlib import Path
+from typing import Any
 from dotenv import load_dotenv
 
 # Base directories
@@ -119,4 +121,24 @@ elif JWT_SECRET_KEY == _DEFAULT_JWT_SECRET and not os.getenv("PYTEST_CURRENT_TES
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+
+
+def atomic_save_json(path: Path, data: Any, indent: int = 2) -> None:
+    """
+    Persists data as JSON atomically to disk using a temporary file and atomic rename.
+    Guarantees no file truncation or corruption occurs if the process crashes mid-write.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = path.with_suffix(f".tmp.{os.getpid()}")
+    try:
+        with open(temp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=indent)
+        os.replace(temp_path, path)
+    except Exception as e:
+        if temp_path.exists():
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        raise e
 

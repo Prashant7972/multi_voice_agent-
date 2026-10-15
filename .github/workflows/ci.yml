@@ -52,8 +52,9 @@ jobs:
           cp models/piper/en_US-lessac-medium.onnx.json ~/.cache/pipecat/piper/
           python -c "import importlib.resources as r, shutil; p = r.files('pipecat.audio.vad.data').joinpath('silero_vad.onnx'); shutil.copy(str(p), 'models/silero_vad.onnx')" || true
 
-      - name: Check Python syntax
-        run: python -m compileall -q app
+      - name: Check Python syntax & compile
+        run: |
+          python -m compileall -q app tests
 
       - name: Run Pytest
         env:

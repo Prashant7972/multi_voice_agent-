@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 
 from app.contacts import ContactsManager
 from app.twilio_handler import TwilioService
+from app.config import atomic_save_json
 
 CAMPAIGNS_FILE = Path(__file__).resolve().parent / "data" / "campaigns.json"
 
@@ -110,10 +111,9 @@ class CampaignManager:
         self.save()
 
     def save(self) -> None:
-        """Persists campaigns to JSON."""
+        """Persists campaigns to JSON atomically."""
         try:
-            with open(self.storage_path, "w", encoding="utf-8") as f:
-                json.dump({"campaigns": self.campaigns}, f, indent=2)
+            atomic_save_json(self.storage_path, {"campaigns": self.campaigns})
         except Exception as e:
             print(f"⚠️ [CampaignManager] Error saving to {self.storage_path}: {e}")
 

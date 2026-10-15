@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+from app.config import atomic_save_json
+
 CONTACTS_FILE = Path(__file__).resolve().parent / "data" / "contacts.json"
 
 COUNTRY_CODES = [
@@ -193,13 +195,12 @@ class ContactsManager:
         self.save()
 
     def save(self) -> None:
-        """Persists groups and contacts to JSON."""
+        """Persists groups and contacts to JSON atomically."""
         try:
-            with open(self.storage_path, "w", encoding="utf-8") as f:
-                json.dump({
-                    "groups": self.groups,
-                    "contacts": self.contacts,
-                }, f, indent=2)
+            atomic_save_json(self.storage_path, {
+                "groups": self.groups,
+                "contacts": self.contacts,
+            })
         except Exception as e:
             print(f"⚠️ [ContactsManager] Error saving to {self.storage_path}: {e}")
 

@@ -260,6 +260,8 @@ class TwilioMediaStreamSession:
         self.pcm_buffer = bytearray()
         self.speech_detected = False
         self.consecutive_silence_sec = 0.0
+        self.current_turn_task: Optional[asyncio.Task] = None
+        self.conversation_history: List[Dict[str, str]] = []
         # Pipecat Neural VAD to eliminate line static & background noise false interruptions
         self.vad = PipecatNeuralVAD(sample_rate=16000, confidence=0.75, start_secs=0.20, stop_secs=0.80, min_volume=0.06)
 
@@ -302,6 +304,8 @@ class TwilioMediaStreamSession:
                             print(f"🛑 [Twilio Neural Barge-In] Confirmed user speech (conf={vad_conf:.2f})! Yielding turn...")
                             self.interrupted = True
                             self.is_agent_speaking = False
+                            if self.current_turn_task and not self.current_turn_task.done():
+                                self.current_turn_task.cancel()
                             # Clear Twilio's audio playback buffer in caller earpiece immediately
                             if self.stream_sid:
                                 await self.ws.send_json({
@@ -328,7 +332,9 @@ class TwilioMediaStreamSession:
                             self.speech_detected = False
                             self.consecutive_silence_sec = 0.0
                             print(f"📞 [Twilio] Pause of {self.silence_threshold}s detected, processing reply...")
-                            asyncio.create_task(self._process_turn(bytes(self.pcm_buffer)))
+                            if self.current_turn_task and not self.current_turn_task.done():
+                                self.current_turn_task.cancel()
+                            self.current_turn_task = asyncio.create_task(self._process_turn(bytes(self.pcm_buffer)))
                             self.pcm_buffer.clear()
 
                 elif event == "stop":
@@ -343,6 +349,8 @@ class TwilioMediaStreamSession:
                 print(f"⚠️ [Twilio] Stream error: {e}")
         finally:
             self.is_active = False
+            if self.current_turn_task and not self.current_turn_task.done():
+                self.current_turn_task.cancel()
 
     async def _process_turn(self, pcm_bytes: bytes):
         """Runs STT -> LLM -> TTS pipeline and streams reply back to the caller."""
@@ -362,8 +370,11 @@ class TwilioMediaStreamSession:
 
             print(f"📞 [Twilio] Caller: \"{user_text}\"")
 
-            reply_text = await asyncio.to_thread(self.llm.chat, user_text)
+            self.conversation_history.append({"role": "user", "content": user_text})
+            reply_text = await asyncio.to_thread(self.llm.chat, user_text, history=self.conversation_history)
+            self.conversation_history.append({"role": "assistant", "content": reply_text})
             print(f"🤖 [Twilio] AI Reply: \"{reply_text}\"")
+
 
             tts_chunks = await asyncio.to_thread(lambda: list(self.tts.voice.synthesize(reply_text)))
             tts_pcm = b"".join(c.audio_int16_bytes for c in tts_chunks)

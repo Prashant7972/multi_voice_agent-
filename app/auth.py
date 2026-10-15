@@ -19,6 +19,7 @@ from app.config import (
     JWT_ALGORITHM,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     REFRESH_TOKEN_EXPIRE_DAYS,
+    atomic_save_json,
 )
 
 USERS_FILE = Path(__file__).resolve().parent / "data" / "users.json"
@@ -181,9 +182,8 @@ class UserManager:
             self.save()
 
     def save(self):
-        """Persists users to JSON storage."""
-        with open(self.storage_path, "w", encoding="utf-8") as f:
-            json.dump(self.users, f, indent=2)
+        """Persists users to JSON storage atomically."""
+        atomic_save_json(self.storage_path, self.users)
 
     def authenticate(self, email: str, password: str) -> Optional[Dict[str, Any]]:
         """Validates email and password credentials. Returns sanitized user if valid."""

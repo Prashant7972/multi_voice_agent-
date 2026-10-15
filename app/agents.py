@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+from app.config import atomic_save_json
+
 AGENTS_FILE = Path(__file__).resolve().parent / "data" / "agents.json"
 
 DEFAULT_SYSTEM_TEMPLATE = (
@@ -154,10 +156,9 @@ class AgentManager:
             self.save()
 
     def save(self) -> None:
-        """Persists agent registry to disk."""
+        """Persists agent registry to disk atomically."""
         try:
-            with open(self.storage_path, "w", encoding="utf-8") as f:
-                json.dump(self.agents, f, indent=2)
+            atomic_save_json(self.storage_path, self.agents)
         except Exception as e:
             print(f"⚠️ [AgentManager] Error saving to {self.storage_path}: {e}")
 

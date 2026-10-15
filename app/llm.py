@@ -78,12 +78,31 @@ class LLMClient:
             else:
                 self.messages.insert(0, {"role": "system", "content": self.system_prompt})
 
-    def chat(self, user_text: str, max_tokens: Optional[int] = None) -> str:
+    def chat(
+        self,
+        user_text: str,
+        max_tokens: Optional[int] = None,
+        history: Optional[List[Dict[str, str]]] = None,
+        system_prompt: Optional[str] = None,
+        stateless: bool = False,
+    ) -> str:
         """
         Send user message to Ollama with conversation context.
-        Appends user and assistant messages to history and returns the cleaned response.
+        Supports explicit session history to prevent cross-caller state leakage in concurrent requests.
         """
-        self.messages.append({"role": "user", "content": user_text})
+        if history is not None or stateless:
+            effective_messages = []
+            sys_content = system_prompt or self.system_prompt
+            if sys_content:
+                effective_messages.append({"role": "system", "content": sys_content})
+            if history:
+                for item in history:
+                    if item.get("role") in ("user", "assistant") and item.get("content"):
+                        effective_messages.append({"role": item["role"], "content": item["content"]})
+            effective_messages.append({"role": "user", "content": user_text})
+        else:
+            self.messages.append({"role": "user", "content": user_text})
+            effective_messages = self.messages
 
         options = {
             "temperature": 0.7,
@@ -95,7 +114,7 @@ class LLMClient:
         try:
             response = self.client.chat(
                 model=self.model,
-                messages=self.messages,
+                messages=effective_messages,
                 options=options,
             )
         except Exception as e:
@@ -107,7 +126,7 @@ class LLMClient:
                 self.client = ollama.Client(host=self.host)
                 response = self.client.chat(
                     model=self.model,
-                    messages=self.messages,
+                    messages=effective_messages,
                     options=options,
                 )
             else:
@@ -115,8 +134,10 @@ class LLMClient:
 
         reply = response["message"]["content"].strip()
         cleaned_reply = clean_text_for_speech(reply)
-        self.messages.append({"role": "assistant", "content": cleaned_reply})
+        if history is None and not stateless:
+            self.messages.append({"role": "assistant", "content": cleaned_reply})
         return cleaned_reply
+
 
     def stream_chat(self, user_text: str, max_tokens: Optional[int] = None) -> Generator[str, None, str]:
         """

@@ -10,6 +10,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
+from app.config import atomic_save_json
+
 KNOWLEDGE_FILE = Path(__file__).resolve().parent / "data" / "knowledge_base.json"
 
 
@@ -241,10 +243,9 @@ class KnowledgeBaseManager:
             self.save()
 
     def save(self) -> None:
-        """Persists knowledge base entries to JSON storage."""
+        """Persists knowledge base entries to JSON storage atomically."""
         try:
-            with open(self.storage_path, "w", encoding="utf-8") as f:
-                json.dump({"sources": self.sources}, f, indent=2)
+            atomic_save_json(self.storage_path, {"sources": self.sources})
         except Exception as e:
             print(f"⚠️ [KnowledgeBaseManager] Error saving to {self.storage_path}: {e}")
 

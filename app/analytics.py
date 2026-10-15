@@ -3,6 +3,8 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+from app.config import atomic_save_json
+
 ANALYTICS_FILE = Path(__file__).resolve().parent / "data" / "analytics.json"
 
 
@@ -41,10 +43,9 @@ class AnalyticsManager:
             self.save()
 
     def save(self) -> None:
-        """Persists analytics to disk."""
+        """Persists analytics to disk atomically."""
         try:
-            with open(self.storage_path, "w", encoding="utf-8") as f:
-                json.dump(self.data, f, indent=2)
+            atomic_save_json(self.storage_path, self.data)
         except Exception as e:
             print(f"⚠️ [AnalyticsManager] Error saving to {self.storage_path}: {e}")
 

@@ -122,6 +122,8 @@ async def jwt_auth_middleware(request: Request, call_next):
     # Public paths that do not require JWT Bearer authentication
     is_public = (
         path == "/"
+        or path == "/healthz"
+        or path == "/api/health"
         or path.startswith("/static")
         or path.startswith("/twiml")
         or path.startswith("/api/auth/")
@@ -147,9 +149,9 @@ async def jwt_auth_middleware(request: Request, call_next):
         if not token:
             token = request.query_params.get("token")
 
-        # Demo Mode & Local Dev Support (only permitted when ALLOW_DEMO_MODE is true and NOT in strict production)
+        # Demo Mode & Local Dev Support (strictly disabled when in production or ALLOW_DEMO_MODE=false)
         is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
-        allow_demo = os.getenv("ALLOW_DEMO_MODE", "true").lower() in ["true", "1"] and not is_production
+        allow_demo = os.getenv("ALLOW_DEMO_MODE", "false" if is_production else "true").lower() in ["true", "1"] and not is_production
 
         is_demo_request = allow_demo and (
             request.headers.get("x-demo-mode", "").lower() in ["true", "1"]
@@ -360,6 +362,24 @@ def startup_event():
     campaign_manager.start_scheduler()
 
     print(f"✅ All AI models, Pipecat VAD & Agents Hub loaded and ready on http://localhost:{port}")
+
+
+@app.get("/healthz")
+@app.get("/api/health")
+async def healthcheck():
+    """Production health, liveness, and readiness probe endpoint."""
+    return JSONResponse({
+        "status": "healthy",
+        "timestamp": time.time(),
+        "version": "1.0.0",
+        "services": {
+            "stt": stt is not None,
+            "llm": llm is not None,
+            "tts": tts is not None,
+            "vad": pipecat_vad is not None,
+            "storage": user_manager.storage_path.parent.exists(),
+        }
+    })
 
 
 @app.on_event("shutdown")
@@ -2930,23 +2950,48 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
 
-@app.post("/api/stt")
-async def stt_endpoint(audio_file: UploadFile = File(...)):
-    """Transcribes audio using local faster-whisper."""
-    global stt
-    temp_upload = AUDIO_DIR / f"stt_upload_{int(time.time() * 1000)}.webm"
-    wav_target = AUDIO_DIR / f"stt_{int(time.time() * 1000)}.wav"
-    with open(temp_upload, "wb") as f:
-        shutil.copyfileobj(audio_file.file, f)
+MAX_AUDIO_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB max upload
+
+
+def _save_upload_file_sync(upload_file: UploadFile, dest_path: Path) -> None:
+    """Synchronously copies upload file content to destination path."""
+    with open(dest_path, "wb") as f:
+        shutil.copyfileobj(upload_file.file, f)
+
+
+def _convert_audio_to_wav_sync(src_path: Path, dst_path: Path) -> Path:
+    """Runs ffmpeg conversion synchronously inside a worker thread."""
     try:
         subprocess.run(
-            ["ffmpeg", "-y", "-i", str(temp_upload), "-ar", "16000", "-ac", "1", "-f", "wav", str(wav_target)],
-            check=False,
+            [
+                "ffmpeg", "-y", "-i", str(src_path),
+                "-ar", "16000", "-ac", "1",
+                "-f", "wav", str(dst_path)
+            ],
+            check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        audio_in = wav_target if wav_target.exists() else temp_upload
-        text = stt.transcribe(audio_in, beam_size=1) if stt else ""
+        return dst_path
+    except Exception:
+        return src_path
+
+
+@app.post("/api/stt")
+async def stt_endpoint(request: Request, audio_file: UploadFile = File(...)):
+    """Transcribes audio using local faster-whisper."""
+    global stt
+    content_len = request.headers.get("content-length")
+    if content_len and int(content_len) > MAX_AUDIO_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large. Maximum size is 25MB.")
+
+    temp_upload = AUDIO_DIR / f"stt_upload_{int(time.time() * 1000)}.webm"
+    wav_target = AUDIO_DIR / f"stt_{int(time.time() * 1000)}.wav"
+
+    await asyncio.to_thread(_save_upload_file_sync, audio_file, temp_upload)
+    try:
+        audio_in = await asyncio.to_thread(_convert_audio_to_wav_sync, temp_upload, wav_target)
+        text = await asyncio.to_thread(stt.transcribe, audio_in, beam_size=1) if stt else ""
         return JSONResponse({"success": True, "text": text})
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -2964,10 +3009,15 @@ async def stt_endpoint(audio_file: UploadFile = File(...)):
 # -------------------------------------------------------------
 @app.post("/api/chat")
 async def chat_endpoint(
+    request: Request,
     audio_file: UploadFile = File(...),
     conversation_id: Optional[str] = Form(None),
 ):
     global stt, llm, tts, memory_manager
+
+    content_len = request.headers.get("content-length")
+    if content_len and int(content_len) > MAX_AUDIO_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large. Maximum size is 25MB.")
 
     t_total_start = time.time()
 
@@ -2976,27 +3026,12 @@ async def chat_endpoint(
     wav_path = AUDIO_DIR / f"browser_input_{req_id}_16k.wav"
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}_{req_id}.wav"
 
-    with open(upload_path, "wb") as f:
-        shutil.copyfileobj(audio_file.file, f)
-
-        # Convert to 16kHz mono WAV using ffmpeg
-        try:
-            subprocess.run(
-                [
-                    "ffmpeg", "-y", "-i", str(upload_path),
-                    "-ar", "16000", "-ac", "1",
-                    "-f", "wav", str(wav_path)
-                ],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        except Exception:
-            wav_path = upload_path
+    await asyncio.to_thread(_save_upload_file_sync, audio_file, upload_path)
+    wav_path = await asyncio.to_thread(_convert_audio_to_wav_sync, upload_path, wav_path)
 
     # Step 1: STT (Speech to Text)
     t_stt_start = time.time()
-    user_text = stt.transcribe(wav_path, beam_size=1)
+    user_text = await asyncio.to_thread(stt.transcribe, wav_path, beam_size=1) if stt else ""
     stt_duration = time.time() - t_stt_start
 
     if not user_text or not user_text.strip():
@@ -3055,7 +3090,10 @@ async def chat_endpoint(
         speech_system_prompt = "\n\n".join(speech_prompt_parts)
         msgs = [{"role": "system", "content": speech_system_prompt}] + history_to_use + [{"role": "user", "content": user_text}]
 
-        reply_text = llm.chat_messages(msgs, max_tokens=65, clean_speech=True) if llm else "I am here."
+        if llm and hasattr(llm, "chat_messages"):
+            reply_text = await asyncio.to_thread(llm.chat_messages, msgs, max_tokens=65, clean_speech=True)
+        else:
+            reply_text = "I am here."
         memory_manager.add_turn(session_key, user_text, reply_text)
     except Exception as e:
         print(f"⚠️ [LLM Error]: {e}")
@@ -3066,10 +3104,11 @@ async def chat_endpoint(
     t_tts_start = time.time()
     try:
         if tts:
-            tts.synthesize(reply_text, output_path=reply_wav_path)
+            await asyncio.to_thread(tts.synthesize, reply_text, output_path=reply_wav_path)
     except Exception as e:
         print(f"⚠️ [TTS Error]: {e}")
     tts_duration = time.time() - t_tts_start
+
 
     total_duration = time.time() - t_total_start
     latency_info = {
@@ -3252,7 +3291,14 @@ def verify_twilio_webhook(request: Request, form_data: Dict[str, Any]) -> bool:
     enforce = os.getenv("TWILIO_SIGNATURE_VALIDATION", "true").lower() in ("true", "1", "yes")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN", "").strip()
 
-    if is_test or not enforce or not auth_token:
+    if is_test or not enforce:
+        return True
+
+    if not auth_token:
+        is_production = os.getenv("ENVIRONMENT", "").lower() == "production"
+        if is_production:
+            print("🚨 [Twilio Security] TWILIO_AUTH_TOKEN is missing in production. Rejecting unverified webhook.")
+            return False
         return True
 
     signature = request.headers.get("X-Twilio-Signature", "")
