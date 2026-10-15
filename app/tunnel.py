@@ -1,3 +1,4 @@
+import os
 import re
 import shutil
 import subprocess
@@ -14,7 +15,6 @@ class TunnelManager:
     _instance: Optional["TunnelManager"] = None
 
     def __init__(self, port: Optional[int] = None):
-        import os
         if port is None:
             port = int(os.getenv("PORT", 8080))
         self.port = port

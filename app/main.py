@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import argparse
@@ -207,7 +208,6 @@ class LocalVoiceAgent:
 def main():
     args = parse_args()
     if args.ui:
-        import os
         import uvicorn
         os.environ["PORT"] = str(args.port)
         print("\n🌐 Launching Local Voice Agent Web UI...")
