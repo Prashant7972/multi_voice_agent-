@@ -1,0 +1,90 @@
+name: Python CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install system audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            libsndfile1 \
+            libportaudio2 \
+            portaudio19-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "av>=12.0.0,<14.0.0"
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Download Voice Models for CI
+        run: |
+          mkdir -p models/piper
+          mkdir -p ~/.cache/pipecat/piper
+          curl -L -o models/piper/en_US-lessac-medium.onnx \
+            https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+          curl -L -o models/piper/en_US-lessac-medium.onnx.json \
+            https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+          cp models/piper/en_US-lessac-medium.onnx ~/.cache/pipecat/piper/
+          cp models/piper/en_US-lessac-medium.onnx.json ~/.cache/pipecat/piper/
+          python -c "import importlib.resources as r, shutil; p = r.files('pipecat.audio.vad.data').joinpath('silero_vad.onnx'); shutil.copy(str(p), 'models/silero_vad.onnx')" || true
+
+      - name: Check Python syntax & compile
+        run: |
+          python -m compileall -q app tests
+
+      - name: Run Pytest
+        env:
+          JWT_SECRET_KEY: "test-secret-key-32-bytes-long-for-ci-runs"
+          JWT_SECRET: "test-secret-key-32-bytes-long-for-ci-runs"
+          SECRET_KEY: "test-secret-key-32-bytes-long-for-ci-runs"
+          ENVIRONMENT: "test"
+          ENV: "test"
+          CI: "true"
+        run: |
+          pytest -v
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ghcr.io/prashant7972/multi-voice-agent:latest
+            ghcr.io/prashant7972/multi-voice-agent:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

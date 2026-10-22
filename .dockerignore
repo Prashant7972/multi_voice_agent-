@@ -1,0 +1,52 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+credentials/
+secrets/
+private/
+.secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+token.json
+client_secret*.json
+service-account*.json
+
+# Git and Python environments
+.git/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+
+# Local data and downloaded models
+models/*
+!models/.gitkeep
+audio/*
+!audio/.gitkeep
+scratch/
+
+# Logs and editor files
+*.log
+.vscode/
+.idea/
+
+`
+# Local data and downloaded models
+models/*
+!models/.gitkeep
+!models/piper/
+models/piper/*
+!models/piper/en_US-lessac-medium.onnx
+!models/piper/en_US-lessac-medium.onnx.json
+audio/*
+!audio/.gitkeep
+scratch/
+
