@@ -3229,16 +3229,21 @@ async def chat_stream_endpoint(payload: Dict[str, Any] = Body(...)):
 # -------------------------------------------------------------
 @app.post("/api/tts")
 async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
-    """Synthesizes speech audio from text using local Piper Neural TTS."""
+    """Synthesizes speech audio from text using multilingual Edge-TTS / local Piper TTS."""
     global tts
     text = payload.get("text", "").strip()
+    language = payload.get("language", "en")
     if not text:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}.wav"
     try:
         if tts:
-            tts.synthesize(text, output_path=reply_wav_path)
-            return JSONResponse({"success": True, "audio_url": f"/api/audio/{reply_wav_path.name}"})
+            await asyncio.to_thread(tts.synthesize, text, output_path=reply_wav_path, language=language)
+            return JSONResponse({
+                "success": True,
+                "audio_url": f"/api/audio/{reply_wav_path.name}",
+                "language": language,
+            })
         return JSONResponse({"success": False, "error": "TTS engine not initialized"}, status_code=503)
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -3307,10 +3312,12 @@ async def stt_endpoint(request: Request, audio_file: UploadFile = File(...)):
 # Web Speech Chat Endpoint
 # -------------------------------------------------------------
 @app.post("/api/chat")
+@app.post("/api/voice/process")
 async def chat_endpoint(
     request: Request,
     audio_file: UploadFile = File(...),
     conversation_id: Optional[str] = Form(None),
+    language: Optional[str] = Form(None),
 ):
     global stt, llm, tts, memory_manager
 
@@ -3325,31 +3332,41 @@ async def chat_endpoint(
     if not ext:
         ext = ".wav"
     upload_path = AUDIO_DIR / f"browser_upload_{req_id}{ext}"
-    wav_path = AUDIO_DIR / f"browser_input_{req_id}_16k.wav"
+    user_wav_path = AUDIO_DIR / f"user_{int(time.time() * 1000)}_{req_id}.wav"
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}_{req_id}.wav"
 
     try:
         await asyncio.to_thread(_save_upload_file_sync, audio_file, upload_path)
-        wav_path = await asyncio.to_thread(_convert_audio_to_wav_sync, upload_path, wav_path)
+        user_wav_path = await asyncio.to_thread(_convert_audio_to_wav_sync, upload_path, user_wav_path)
 
-        # Step 1: STT (Speech to Text)
+        # Step 1: STT (Speech to Text with Dynamic Language Auto-Detection & Native Script Enforcement)
         t_stt_start = time.time()
         user_text = ""
+        req_lang = None if language in (None, "", "auto", "null", "undefined") else str(language).strip()
+        detected_language = req_lang or "en"
         try:
-            if stt and wav_path.exists():
-                user_text = await asyncio.to_thread(stt.transcribe, wav_path, beam_size=1)
+            if stt and user_wav_path.exists():
+                beam = 2 if req_lang == "en" else 3
+                if hasattr(stt, "transcribe_with_info"):
+                    user_text, detected_language = await asyncio.to_thread(
+                        stt.transcribe_with_info, user_wav_path, language=req_lang, beam_size=beam
+                    )
+                else:
+                    user_text = await asyncio.to_thread(stt.transcribe, user_wav_path, language=req_lang, beam_size=beam)
+                    detected_language = req_lang or getattr(stt, "last_detected_language", "en") or "en"
         except Exception as e:
-            logger.warning("[VOICE-CHAT] STT transcription failed on %s: %s", wav_path, e)
+            logger.warning("[VOICE-CHAT] STT transcription failed on %s: %s", user_wav_path, e)
             user_text = ""
         stt_duration = time.time() - t_stt_start
 
-        logger.info("[VOICE-CHAT] Upload audio transcribed: %r (took %.2fs)", user_text, stt_duration)
+        logger.info("[VOICE-CHAT] Upload audio transcribed: %r [lang=%s] (took %.2fs)", user_text, detected_language, stt_duration)
 
         if not user_text or not user_text.strip():
             return JSONResponse({
                 "user_text": "",
                 "reply_text": "",
                 "audio_url": None,
+                "user_audio_url": None,
                 "status": "no_speech_detected",
                 "message": "No clear speech detected. Please speak closer to your microphone.",
                 "latency": {"stt": round(stt_duration, 2), "llm": 0, "tts": 0, "total": round(stt_duration, 2)}
@@ -3377,14 +3394,62 @@ async def chat_endpoint(
             agent_role=agent_role,
             interaction_type="voice",
         )
+        user_msg["audio_url"] = f"/api/audio/{user_wav_path.name}"
+        user_msg["detected_language"] = detected_language
 
-        # Step 2: LLM (Ollama) with persona, conversation window & strict voice brevity guardrails
+        # Step 2: LLM (Ollama) with Dynamic Turn-by-Turn Language Mirroring
         t_llm_start = time.time()
         try:
             rag_context, _ = kb_manager.build_rag_context(org_id=org_id, query=user_text, agent_id=active_agent_id, top_k=2)
 
             session_key = f"voice_web_{active_agent_id}"
             history_to_use = memory_manager.get_window(session_key)
+
+            lang_names_map = {
+                "mr": ("Marathi", "मराठी"),
+                "hi": ("Hindi", "हिन्दी"),
+                "en": ("English", "English"),
+                "es": ("Spanish", "Español"),
+                "fr": ("French", "Français"),
+                "de": ("German", "Deutsch"),
+                "it": ("Italian", "Italiano"),
+                "ja": ("Japanese", "日本語"),
+                "zh": ("Chinese", "中文"),
+                "ru": ("Russian", "Русский"),
+                "pt": ("Portuguese", "Português"),
+                "ar": ("Arabic", "العربية"),
+                "ta": ("Tamil", "தமிழ்"),
+                "te": ("Telugu", "తెలుగు"),
+                "bn": ("Bengali", "বাংলা"),
+                "gu": ("Gujarati", "ગુજરાતી"),
+                "kn": ("Kannada", "ಕನ್ನಡ"),
+                "ml": ("Malayalam", "മലയാളം"),
+                "pa": ("Punjabi", "ਪੰਜਾਬੀ"),
+                "ur": ("Urdu", "اردو"),
+            }
+            lang_entry = lang_names_map.get(detected_language.lower())
+            if lang_entry:
+                lang_name_en, lang_name_native = lang_entry
+                if detected_language == "en":
+                    lang_directive = (
+                        "User Spoken Language: English.\n"
+                        "- You MUST respond directly in natural, conversational English.\n"
+                        "- Keep your answer concise (1 to 2 spoken sentences, maximum 25 words)."
+                    )
+                else:
+                    lang_directive = (
+                        f"CRITICAL LANGUAGE DIRECTIVE: The user spoke in {lang_name_en} ({lang_name_native}).\n"
+                        f"- You MUST respond STRICTLY AND EXCLUSIVELY in authentic {lang_name_en} ({lang_name_native}) using its native script.\n"
+                        f"- DO NOT reply in English. DO NOT translate into English.\n"
+                        f"- Respond in natural, idiomatic {lang_name_en} in 1 to 2 spoken sentences (maximum 25 words).\n"
+                        f"- Speak warmly and helpfully without preamble, filler phrases, or formatting."
+                    )
+            else:
+                lang_directive = (
+                    f"CRITICAL LANGUAGE DIRECTIVE: The user spoke in language code '{detected_language}'.\n"
+                    f"- You MUST respond in the EXACT SAME language ({detected_language}) using its native script.\n"
+                    f"- Speak naturally and concisely in 1 to 2 spoken sentences (maximum 25 words)."
+                )
 
             speech_prompt_parts = [
                 f"You are {agent_name} ({agent_role}). You are speaking directly to a user in a live spoken voice conversation."
@@ -3393,7 +3458,9 @@ async def chat_endpoint(
                 speech_prompt_parts.append(f"Agent Persona:\n{agent_persona}")
             speech_prompt_parts.append(
                 "Strict Voice Rules:\n"
-                "- Speak naturally, concisely, and warmly in 1 to 2 spoken sentences (maximum 25 words).\n"
+                f"{lang_directive}\n"
+                "- Speech Context: The user's input was transcribed from microphone audio and may contain minor phonetic approximations. Interpret the user's intent generously and answer helpfully.\n"
+                "- Spoken Brevity: Speak concisely and warmly in 1 to 2 spoken sentences (maximum 25 words).\n"
                 "- Sound like a real, helpful human in an engaging live phone conversation.\n"
                 "- Never output markdown, bullet points, asterisks, hashtags, or code blocks.\n"
                 "- Answer directly without preamble or filler phrases."
@@ -3402,23 +3469,42 @@ async def chat_endpoint(
                 speech_prompt_parts.append(f"{rag_context}")
 
             speech_system_prompt = "\n\n".join(speech_prompt_parts)
-            msgs = [{"role": "system", "content": speech_system_prompt}] + history_to_use + [{"role": "user", "content": user_text}]
+
+            user_turn_prompt = (
+                f"[Spoken in {lang_entry[0]} ({lang_entry[1]}) - reply strictly in {lang_entry[0]}]: {user_text}"
+                if (lang_entry and detected_language != "en")
+                else user_text
+            )
+            msgs = [{"role": "system", "content": speech_system_prompt}] + history_to_use + [{"role": "user", "content": user_turn_prompt}]
 
             if llm and hasattr(llm, "chat_messages"):
-                reply_text = await asyncio.to_thread(llm.chat_messages, msgs, max_tokens=40, clean_speech=True)
+                reply_text = await asyncio.to_thread(llm.chat_messages, msgs, max_tokens=42, clean_speech=True, temperature=0.2)
             else:
                 reply_text = "I am here."
+
+            # Multilingual Script Guard: if model mistakenly replied in English characters to a non-English query
+            if detected_language != "en" and reply_text:
+                latin_letters = sum(1 for c in reply_text if "a" <= c.lower() <= "z")
+                total_chars = len(reply_text.strip())
+                if total_chars > 0 and (latin_letters / total_chars) > 0.45:
+                    if detected_language == "mr":
+                        logger.warning("[VOICE-CHAT] Model replied in English to Marathi input. Using polite Marathi fallback.")
+                        reply_text = "हो, मी तुम्हाला ऐकत आहे. सांगा, मी तुमची काय मदत करू शकतो?"
+                    elif detected_language == "hi":
+                        logger.warning("[VOICE-CHAT] Model replied in English to Hindi input. Using polite Hindi fallback.")
+                        reply_text = "हाँ, मैं सुन रहा हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?"
+
             memory_manager.add_turn(session_key, user_text, reply_text)
         except Exception as e:
             logger.error("Audio route LLM error: %s", e)
             reply_text = "I'm having trouble connecting to my local language model. Please make sure Ollama is running."
         llm_duration = time.time() - t_llm_start
 
-        # Step 3: TTS (Piper)
+        # Step 3: TTS (Multilingual Edge-TTS / Piper fallback matching user's spoken language)
         t_tts_start = time.time()
         try:
             if tts:
-                await asyncio.to_thread(tts.synthesize, reply_text, output_path=reply_wav_path)
+                await asyncio.to_thread(tts.synthesize, reply_text, output_path=reply_wav_path, language=detected_language)
         except Exception as e:
             logger.error("Audio route TTS error: %s", e)
         tts_duration = time.time() - t_tts_start
@@ -3431,8 +3517,8 @@ async def chat_endpoint(
             "total": round(total_duration, 2),
         }
 
-        logger.info("[VOICE-CHAT] Turn complete. user=%r, reply=%r, audio=%s, latency=%s",
-                    user_text, reply_text, reply_wav_path.name, latency_info)
+        logger.info("[VOICE-CHAT] Turn complete. user=%r, reply=%r, lang=%s, audio=%s, latency=%s",
+                    user_text, reply_text, detected_language, reply_wav_path.name, latency_info)
 
         asst_msg = add_conversation_message(
             role="assistant",
@@ -3446,25 +3532,28 @@ async def chat_endpoint(
             agent_role=agent_role,
             interaction_type="voice",
         )
+        asst_msg["audio_url"] = f"/api/audio/{reply_wav_path.name}"
+        asst_msg["detected_language"] = detected_language
 
         return JSONResponse({
             "user_text": user_text,
             "reply_text": reply_text,
             "audio_url": f"/api/audio/{reply_wav_path.name}",
+            "user_audio_url": f"/api/audio/{user_wav_path.name}",
             "conversation_id": conversation_id,
+            "detected_language": detected_language,
             "latency": latency_info,
             "agent": active_agent,
             "user_message": user_msg,
             "assistant_message": asst_msg,
         })
     finally:
-        # Clean up temporary browser upload files
-        for p in [upload_path, wav_path]:
-            if p.exists() and p != reply_wav_path:
-                try:
-                    os.remove(p)
-                except Exception:
-                    pass
+        # Clean up temporary browser upload file only (keep 16k user_wav_path and reply_wav_path for playback)
+        if upload_path.exists():
+            try:
+                os.remove(upload_path)
+            except Exception:
+                pass
 
 
 @app.get("/api/audio/{filename}")

@@ -6,7 +6,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from app.config import GEMINI_API_KEY, LLM_MODEL, SYSTEM_PROMPT, OLLAMA_HOST
+from app.config import GEMINI_API_KEY, LLM_MODEL, SYSTEM_PROMPT, OLLAMA_HOST, LLM_TEMPERATURE
 
 logger = logging.getLogger("voice_agent.llm")
 
@@ -321,7 +321,7 @@ class LLMClient:
             effective_messages = self.messages
 
         options: Dict[str, Any] = {
-            "temperature": 0.7,
+            "temperature": LLM_TEMPERATURE,
             "top_p": 0.9,
         }
         if max_tokens:
@@ -440,7 +440,7 @@ class LLMClient:
         msgs.append({"role": "user", "content": prompt})
 
         options: Dict[str, Any] = {
-            "temperature": 0.7,
+            "temperature": LLM_TEMPERATURE,
             "top_p": 0.9,
         }
         if max_tokens:
@@ -491,13 +491,15 @@ class LLMClient:
         messages: List[Dict[str, str]],
         max_tokens: Optional[int] = None,
         clean_speech: bool = True,
+        temperature: Optional[float] = None,
     ) -> str:
         """
         Send a full multi-turn conversation messages array to Gemini or Ollama.
         Returns the assistant reply (optionally cleaned for speech).
         """
+        effective_temp = LLM_TEMPERATURE if temperature is None else temperature
         options: Dict[str, Any] = {
-            "temperature": 0.7,
+            "temperature": effective_temp,
             "top_p": 0.9,
         }
         if max_tokens:

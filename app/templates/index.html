@@ -3879,36 +3879,155 @@
             align-self: flex-start;
         }
 
+        .message {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1.1rem;
+            max-width: 88%;
+            animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         .message-bubble {
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            font-size: 0.88rem;
-            line-height: 1.45;
+            padding: 0.85rem 1.1rem;
+            border-radius: 1.1rem;
+            font-size: 0.92rem;
+            line-height: 1.5;
             position: relative;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s ease;
         }
 
         .message.user .message-bubble {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #fff;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
             border-bottom-right-radius: 0.25rem;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(147, 197, 253, 0.28);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.28);
         }
 
         .message.assistant .message-bubble {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #0f172a;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f1f5f9;
             border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
         }
 
-        .message-agent-tag {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 0.25rem;
+        .message-header-row {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin-bottom: 0.45rem;
+            flex-wrap: wrap;
+        }
+
+        .message-sender {
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #38bdf8;
+            letter-spacing: 0.01em;
+        }
+
+        .message.user .message-sender {
+            color: #bfdbfe;
+        }
+
+        .message-lang-badge {
+            display: inline-flex;
+            align-items: center;
             gap: 0.3rem;
+            padding: 0.18rem 0.55rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.22);
+            color: #c7d2fe;
+            border: 1px solid rgba(129, 140, 248, 0.35);
+        }
+
+        .message.user .message-lang-badge {
+            background: rgba(255, 255, 255, 0.16);
+            color: #eff6ff;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+        }
+
+        .message-text {
+            font-size: 0.92rem;
+            word-break: break-word;
+            margin-bottom: 0.35rem;
+        }
+
+        .message-audio-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.45rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-audio-replay {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-audio-replay:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: scale(1.02);
+        }
+
+        .message.user .btn-audio-replay {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+
+        .message.user .btn-audio-replay:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .telemetry-chips {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            margin-top: 0.35rem;
+        }
+
+        .telemetry-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.45rem;
+            font-size: 0.68rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .telemetry-chip.highlight {
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.35);
+            background: rgba(56, 189, 248, 0.12);
         }
 
         .source-tag {
@@ -5115,7 +5234,13 @@
 
                             <div class="switch-mode-footer">
                                 <span>Already have account? </span>
-                                <button type="button" class="link-switch-mode" onclick="switchAuthMode('login')">Start exploring</button>
+                                <button type="button" class="link-switch-mode" onclick="switchAuthMode('login')">Sign In</button>
+                            </div>
+
+                            <div class="quick-demo-wrapper" style="margin-top: 1.25rem; text-align: center;">
+                                <button type="button" class="btn-demo-explore" onclick="quickLogin('admin@apexai.io', 'demo')" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); color: #2563eb; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                    <span>⚡</span> <span>Instant Demo / Start Exploring</span>
+                                </button>
                             </div>
                         </form>
 
@@ -5248,10 +5373,14 @@
 
                         <div class="switch-mode-footer">
                             <span>New to Voicing AI? </span>
-                            <button type="button" class="link-switch-mode" onclick="switchAuthMode('register')">Start exploring</button>
+                            <button type="button" class="link-switch-mode" onclick="switchAuthMode('register')">Create Account</button>
                         </div>
 
-                        <!-- Demo buttons removed -->
+                        <div class="quick-demo-wrapper" style="margin-top: 1.25rem; text-align: center;">
+                            <button type="button" class="btn-demo-explore" onclick="quickLogin('admin@apexai.io', 'demo')" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); color: #2563eb; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                <span>⚡</span> <span>Instant Demo / Start Exploring</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- ==============================================
@@ -6591,9 +6720,34 @@
                         </div>
                         <div class="agent-active-sub" id="voiceActiveAgentRole">Voice Assistant • Real-Time Audio</div>
                     </div>
-                    <button class="btn-switch-agent" onclick="switchTab('agents')">
-                        Switch Agent
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                        <select id="voiceLanguageSelect" class="lang-select-dropdown" style="background: rgba(30, 41, 59, 0.95); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.45rem 0.75rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; outline: none;" onchange="saveVoiceLanguageChoice(this.value)" title="Choose the language you are speaking in, or keep Auto-Detect">
+                            <option value="auto">🌐 Auto-Detect Language</option>
+                            <option value="mr">🇮🇳 Marathi (मराठी)</option>
+                            <option value="hi">🇮🇳 Hindi (हिंदी)</option>
+                            <option value="en">🇬🇧 English</option>
+                            <option value="es">🇪🇸 Spanish (Español)</option>
+                            <option value="fr">🇫🇷 French (Français)</option>
+                            <option value="de">🇩🇪 German (Deutsch)</option>
+                            <option value="it">🇮🇹 Italian (Italiano)</option>
+                            <option value="ja">🇯🇵 Japanese (日本語)</option>
+                            <option value="zh">🇨🇳 Chinese (中文)</option>
+                            <option value="ru">🇷🇺 Russian (Русский)</option>
+                            <option value="pt">🇧🇷 Portuguese (Português)</option>
+                            <option value="ar">🇸🇦 Arabic (العربية)</option>
+                            <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+                            <option value="te">🇮🇳 Telugu (తెలుగు)</option>
+                            <option value="bn">🇮🇳 Bengali (বাংলা)</option>
+                            <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
+                            <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                            <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
+                            <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+                            <option value="ur">🇵🇰 Urdu (اردو)</option>
+                        </select>
+                        <button class="btn-switch-agent" onclick="switchTab('agents')">
+                            Switch Agent
+                        </button>
+                    </div>
                 </div>
 
                 <div class="orb-wrapper">
@@ -11797,6 +11951,21 @@ Account ID: ${u.id || ''}`;
         function encodeWAV(samples, sampleRate = 16000) {
             const buffer = new ArrayBuffer(44 + samples.length * 2);
             const view = new DataView(buffer);
+
+            // Audio Peak Normalization:
+            // Laptop built-in microphones often capture voice at very low volume (peak 0.05 - 0.20),
+            // which causes Whisper to mishear speech phonetics.
+            // Dynamically normalize peak to 0.85 (headroom to avoid clipping).
+            let maxAmp = 0;
+            for (let i = 0; i < samples.length; i++) {
+                const abs = Math.abs(samples[i]);
+                if (abs > maxAmp) maxAmp = abs;
+            }
+            let gain = 1.0;
+            if (maxAmp > 0.005 && maxAmp < 0.6) {
+                gain = Math.min(8.0, 0.85 / maxAmp);
+            }
+
             function writeString(view, offset, string) {
                 for (let i = 0; i < string.length; i++) {
                     view.setUint8(offset + i, string.charCodeAt(i));
@@ -11818,29 +11987,24 @@ Account ID: ${u.id || ''}`;
 
             let offset = 44;
             for (let i = 0; i < samples.length; i++, offset += 2) {
-                const s = Math.max(-1, Math.min(1, samples[i]));
+                const s = Math.max(-1, Math.min(1, samples[i] * gain));
                 view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
             }
             return new Blob([buffer], { type: 'audio/wav' });
         }
 
         function downsampleBuffer(buffer, inputSampleRate, outputSampleRate = 16000) {
-            if (inputSampleRate === outputSampleRate) return buffer;
-            const sampleRateRatio = inputSampleRate / outputSampleRate;
-            const newLength = Math.round(buffer.length / sampleRateRatio);
+            if (!buffer || buffer.length === 0 || inputSampleRate === outputSampleRate) return buffer;
+            const ratio = inputSampleRate / outputSampleRate;
+            const newLength = Math.round(buffer.length / ratio);
             const result = new Float32Array(newLength);
-            let offsetResult = 0;
-            let offsetBuffer = 0;
-            while (offsetResult < result.length) {
-                const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-                let accum = 0, count = 0;
-                for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
-                    accum += buffer[i];
-                    count++;
-                }
-                result[offsetResult] = count > 0 ? accum / count : 0;
-                offsetResult++;
-                offsetBuffer = nextOffsetBuffer;
+            for (let i = 0; i < newLength; i++) {
+                const srcPos = i * ratio;
+                const idx = Math.floor(srcPos);
+                const frac = srcPos - idx;
+                const s0 = buffer[idx] || 0;
+                const s1 = (idx + 1 < buffer.length) ? buffer[idx + 1] : s0;
+                result[i] = s0 + frac * (s1 - s0);
             }
             return result;
         }
@@ -11859,10 +12023,17 @@ Account ID: ${u.id || ''}`;
                     audio: {
                         echoCancellation: true,
                         noiseSuppression: true,
-                        autoGainControl: true
+                        autoGainControl: true,
+                        channelCount: 1,
+                        sampleRate: 16000
                     }
                 });
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                try {
+                    audioContext = new AudioCtxClass({ sampleRate: 16000, latencyHint: 'interactive' });
+                } catch (e) {
+                    audioContext = new AudioCtxClass();
+                }
                 if (audioContext.state === 'suspended') {
                     await audioContext.resume();
                 }
@@ -12108,6 +12279,8 @@ Account ID: ${u.id || ''}`;
                     const speechTriggerLevel = Math.max(20, Math.round(ambientFloor + 8));
                     // Turn-taking pause threshold: volume dropping back near ambient baseline
                     const pauseThreshold = Math.max(14, Math.round(ambientFloor + 4));
+                    // Adaptive turn-taking: 750ms if user spoke a full sentence (>1.4s), 950ms for short utterance
+                    const requiredSilence = (speechDuration > 1400) ? 750 : 950;
 
                     if (vocalVolume < pauseThreshold) {
                         consecutiveResumeFrames = 0;
@@ -12115,7 +12288,7 @@ Account ID: ${u.id || ''}`;
                             silenceStartTime = Date.now();
                         }
                         const silenceElapsed = Date.now() - silenceStartTime;
-                        if (silenceElapsed >= 750) { // 750ms natural conversational pause concludes turn
+                        if (silenceElapsed >= requiredSilence) {
                             isSpeaking = false;
                             silenceStartTime = null;
                             consecutiveResumeFrames = 0;
@@ -12134,7 +12307,7 @@ Account ID: ${u.id || ''}`;
                         consecutiveResumeFrames = 0;
                         if (silenceStartTime) {
                             const silenceElapsed = Date.now() - silenceStartTime;
-                            if (silenceElapsed >= 750) {
+                            if (silenceElapsed >= requiredSilence) {
                                 isSpeaking = false;
                                 silenceStartTime = null;
                                 consecutiveResumeFrames = 0;
@@ -12188,6 +12361,10 @@ Account ID: ${u.id || ''}`;
             if (activeVoiceConversationId) {
                 formData.append('conversation_id', activeVoiceConversationId);
             }
+            const selectedVoiceLang = document.getElementById('voiceLanguageSelect')?.value || 'auto';
+            if (selectedVoiceLang && selectedVoiceLang !== 'auto') {
+                formData.append('language', selectedVoiceLang);
+            }
 
             try {
                 // Call originalFetch directly with formData and NO headers.
@@ -12222,6 +12399,17 @@ Account ID: ${u.id || ''}`;
                 }
 
                 // Instantly append user message to conversation transcript
+                if (data.detected_language) {
+                    if (data.user_message) data.user_message.detected_language = data.detected_language;
+                    if (data.assistant_message) data.assistant_message.detected_language = data.detected_language;
+                }
+                if (data.user_audio_url && data.user_message) {
+                    data.user_message.audio_url = data.user_audio_url;
+                }
+                if (data.audio_url && data.assistant_message) {
+                    data.assistant_message.audio_url = data.audio_url;
+                }
+
                 if (data.user_message && !renderedMessageIds.has(data.user_message.id)) {
                     renderedMessageIds.add(data.user_message.id);
                     appendMessageToDOM(data.user_message);
@@ -12230,6 +12418,8 @@ Account ID: ${u.id || ''}`;
                     appendMessageToDOM({
                         role: 'user',
                         text: data.user_text,
+                        detected_language: data.detected_language,
+                        audio_url: data.user_audio_url,
                         source: 'web'
                     });
                 }
@@ -12243,15 +12433,17 @@ Account ID: ${u.id || ''}`;
                     appendMessageToDOM({
                         role: 'assistant',
                         text: data.reply_text,
+                        detected_language: data.detected_language,
+                        audio_url: data.audio_url,
                         agent_name: activeAgent ? activeAgent.name : 'AI Assistant',
                         latency: data.latency,
                         source: 'web'
                     });
                 }
 
-                // Play synthesized speech from local Piper TTS
+                // Play synthesized speech from multilingual Edge-TTS / local Piper TTS
                 if (data.audio_url) {
-                    playAgentReply(data.audio_url);
+                    playAgentReply(data.audio_url, data.detected_language);
                 } else {
                     statusText.innerText = "Listening...";
                     statusSub.innerText = "Speak naturally. Pause when done.";
@@ -12268,7 +12460,7 @@ Account ID: ${u.id || ''}`;
             }
         }
 
-        function playAgentReply(audioUrl) {
+        function playAgentReply(audioUrl, lang) {
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio = null;
@@ -12277,7 +12469,8 @@ Account ID: ${u.id || ''}`;
             // Audio URLs under /api/audio/ are public and do not require authentication tokens
             currentAudio = new Audio(audioUrl);
             isAgentSpeaking = true;
-            statusText.innerText = (activeAgent ? activeAgent.name : "Agent") + " is Speaking...";
+            const langLabel = (lang && lang.toLowerCase() !== 'en') ? ` [${lang.toUpperCase()}]` : '';
+            statusText.innerText = (activeAgent ? activeAgent.name : "Agent") + ` is Speaking${langLabel}...`;
             statusSub.innerText = "Speak to interrupt at any moment (ambient noise is ignored).";
             orbCore.className = 'orb-core speaking';
 
@@ -12323,6 +12516,22 @@ Account ID: ${u.id || ''}`;
                 }
             });
         }
+
+        function saveVoiceLanguageChoice(val) {
+            try {
+                localStorage.setItem('voiceLanguageChoice', val);
+            } catch (e) {}
+        }
+
+        (function restoreVoiceLanguageChoice() {
+            try {
+                const saved = localStorage.getItem('voiceLanguageChoice');
+                const sel = document.getElementById('voiceLanguageSelect');
+                if (saved && sel) {
+                    sel.value = saved;
+                }
+            } catch (e) {}
+        })();
 
         let speechPlayStartTime = 0;
 
@@ -12403,31 +12612,134 @@ Account ID: ${u.id || ''}`;
             }
         }
 
+        const LANG_MAP = {
+            'mr': { flag: '🇮🇳', name: 'Marathi (मराठी)' },
+            'hi': { flag: '🇮🇳', name: 'Hindi (हिन्दी)' },
+            'en': { flag: '🇬🇧', name: 'English' },
+            'es': { flag: '🇪🇸', name: 'Spanish (Español)' },
+            'fr': { flag: '🇫🇷', name: 'French (Français)' },
+            'de': { flag: '🇩🇪', name: 'German (Deutsch)' },
+            'it': { flag: '🇮🇹', name: 'Italian (Italiano)' },
+            'ja': { flag: '🇯🇵', name: 'Japanese (日本語)' },
+            'zh': { flag: '🇨🇳', name: 'Chinese (中文)' },
+            'ru': { flag: '🇷🇺', name: 'Russian (Русский)' },
+            'pt': { flag: '🇧🇷', name: 'Portuguese (Português)' },
+            'ar': { flag: '🇸🇦', name: 'Arabic (العربية)' },
+            'ta': { flag: '🇮🇳', name: 'Tamil (தமிழ்)' },
+            'te': { flag: '🇮🇳', name: 'Telugu (తెలుగు)' },
+            'bn': { flag: '🇮🇳', name: 'Bengali (বাংলা)' },
+            'gu': { flag: '🇮🇳', name: 'Gujarati (ગુજરાતી)' },
+            'kn': { flag: '🇮🇳', name: 'Kannada (ಕನ್ನಡ)' },
+            'ml': { flag: '🇮🇳', name: 'Malayalam (മലയാളം)' },
+            'pa': { flag: '🇮🇳', name: 'Punjabi (ਪੰਜਾਬੀ)' },
+            'ur': { flag: '🇵🇰', name: 'Urdu (اردو)' }
+        };
+
+        let messageAudioPlayer = null;
+        let activeReplayButton = null;
+
+        function replayMessageAudio(audioUrl, btn) {
+            if (!audioUrl) return;
+
+            // If this button is already playing, pause it
+            if (messageAudioPlayer && activeReplayButton === btn && !messageAudioPlayer.paused) {
+                messageAudioPlayer.pause();
+                btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Replay Audio`;
+                activeReplayButton = null;
+                return;
+            }
+
+            // If another audio was playing, reset its button
+            if (messageAudioPlayer) {
+                messageAudioPlayer.pause();
+                if (activeReplayButton) {
+                    activeReplayButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Replay Audio`;
+                }
+            }
+
+            messageAudioPlayer = new Audio(audioUrl);
+            activeReplayButton = btn;
+            btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Playing...`;
+
+            messageAudioPlayer.onended = () => {
+                btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Replay Audio`;
+                activeReplayButton = null;
+                messageAudioPlayer = null;
+            };
+
+            messageAudioPlayer.onerror = () => {
+                btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Replay Audio`;
+                activeReplayButton = null;
+                messageAudioPlayer = null;
+            };
+
+            messageAudioPlayer.play().catch(e => {
+                console.error("Audio playback error:", e);
+                btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Replay Audio`;
+                activeReplayButton = null;
+            });
+        }
+
         function appendMessageToDOM(msg) {
             if (emptyState) emptyState.style.display = 'none';
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${msg.role}`;
 
-            const sourceText = msg.source === 'phone' ? '📞 Phone Call' : '🎙️ Local Mic';
-            const sourceClass = msg.source === 'phone' ? 'phone' : 'web';
+            const isUser = msg.role === 'user';
+            const senderIcon = isUser ? '👤' : '🤖';
+            const senderName = isUser ? 'You' : (msg.agent_name || (activeAgent ? activeAgent.name : 'AI Assistant'));
+            const sourceText = msg.source === 'phone' ? '📞 Phone' : '🎙️ Mic';
 
-            let latencyHtml = '';
-            if (msg.latency && msg.role === 'assistant') {
-                latencyHtml = `<div class="message-meta">⚡ Total: ${msg.latency.total}s (LLM: ${msg.latency.llm}s)</div>`;
+            // Dynamic Language Badge
+            let langBadge = '';
+            if (msg.detected_language) {
+                const code = msg.detected_language.toLowerCase();
+                const info = LANG_MAP[code];
+                if (info) {
+                    langBadge = `<span class="message-lang-badge">${info.flag} ${info.name}</span>`;
+                } else if (code !== 'en') {
+                    langBadge = `<span class="message-lang-badge">🌐 ${escapeHtml(code.toUpperCase())}</span>`;
+                }
             }
 
-            const agentHeader = (msg.role === 'assistant' && msg.agent_name) 
-                ? `<div class="message-agent-tag">🤖 ${escapeHtml(msg.agent_name)}</div>` 
-                : '';
+            // Audio Replay Button for user or assistant
+            let audioBarHtml = '';
+            if (msg.audio_url) {
+                const replayLabel = isUser ? 'Replay Your Voice' : 'Replay Agent Audio';
+                audioBarHtml = `
+                    <div class="message-audio-bar">
+                        <button class="btn-audio-replay" onclick="replayMessageAudio('${escapeHtml(msg.audio_url)}', this)" title="Listen to this recorded audio">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            ${replayLabel}
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Telemetry Chips (for assistant turns)
+            let telemetryHtml = '';
+            if (!isUser && msg.latency) {
+                telemetryHtml = `
+                    <div class="telemetry-chips">
+                        <span class="telemetry-chip highlight">⚡ Total: ${msg.latency.total}s</span>
+                        <span class="telemetry-chip">🎙️ STT: ${msg.latency.stt || 0}s</span>
+                        <span class="telemetry-chip">🧠 LLM: ${msg.latency.llm || 0}s</span>
+                        <span class="telemetry-chip">🔊 TTS: ${msg.latency.tts || 0}s</span>
+                    </div>
+                `;
+            }
 
             msgDiv.innerHTML = `
-                <div class="source-tag ${sourceClass}">${sourceText}</div>
                 <div class="message-bubble">
-                    ${agentHeader}
-                    <div>${escapeHtml(msg.text)}</div>
+                    <div class="message-header-row">
+                        <div class="message-sender">${senderIcon} ${escapeHtml(senderName)} <span style="opacity: 0.6; font-size: 0.68rem; font-weight: normal; margin-left: 4px;">• ${sourceText}</span></div>
+                        ${langBadge}
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                    ${audioBarHtml}
                 </div>
-                ${latencyHtml}
+                ${telemetryHtml}
             `;
 
             chatMessages.appendChild(msgDiv);

@@ -65,14 +65,16 @@ AVAILABLE_MODELS = [
 ]
 
 LLM_MODEL = os.getenv("LLM_MODEL", "gemma3:4b")
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 
 # Voice Assistant System Prompt
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
     (
-        "You are a helpful local voice assistant powered by Gemma 3, running completely offline on this computer.\n"
+        "You are a helpful multilingual local voice assistant powered by Gemma 3, running on this computer.\n"
         "You are NOT ChatGPT and you are NOT made by OpenAI. Your model is Gemma 3.\n"
-        "Keep your answers short and conversational (1 to 3 sentences maximum).\n"
+        "Crucial Rule: Always respond in the exact same language that the user spoke to you (for example Hindi, Spanish, French, German, Marathi, Japanese, etc.).\n"
+        "Keep your answers short and conversational (1 to 2 sentences maximum).\n"
         "Do not use markdown, bullet points, asterisks, or code blocks.\n"
         "Do not give unnecessary explanations.\n"
         "Speak naturally as if talking out loud."
@@ -80,7 +82,7 @@ SYSTEM_PROMPT = os.getenv(
 )
 
 # STT Configuration (faster-whisper)
-WHISPER_MODEL_NAME = os.getenv("WHISPER_MODEL_NAME", "base")
+WHISPER_MODEL_NAME = os.getenv("WHISPER_MODEL_NAME", "small")
 WHISPER_DEVICE = os.getenv("WHISPER_DEVICE", "cpu")  # "cpu" or "cuda"
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
 WHISPER_CACHE_DIR = MODELS_DIR / "whisper"
