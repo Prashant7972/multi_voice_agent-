@@ -59,18 +59,19 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # Available Local Models
 AVAILABLE_MODELS = [
+    "gemma3:4b",
     "qwen2.5-coder:3b-instruct",
     "hf.co/nvidia/NVIDIA-Nemotron-3-Nano-4B-GGUF:Q4_K_M",
 ]
 
-LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5-coder:3b-instruct")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemma3:4b")
 
 # Voice Assistant System Prompt
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
     (
-        "You are a helpful local voice assistant powered by Qwen 2.5, running completely offline on this computer.\n"
-        "You are NOT ChatGPT and you are NOT made by OpenAI. Your model is Qwen.\n"
+        "You are a helpful local voice assistant powered by Gemma 3, running completely offline on this computer.\n"
+        "You are NOT ChatGPT and you are NOT made by OpenAI. Your model is Gemma 3.\n"
         "Keep your answers short and conversational (1 to 3 sentences maximum).\n"
         "Do not use markdown, bullet points, asterisks, or code blocks.\n"
         "Do not give unnecessary explanations.\n"

@@ -26,9 +26,9 @@ def test_twilio_service():
     assert "<Response>" in twiml
 
     # Test call execution with dummy number
-    result = ts.make_call("+your nunber", host="voice.example.com")
+    result = ts.make_call("+15551234567", host="voice.example.com")
     assert result["status"] in ("mock_mode", "success", "error")
-    assert result["to"] == "+1your caller"
+    assert result["to"] == "+15551234567"
 
 def test_audio_transcoding():
     # 20ms of silence in mulaw = 160 bytes of 0xFF
@@ -53,9 +53,9 @@ def test_twilio_api_endpoints():
 
     admin_token = create_access_token({"sub": "admin-1", "email": "admin@apexai.io", "role": "admin"})
     headers = {"Authorization": f"Bearer {admin_token}"}
-    r = client.post("/api/twilio/call", json={"to_phone": "+phone number"}, headers=headers)
+    r = client.post("/api/twilio/call", json={"to_phone": "+15559876543"}, headers=headers)
     assert r.status_code == 200
-    assert r.json()["to"] == "phone numebr"
+    assert r.json()["to"] == "+15559876543"
 
     r = client.post("/twiml/incoming")
     assert r.status_code == 200
@@ -89,8 +89,8 @@ def test_twilio_websocket():
         ws.send_text(json.dumps({
             "event": "start",
             "start": {
-                "streamSid": "id",
-                "callSid": "calld5",
+                "streamSid": "MZ12345",
+                "callSid": "CA12345",
                 "mediaFormat": {"encoding": "audio/x-mulaw", "sampleRate": 8000, "channels": 1}
             }
         }))
@@ -107,9 +107,9 @@ def test_twilio_websocket():
 
 def test_twilio_trial_parameter_fallback():
     from unittest.mock import MagicMock, patch
-    ts = TwilioService(account_sid="your id", auth_token="token", phone_number="+phone")
+    ts = TwilioService(account_sid="mock_twilio_account_sid", auth_token="test_token_12345", phone_number="+17372212163")
     mock_call = MagicMock()
-    mock_call.sid = "your id "
+    mock_call.sid = "CA123trialcallsid"
 
     calls_created = []
 
@@ -123,27 +123,27 @@ def test_twilio_trial_parameter_fallback():
         instance = MockClient.return_value
         instance.calls.create.side_effect = fake_create
 
-        res = ts.make_call("ypur umebr ", host="voice.example.com")
+        res = ts.make_call("+917972412266", host="voice.example.com")
         assert res["status"] == "success"
-        assert res["call_sid"] == "id"
+        assert res["call_sid"] == "CA123trialcallsid"
         assert len(calls_created) == 2
         # First call attempted standard status callbacks
         assert "status_callback" in calls_created[0]
         # Fallback call strictly stripped status callbacks and time limits
         assert "status_callback" not in calls_created[1]
         assert "time_limit" not in calls_created[1]
-        assert calls_created[1]["to"] == "your number "
-        assert calls_created[1]["from_"] == "callers numnber "
+        assert calls_created[1]["to"] == "+917972412266"
+        assert calls_created[1]["from_"] == "+17372212163"
 
 def test_telephony_audio_config_and_twiml_interaction():
     from app.server import resolve_telephony_audio_config
 
     # 1. Config resolution for different locales
-    cfg_in = resolve_telephony_audio_config("+yor number ")
+    cfg_in = resolve_telephony_audio_config("+917972412266")
     assert cfg_in["voice"] == "Polly.Kajal-Neural"
     assert cfg_in["language"] == "en-IN"
 
-    cfg_us = resolve_telephony_audio_config("+callers umber")
+    cfg_us = resolve_telephony_audio_config("+15551234567")
     assert cfg_us["voice"] == "Polly.Joanna-Neural"
     assert cfg_us["language"] == "en-US"
 
@@ -152,21 +152,21 @@ def test_telephony_audio_config_and_twiml_interaction():
     assert cfg_uk["language"] == "en-GB"
 
     # 2. Incoming call to Indian number generates Indian neural voice & en-IN speech recognition
-    r_inc = client.post("/twiml/incoming", data={"To": "+your mumber ", "From": "which from you want the phonen"})
+    r_inc = client.post("/twiml/incoming", data={"To": "+917972412266", "From": "+17372212163"})
     assert r_inc.status_code == 200
     assert "Polly.Kajal-Neural" in r_inc.text
     assert 'language="en-IN"' in r_inc.text
     assert 'bargeIn="false"' in r_inc.text
 
     # 3. Respond with speech returns conversational answer and continues interactive Gather
-    r_resp = client.post("/twiml/respond", data={"SpeechResult": "Hello, how are you?", "To": "+your number "})
+    r_resp = client.post("/twiml/respond", data={"SpeechResult": "Hello, how are you?", "To": "+917972412266"})
     assert r_resp.status_code == 200
     assert "<Response>" in r_resp.text
     assert "<Gather" in r_resp.text
     assert 'bargeIn="true"' in r_resp.text
 
     # 4. Respond with empty speech returns friendly conversational reprompt
-    r_empty = client.post("/twiml/respond", data={"SpeechResult": "", "To": "your number "})
+    r_empty = client.post("/twiml/respond", data={"SpeechResult": "", "To": "+917972412266"})
     assert r_empty.status_code == 200
     assert ("couldn't quite hear you" in r_empty.text) or ("say that again" in r_empty.text)
 
@@ -175,7 +175,7 @@ def test_incoming_call_logs_initial_greeting():
     from app.server import conversation_manager
     call_sid = "CA_greeting_test_8877"
     try:
-        r = client.post("/twiml/incoming", data={"To": "+917972412266", "From": "+from yoyu wnat the nube r", "CallSid": call_sid})
+        r = client.post("/twiml/incoming", data={"To": "+917972412266", "From": "+17372212163", "CallSid": call_sid})
         assert r.status_code == 200
         assert "<Response>" in r.text
 
@@ -220,7 +220,7 @@ def test_download_recording_and_status_callback():
         mock_resp.status_code = 200
         mock_resp.content = b"ID3\x03\x00\x00\x00" + b"\x00" * 600
 
-        ts = TwilioService(account_sid="yur roekn", auth_token="test_token_12345", phone_number="+tour number")
+        ts = TwilioService(account_sid="mock_twilio_account_sid", auth_token="test_token_12345", phone_number="+17372212163")
 
         with patch("requests.get", return_value=mock_resp):
             url = ts.download_recording(rec_sid, test_sid)

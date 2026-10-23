@@ -14,7 +14,7 @@ from app.config import AUDIO_DIR
 def test_full_pipeline():
     print("=" * 60)
     print("TEST: Full End-to-End Voice Pipeline")
-    print("Microphone/WAV -> faster-whisper -> Ollama Qwen -> Piper -> Speaker/WAV")
+    print("Microphone/WAV -> faster-whisper -> Ollama Gemma 3 -> Piper -> Speaker/WAV")
     print("=" * 60)
 
     try:

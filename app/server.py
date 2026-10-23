@@ -3580,7 +3580,7 @@ async def pipecat_status():
         "vad_noise_filter_active": True,
         "min_volume_threshold": 0.06,
         "stt": f"faster-whisper ({WHISPER_MODEL_NAME}, {WHISPER_COMPUTE_TYPE})",
-        "llm": f"Gemini ({llm.model if llm else LLM_MODEL})",
+        "llm": f"Gemini ({llm.model if llm else LLM_MODEL})" if (llm and llm.is_gemini()) else f"Ollama ({llm.model if llm else LLM_MODEL})",
         "tts": f"Piper TTS ({PIPER_VOICE_NAME})",
     })
 

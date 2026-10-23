@@ -9,7 +9,7 @@ from app.llm import LLMClient
 
 def test_llm():
     print("=" * 50)
-    print("STAGE 1: Testing LLM (Local Ollama / Qwen 2.5)")
+    print("STAGE 1: Testing LLM (Local Ollama / Gemma 3 4B)")
     print("=" * 50)
 
     llm = LLMClient()

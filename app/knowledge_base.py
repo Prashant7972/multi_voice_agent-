@@ -215,7 +215,7 @@ class KnowledgeBaseManager:
                 "Apex Voice AI Enterprise Protocol and Knowledge Base:\n\n"
                 "1. Overview: Apex Voice AI provides low-latency local voice agents, telephony bridges via Twilio, "
                 "and offline neural voice activity detection (Silero VAD).\n"
-                "2. Model Architecture: Reasoning is handled by Qwen 2.5 Coder 3B and NVIDIA Nemotron 3 Nano offline LLMs. "
+                "2. Model Architecture: Reasoning is handled by Gemma 3 4B and NVIDIA Nemotron 3 Nano offline LLMs. "
                 "Spoken generation uses Piper neural TTS and transcription uses faster-whisper.\n"
                 "3. Organization Policy: Access to administrative settings and knowledge base configuration is restricted "
                 "to Organization Admins and Owners. Analysts have read-only analytics access.\n"

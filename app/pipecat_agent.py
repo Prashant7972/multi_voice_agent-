@@ -81,7 +81,7 @@ class PipecatVoiceAgent:
     Pipecat Conversational Voice Agent orchestrating:
     - Silero Neural VAD (background noise filtering & turn-taking)
     - Whisper STT (faster-whisper int8 CPU)
-    - Ollama LLM (local Qwen 2.5 on GPU)
+    - Ollama LLM (local Gemma 3 4B on GPU)
     - Piper TTS (local neural speech synthesis)
     """
 
