@@ -53,3 +53,30 @@ def test_english_non_indic_discrimination():
     words = set(re.findall(r"[a-z]+", english_sentence.lower()))
     indic_hits = len(words & LATIN_INDIC_PHONETICS)
     assert indic_hits == 0
+
+
+def test_hallucinated_repetition_filter():
+    from app.stt import is_hallucinated_repetition
+    # Repeating Devanagari om chant hallucinated from noise
+    assert is_hallucinated_repetition("ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ") is True
+    # Repeating single character or punctuation
+    assert is_hallucinated_repetition(".... .... .... ....") is True
+    assert is_hallucinated_repetition("Thank you. Thank you. Thank you. Thank you.") is True
+    # Genuine speech must not be flagged
+    assert is_hallucinated_repetition("तुम्हाला माझं विषयी माहिती हवी आहे का।") is False
+    assert is_hallucinated_repetition("नमस्ते, आप कैसे हैं?") is False
+    assert is_hallucinated_repetition("Hello, what is the weather today?") is False
+
+
+def test_language_refusal_interceptor():
+    from app.server import is_language_refusal_or_deflection
+    # Deflections from screenshot
+    assert is_language_refusal_or_deflection("मी अनेक भाषा समजू शकतो, पण तुम्ही इंग्रजीमध्ये बोलू शकता का?", "en") is True
+    assert is_language_refusal_or_deflection("मला माफ करा, मला तुमची भाषा समजत नाही. कृपया इंग्रजीमध्ये बोलू शकता का?", "mr") is True
+    assert is_language_refusal_or_deflection("कृपया अंग्रेजी में बात करें", "hi") is True
+    assert is_language_refusal_or_deflection("I don't understand your language. Can you speak in English?", "mr") is True
+    # Genuine native responses must not be flagged
+    assert is_language_refusal_or_deflection("हो, मी तुम्हाला ऐकत आहे. सांगा, मी तुमची काय मदत करू शकतो?", "mr") is False
+    assert is_language_refusal_or_deflection("हाँ, मैं सुन रहा हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?", "hi") is False
+    assert is_language_refusal_or_deflection("Hello, how can I help you today?", "en") is False
+

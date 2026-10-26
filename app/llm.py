@@ -6,7 +6,15 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from app.config import GEMINI_API_KEY, LLM_MODEL, SYSTEM_PROMPT, OLLAMA_HOST, LLM_TEMPERATURE
+from app.config import (
+    GEMINI_API_KEY,
+    LLM_MODEL,
+    SYSTEM_PROMPT,
+    OLLAMA_HOST,
+    LLM_TEMPERATURE,
+    OLLAMA_KEEP_ALIVE,
+    OLLAMA_NUM_CTX,
+)
 
 logger = logging.getLogger("voice_agent.llm")
 
@@ -210,14 +218,14 @@ class GeminiApiClient:
                     # Check if local Ollama is running as ultimate emergency fallback
                     try:
                         import ollama
-                        from app.config import OLLAMA_HOST
+                        from app.config import OLLAMA_HOST, OLLAMA_KEEP_ALIVE
                         ollama_client = ollama.Client(host=OLLAMA_HOST)
                         installed_models = ollama_client.list().get("models", [])
                         if installed_models:
                             local_model = installed_models[0].get("name") or installed_models[0].get("model")
                             logger.info("All Gemini cloud options exhausted. Falling back to local Ollama model %s...", local_model)
                             if stream:
-                                stream_res = ollama_client.chat(model=local_model, messages=messages, stream=True, options=options)
+                                stream_res = ollama_client.chat(model=local_model, messages=messages, stream=True, options=options, keep_alive=OLLAMA_KEEP_ALIVE)
                                 def ollama_stream_gen():
                                     for chk in stream_res:
                                         c = chk.get("message", {}).get("content", "")
@@ -225,7 +233,7 @@ class GeminiApiClient:
                                             yield {"message": {"content": c}}
                                 return ollama_stream_gen()
                             else:
-                                return ollama_client.chat(model=local_model, messages=messages, options=options)
+                                return ollama_client.chat(model=local_model, messages=messages, options=options, keep_alive=OLLAMA_KEEP_ALIVE)
                     except Exception:
                         pass
                     raise last_error
@@ -243,11 +251,13 @@ class LLMClient:
         model: str = LLM_MODEL,
         system_prompt: str = SYSTEM_PROMPT,
         host: str = OLLAMA_HOST,
+        keep_alive: str = OLLAMA_KEEP_ALIVE,
     ):
         self.api_key = api_key or GEMINI_API_KEY
         self.model = model or LLM_MODEL
         self.system_prompt = system_prompt or SYSTEM_PROMPT
         self.host = host
+        self.keep_alive = keep_alive or OLLAMA_KEEP_ALIVE
         self.gemini_client = GeminiApiClient(api_key=self.api_key)
         self.client = self.gemini_client  # Backward compatibility
         import ollama
@@ -323,6 +333,7 @@ class LLMClient:
         options: Dict[str, Any] = {
             "temperature": LLM_TEMPERATURE,
             "top_p": 0.9,
+            "num_ctx": OLLAMA_NUM_CTX,
         }
         if max_tokens:
             options["num_predict"] = max_tokens
@@ -339,6 +350,7 @@ class LLMClient:
                     model=self.model,
                     messages=effective_messages,
                     options=options,
+                    keep_alive=self.keep_alive,
                 )
             except Exception:
                 from app.config import detect_ollama_host
@@ -351,6 +363,7 @@ class LLMClient:
                         model=self.model,
                         messages=effective_messages,
                         options=options,
+                        keep_alive=self.keep_alive,
                     )
                 else:
                     raise
@@ -371,6 +384,7 @@ class LLMClient:
         options: Dict[str, Any] = {
             "temperature": 0.7,
             "top_p": 0.9,
+            "num_ctx": OLLAMA_NUM_CTX,
         }
         if max_tokens:
             options["num_predict"] = max_tokens
@@ -389,6 +403,7 @@ class LLMClient:
                     messages=self.messages,
                     stream=True,
                     options=options,
+                    keep_alive=self.keep_alive,
                 )
             except Exception:
                 from app.config import detect_ollama_host
@@ -402,6 +417,7 @@ class LLMClient:
                         messages=self.messages,
                         stream=True,
                         options=options,
+                        keep_alive=self.keep_alive,
                     )
                 else:
                     raise
@@ -442,6 +458,7 @@ class LLMClient:
         options: Dict[str, Any] = {
             "temperature": LLM_TEMPERATURE,
             "top_p": 0.9,
+            "num_ctx": OLLAMA_NUM_CTX,
         }
         if max_tokens:
             options["num_predict"] = max_tokens
@@ -460,6 +477,7 @@ class LLMClient:
                     messages=msgs,
                     stream=True,
                     options=options,
+                    keep_alive=self.keep_alive,
                 )
             except Exception:
                 from app.config import detect_ollama_host
@@ -473,6 +491,7 @@ class LLMClient:
                         messages=msgs,
                         stream=True,
                         options=options,
+                        keep_alive=self.keep_alive,
                     )
                 else:
                     raise
@@ -501,9 +520,12 @@ class LLMClient:
         options: Dict[str, Any] = {
             "temperature": effective_temp,
             "top_p": 0.9,
+            "num_ctx": OLLAMA_NUM_CTX,
         }
         if max_tokens:
             options["num_predict"] = max_tokens
+        else:
+            options["num_predict"] = 45
 
         if self.is_gemini():
             response = self.gemini_client.chat(
@@ -517,6 +539,7 @@ class LLMClient:
                     model=self.model,
                     messages=messages,
                     options=options,
+                    keep_alive=self.keep_alive,
                 )
             except Exception:
                 from app.config import detect_ollama_host
@@ -529,6 +552,7 @@ class LLMClient:
                         model=self.model,
                         messages=messages,
                         options=options,
+                        keep_alive=self.keep_alive,
                     )
                 else:
                     raise
@@ -537,6 +561,28 @@ class LLMClient:
         if clean_speech:
             return clean_text_for_speech(reply)
         return reply
+
+    def warmup(self, model_name: Optional[str] = None) -> bool:
+        """
+        Pre-loads the model weights into Ollama RAM/VRAM with keep_alive='30m'
+        so the first conversational turn has zero model-loading latency.
+        """
+        if self.is_gemini():
+            return True
+        target_model = model_name or self.model
+        try:
+            logger.info("Warming up local Ollama model '%s' (keep_alive=%s)...", target_model, self.keep_alive)
+            self.ollama_client.chat(
+                model=target_model,
+                messages=[{"role": "user", "content": "hi"}],
+                options={"num_predict": 1, "num_ctx": OLLAMA_NUM_CTX},
+                keep_alive=self.keep_alive,
+            )
+            logger.info("Local Ollama model '%s' is warm and ready in memory.", target_model)
+            return True
+        except Exception as e:
+            logger.warning("Ollama warmup skipped (service offline or unready): %s", e)
+            return False
 
     def get_history(self) -> List[Dict[str, str]]:
         return list(self.messages)

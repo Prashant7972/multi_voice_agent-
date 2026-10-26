@@ -54,6 +54,8 @@ def detect_ollama_host() -> str:
 
 # LLM Configuration: Local Ollama (Primary Engine)
 OLLAMA_HOST = detect_ollama_host()
+OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "30m")
+OLLAMA_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "1536"))
 LLM_ENGINE = os.getenv("LLM_ENGINE", "ollama")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
@@ -85,6 +87,7 @@ SYSTEM_PROMPT = os.getenv(
 WHISPER_MODEL_NAME = os.getenv("WHISPER_MODEL_NAME", "small")
 WHISPER_DEVICE = os.getenv("WHISPER_DEVICE", "cpu")  # "cpu" or "cuda"
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
+WHISPER_CPU_THREADS = int(os.getenv("WHISPER_CPU_THREADS", str(min(8, max(2, (os.cpu_count() or 4) - 2)))))
 WHISPER_CACHE_DIR = MODELS_DIR / "whisper"
 
 # TTS Configuration (Piper)

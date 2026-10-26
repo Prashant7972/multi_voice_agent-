@@ -128,7 +128,7 @@ pip install -r requirements.txt
 python app/main.py --ui
 ```
 Open your browser at **http://localhost:8080**:
-1. Click **⚡ Instant Demo / Start Exploring**.
+1. Enter your credentials and click **Start Exploring** (or click **Create Account** if you are new).
 2. Select your language from the dropdown (or keep on **`🌐 Auto-Detect Language`**).
 3. Click **Start Session** and speak naturally.
 4. Review the conversation transcript, click **`▶ Replay Your Voice`** to check your audio, and inspect real-time latency pills.

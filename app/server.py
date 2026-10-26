@@ -176,7 +176,8 @@ async def jwt_auth_middleware(request: Request, call_next):
         or path == "/ready"
         or path == "/metrics"
         or path == "/api/health"
-        or path == "/api/chat"
+        or path.rstrip("/") == "/api/chat"
+        or path.rstrip("/") == "/api/voice/process"
         or path.startswith("/static")
         or path.startswith("/twiml")
         or path.startswith("/api/auth/")
@@ -385,6 +386,10 @@ def startup_event():
     stt = STTClient()
     tts = TTSClient()
     pipecat_vad = PipecatNeuralVAD(confidence=0.75, start_secs=0.20, min_volume=0.06)
+
+    # Warm up local LLM model in background to preload weights with keep_alive
+    import threading
+    threading.Thread(target=llm.warmup, daemon=True).start()
 
     # Initialize LLM with the active agent's prompt
     active_agent = agent_manager.get_active_agent()
@@ -3307,6 +3312,47 @@ async def stt_endpoint(request: Request, audio_file: UploadFile = File(...)):
                 except Exception:
                     pass
 
+def is_language_refusal_or_deflection(reply: str, user_lang: str) -> bool:
+    """
+    Detects if the LLM generated a refusal to converse in the user's language,
+    such as asking the user to switch to English, or claiming it doesn't understand.
+    """
+    if not reply or not reply.strip():
+        return False
+    lower = reply.lower()
+
+    # English-language deflections
+    if any(phrase in lower for phrase in [
+        "speak in english", "speak english", "talk in english",
+        "in english please", "switch to english", "don't understand your language",
+        "do not understand your language", "cannot understand your language",
+        "can you speak english", "could you speak english", "only speak english"
+    ]):
+        return True
+
+    # Marathi deflections
+    if user_lang == "mr" or any(c in reply for c in ["इंग्रजी", "समजत नाही"]):
+        if any(marker in reply for marker in [
+            "इंग्रजीमध्ये बोलू शकता का", "इंग्रजीत बोलू शकता का",
+            "इंग्रजीमध्ये बोला", "इंग्रजीत बोला",
+            "भाषा समजत नाही", "मला समजत नाही", "माफ करा, मला तुमची भाषा",
+            "तुम्ही इंग्रजीमध्ये", "पण तुम्ही इंग्रजीमध्ये"
+        ]):
+            return True
+
+    # Hindi deflections
+    if user_lang == "hi" or any(c in reply for c in ["अंग्रेजी", "अंग्रेज़ी", "समझ नहीं"]):
+        if any(marker in reply for marker in [
+            "अंग्रेजी में बोल सकते हैं", "अंग्रेज़ी में बोल सकते हैं",
+            "अंग्रेजी में बात करें", "अंग्रेज़ी में बात करें",
+            "भाषा समझ नहीं आती", "मुझे आपकी भाषा समझ नहीं",
+            "कृपया अंग्रेजी में बोलें", "कृपया अंग्रेज़ी में बोलें",
+            "क्या आप अंग्रेजी में", "क्या आप अंग्रेज़ी में"
+        ]):
+            return True
+
+    return False
+
 
 # -------------------------------------------------------------
 # Web Speech Chat Endpoint
@@ -3403,7 +3449,12 @@ async def chat_endpoint(
             rag_context, _ = kb_manager.build_rag_context(org_id=org_id, query=user_text, agent_id=active_agent_id, top_k=2)
 
             session_key = f"voice_web_{active_agent_id}"
-            history_to_use = memory_manager.get_window(session_key)
+            from app.stt import is_hallucinated_repetition
+            history_to_use = [
+                m for m in memory_manager.get_window(session_key)
+                if not is_language_refusal_or_deflection(m.get("content", ""), detected_language)
+                and not is_hallucinated_repetition(m.get("content", ""))
+            ]
 
             lang_names_map = {
                 "mr": ("Marathi", "मराठी"),
@@ -3438,16 +3489,18 @@ async def chat_endpoint(
                     )
                 else:
                     lang_directive = (
-                        f"CRITICAL LANGUAGE DIRECTIVE: The user spoke in {lang_name_en} ({lang_name_native}).\n"
-                        f"- You MUST respond STRICTLY AND EXCLUSIVELY in authentic {lang_name_en} ({lang_name_native}) using its native script.\n"
-                        f"- DO NOT reply in English. DO NOT translate into English.\n"
-                        f"- Respond in natural, idiomatic {lang_name_en} in 1 to 2 spoken sentences (maximum 25 words).\n"
-                        f"- Speak warmly and helpfully without preamble, filler phrases, or formatting."
+                        f"CRITICAL MULTILINGUAL MANDATE: The user spoke in {lang_name_en} ({lang_name_native}).\n"
+                        f"- You are a native speaker of {lang_name_en} ({lang_name_native}).\n"
+                        f"- You MUST respond 100% EXCLUSIVELY in authentic, natural {lang_name_en} ({lang_name_native}) using its native script.\n"
+                        f"- ABSOLUTE PROHIBITION: NEVER ask the user to switch to English. NEVER say 'इंग्रजीमध्ये बोलू शकता का', 'can you speak English', 'please speak in English', or 'I do not understand your language'.\n"
+                        f"- NEVER say you only speak English. If the user greets you or asks if you know {lang_name_en}, warmly confirm in {lang_name_en} that you speak {lang_name_en} fluently.\n"
+                        f"- Speak warmly, helpfully, and concisely in 1 to 2 spoken sentences (maximum 25 words)."
                     )
             else:
                 lang_directive = (
-                    f"CRITICAL LANGUAGE DIRECTIVE: The user spoke in language code '{detected_language}'.\n"
+                    f"CRITICAL MULTILINGUAL MANDATE: The user spoke in language code '{detected_language}'.\n"
                     f"- You MUST respond in the EXACT SAME language ({detected_language}) using its native script.\n"
+                    f"- NEVER ask the user to switch to English.\n"
                     f"- Speak naturally and concisely in 1 to 2 spoken sentences (maximum 25 words)."
                 )
 
@@ -3470,11 +3523,15 @@ async def chat_endpoint(
 
             speech_system_prompt = "\n\n".join(speech_prompt_parts)
 
-            user_turn_prompt = (
-                f"[Spoken in {lang_entry[0]} ({lang_entry[1]}) - reply strictly in {lang_entry[0]}]: {user_text}"
-                if (lang_entry and detected_language != "en")
-                else user_text
-            )
+            if lang_entry and detected_language == "mr":
+                user_turn_prompt = f"[वापरकर्ता मराठीत बोलला - फक्त अस्सल मराठीत उत्तर द्या]: {user_text}"
+            elif lang_entry and detected_language == "hi":
+                user_turn_prompt = f"[उपयोगकर्ता हिंदी में बोला - केवल शुद्ध हिंदी में उत्तर दें]: {user_text}"
+            elif lang_entry and detected_language != "en":
+                user_turn_prompt = f"[{lang_entry[0]} conversation - reply strictly in {lang_entry[0]}]: {user_text}"
+            else:
+                user_turn_prompt = user_text
+
             msgs = [{"role": "system", "content": speech_system_prompt}] + history_to_use + [{"role": "user", "content": user_turn_prompt}]
 
             if llm and hasattr(llm, "chat_messages"):
@@ -3482,17 +3539,36 @@ async def chat_endpoint(
             else:
                 reply_text = "I am here."
 
-            # Multilingual Script Guard: if model mistakenly replied in English characters to a non-English query
+            # Multilingual Script Guard & Refusal Interceptor
             if detected_language != "en" and reply_text:
-                latin_letters = sum(1 for c in reply_text if "a" <= c.lower() <= "z")
-                total_chars = len(reply_text.strip())
-                if total_chars > 0 and (latin_letters / total_chars) > 0.45:
+                if is_language_refusal_or_deflection(reply_text, detected_language):
+                    logger.warning("[VOICE-CHAT] Model attempted to deflect/refuse %s; overriding with native conversational response.", detected_language)
                     if detected_language == "mr":
-                        logger.warning("[VOICE-CHAT] Model replied in English to Marathi input. Using polite Marathi fallback.")
-                        reply_text = "हो, मी तुम्हाला ऐकत आहे. सांगा, मी तुमची काय मदत करू शकतो?"
+                        reply_text = "हो, मी तुमच्याशी मराठीत बोलू शकतो. सांगा, मी तुमची काय मदत करू शकतो?"
                     elif detected_language == "hi":
-                        logger.warning("[VOICE-CHAT] Model replied in English to Hindi input. Using polite Hindi fallback.")
-                        reply_text = "हाँ, मैं सुन रहा हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?"
+                        reply_text = "हाँ, मैं आपसे हिंदी में बात कर सकता हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?"
+                    elif detected_language == "es":
+                        reply_text = "¡Hola! Claro que sí, hablo español. ¿En qué te puedo ayudar hoy?"
+                    elif detected_language == "fr":
+                        reply_text = "Bonjour ! Oui, je parle français. Comment puis-je vous aider ?"
+                    elif detected_language == "de":
+                        reply_text = "Hallo! Ja, ich kann Deutsch sprechen. Wie kann ich Ihnen helfen?"
+                    else:
+                        reply_text = f"Yes, I understand and can speak with you in {lang_entry[0] if lang_entry else detected_language}. How can I help you?"
+                else:
+                    latin_letters = sum(1 for c in reply_text if "a" <= c.lower() <= "z")
+                    total_chars = len(reply_text.strip())
+                    if total_chars > 0 and (latin_letters / total_chars) > 0.45:
+                        if detected_language == "mr":
+                            logger.warning("[VOICE-CHAT] Model replied in English to Marathi input. Using polite Marathi fallback.")
+                            reply_text = "हो, मी तुम्हाला ऐकत आहे. सांगा, मी तुमची काय मदत करू शकतो?"
+                        elif detected_language == "hi":
+                            logger.warning("[VOICE-CHAT] Model replied in English to Hindi input. Using polite Hindi fallback.")
+                            reply_text = "हाँ, मैं सुन रहा हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?"
+            elif detected_language == "en" and reply_text:
+                if is_language_refusal_or_deflection(reply_text, "en") or is_language_refusal_or_deflection(reply_text, "mr"):
+                    logger.warning("[VOICE-CHAT] English mode deflection detected; overriding with standard greeting.")
+                    reply_text = "Hello! I am your voice assistant. How can I help you today?"
 
             memory_manager.add_turn(session_key, user_text, reply_text)
         except Exception as e:

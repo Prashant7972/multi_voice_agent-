@@ -11,6 +11,7 @@ from app.config import (
     WHISPER_DEVICE,
     WHISPER_COMPUTE_TYPE,
     WHISPER_CACHE_DIR,
+    WHISPER_CPU_THREADS,
 )
 
 logger = logging.getLogger("voice_agent.stt")
@@ -85,6 +86,40 @@ LATIN_INDIC_PHONETICS = {
     "kaisa", "kaise", "apka", "aapka", "kya", "chahiye", "batao", "dhanyawad"
 }
 
+def is_hallucinated_repetition(text: str) -> bool:
+    """
+    Detects Whisper repetition loops and hallucinations on background noise/silence
+    such as 'ॐ ॐ ॐ ॐ ॐ...', '... ... ...', or single repeated words/syllables.
+    """
+    if not text or not text.strip():
+        return True
+
+    clean = text.strip()
+
+    # 1. Repeating single character/symbol (e.g. ॐ repeated many times)
+    non_space = re.sub(r"\s+", "", clean)
+    if len(non_space) >= 3:
+        from collections import Counter
+        char_counts = Counter(non_space)
+        top_char, count = char_counts.most_common(1)[0]
+        if count >= 3 and (count / len(non_space)) >= 0.65:
+            return True
+
+    # 2. Repeating single word (e.g. 'ॐ ॐ ॐ' or 'thank you thank you thank you')
+    words = clean.split()
+    if len(words) >= 3:
+        from collections import Counter
+        word_counts = Counter(w.lower() for w in words)
+        top_word, w_count = word_counts.most_common(1)[0]
+        if w_count >= 3 and (w_count / len(words)) >= 0.60:
+            return True
+
+    # 3. Repeated short pattern (e.g. 'abc abc abc abc')
+    if len(non_space) >= 8 and re.search(r"(.{2,15}?)\1{3,}", non_space):
+        return True
+
+    return False
+
 
 class STTClient:
     def __init__(
@@ -101,7 +136,7 @@ class STTClient:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info("Loading faster-whisper '%s' on %s (%s)...", self.model_name, self.device, self.compute_type)
-        cpu_th = min(4, max(1, (os.cpu_count() or 4) // 2))
+        cpu_th = max(1, WHISPER_CPU_THREADS)
         try:
             self.model = WhisperModel(
                 self.model_name,
@@ -203,6 +238,9 @@ class STTClient:
         self.last_language_probability = getattr(info, "language_probability", 1.0) if info else 1.0
 
         transcription = " ".join([segment.text.strip() for segment in segments]).strip()
+        if is_hallucinated_repetition(transcription):
+            logger.warning("STT detected hallucinated repetition loop %r; discarding.", transcription[:60])
+            return ""
 
         # Script Contamination Guard:
         # If detected language is non-Latin (like Marathi, Hindi, etc.), but Whisper outputted
@@ -298,6 +336,8 @@ class STTClient:
                     if re_text:
                         transcription = re_text
 
+        if is_hallucinated_repetition(transcription):
+            return ""
         return transcription
 
     def transcribe_with_info(

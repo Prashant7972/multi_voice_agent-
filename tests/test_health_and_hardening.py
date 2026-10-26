@@ -52,7 +52,12 @@ def test_verify_twilio_webhook_fail_closed_in_production():
             os.environ.pop("ENVIRONMENT", None)
         if orig_test is not None:
             os.environ["PYTEST_CURRENT_TEST"] = orig_test
+        else:
+            os.environ.pop("PYTEST_CURRENT_TEST", None)
+        if orig_token is not None:
             os.environ["TWILIO_AUTH_TOKEN"] = orig_token
+        else:
+            os.environ.pop("TWILIO_AUTH_TOKEN", None)
 
 
 def test_verify_twilio_webhook_candidate_urls_and_dev_fallback():
@@ -108,8 +113,12 @@ def test_verify_twilio_webhook_candidate_urls_and_dev_fallback():
             os.environ.pop("ENVIRONMENT", None)
         if orig_test is not None:
             os.environ["PYTEST_CURRENT_TEST"] = orig_test
+        else:
+            os.environ.pop("PYTEST_CURRENT_TEST", None)
         if orig_token is not None:
             os.environ["TWILIO_AUTH_TOKEN"] = orig_token
+        else:
+            os.environ.pop("TWILIO_AUTH_TOKEN", None)
 
 
 def test_atomic_save_json_utility():

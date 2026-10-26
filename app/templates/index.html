@@ -5181,8 +5181,8 @@
 
                     <!-- Hidden/Preserved Mode Switcher Tabs for Script Compatibility -->
                     <div class="auth-nav-tabs" id="authNavTabs" style="display: none;">
-                        <button type="button" class="auth-tab-btn active" id="tabBtnAuthRegister" onclick="switchAuthMode('register')">Register Account</button>
-                        <button type="button" class="auth-tab-btn" id="tabBtnAuthLogin" onclick="switchAuthMode('login')">Sign In</button>
+                        <button type="button" class="auth-tab-btn" id="tabBtnAuthRegister" onclick="switchAuthMode('register')">Register Account</button>
+                        <button type="button" class="auth-tab-btn active" id="tabBtnAuthLogin" onclick="switchAuthMode('login')">Sign In</button>
                     </div>
 
                     <!-- Alert Banners -->
@@ -5190,9 +5190,9 @@
                     <div class="auth-info-banner" id="authDevNotice" style="display: none;"></div>
 
                     <!-- ==============================================
-                         PANEL 1 (DEFAULT): SIGNUP WITH EMAIL OTP
+                         PANEL 1: SIGNUP WITH EMAIL OTP
                          ============================================== -->
-                    <div id="authPanelRegister">
+                    <div id="authPanelRegister" style="display: none;">
                         <!-- Step 1: Send Registration OTP -->
                         <form class="auth-form-modern" id="regStep1Form" onsubmit="handleSendRegOtp(event)">
                             <div class="form-group-modern">
@@ -5235,12 +5235,6 @@
                             <div class="switch-mode-footer">
                                 <span>Already have account? </span>
                                 <button type="button" class="link-switch-mode" onclick="switchAuthMode('login')">Sign In</button>
-                            </div>
-
-                            <div class="quick-demo-wrapper" style="margin-top: 1.25rem; text-align: center;">
-                                <button type="button" class="btn-demo-explore" onclick="quickLogin('admin@apexai.io', 'demo')" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); color: #2563eb; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;">
-                                    <span>⚡</span> <span>Instant Demo / Start Exploring</span>
-                                </button>
                             </div>
                         </form>
 
@@ -5319,7 +5313,7 @@
                     <!-- ==============================================
                          PANEL 2: SIGN IN (Standard Credentials)
                          ============================================== -->
-                    <div id="authPanelLogin" style="display: none;">
+                    <div id="authPanelLogin">
                         <form class="auth-form-modern" id="loginForm" onsubmit="handleLoginSubmit(event)">
                             <div class="form-group-modern">
                                 <label class="form-label-modern" for="loginEmail">Email Address</label>
@@ -5367,19 +5361,13 @@
                             </div>
 
                             <button type="submit" class="btn-gradient-auth" id="btnAuthSubmit">
-                                Login
+                                Start Exploring →
                             </button>
                         </form>
 
                         <div class="switch-mode-footer">
                             <span>New to Voicing AI? </span>
                             <button type="button" class="link-switch-mode" onclick="switchAuthMode('register')">Create Account</button>
-                        </div>
-
-                        <div class="quick-demo-wrapper" style="margin-top: 1.25rem; text-align: center;">
-                            <button type="button" class="btn-demo-explore" onclick="quickLogin('admin@apexai.io', 'demo')" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); color: #2563eb; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;">
-                                <span>⚡</span> <span>Instant Demo / Start Exploring</span>
-                            </button>
                         </div>
                     </div>
 
@@ -8272,7 +8260,8 @@
         let vadFilter = null;
         let allowBargeIn = true;
         let lastTurnFinishedTimestamp = 0;
-        let ambientFloor = 18;
+        let ambientFloor = 8;
+        let currentRmsVolume = 0;
         let consecutiveResumeFrames = 0;
 
         // Barge-In State
@@ -8427,7 +8416,7 @@
             return null;
         }
 
-        function handleSessionExpired(msg = "Session expired or authentication required. Please sign in or use 1-click Instant Demo.") {
+        function handleSessionExpired(msg = "Session expired or authentication required. Please enter your credentials to Start Exploring.") {
             clearAuthTokens();
             currentUser = null;
             applyAuthState(false);
@@ -12019,15 +12008,21 @@ Account ID: ${u.id || ''}`;
 
         async function startAssistant() {
             try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true,
-                        channelCount: 1,
-                        sampleRate: 16000
-                    }
-                });
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Your browser or connection does not support microphone capture (requires localhost or HTTPS).");
+                }
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                        }
+                    });
+                } catch (constraintErr) {
+                    console.warn("Retrying getUserMedia with basic audio constraint:", constraintErr);
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                }
                 const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
                 try {
                     audioContext = new AudioCtxClass({ sampleRate: 16000, latencyHint: 'interactive' });
@@ -12076,6 +12071,15 @@ Account ID: ${u.id || ''}`;
                 pcmProcessor.onaudioprocess = (e) => {
                     if (!isRunning || isAgentSpeaking || isProcessingTurn) return;
                     const inputData = e.inputBuffer.getChannelData(0);
+
+                    // Compute real-time RMS input volume directly from audio samples
+                    let sumSquares = 0;
+                    const len = inputData.length;
+                    for (let i = 0; i < len; i += 4) {
+                        sumSquares += inputData[i] * inputData[i];
+                    }
+                    currentRmsVolume = Math.sqrt(sumSquares / (len / 4));
+
                     const pcm16k = downsampleBuffer(inputData, audioContext.sampleRate, 16000);
 
                     if (!isSpeaking) {
@@ -12105,7 +12109,19 @@ Account ID: ${u.id || ''}`;
                 visualize();
                 listenForSilence();
             } catch (err) {
-                alert("Microphone access denied or error: " + err.message);
+                console.error("Microphone access error:", err);
+                isRunning = false;
+                orbCore.className = 'orb-core';
+                statusText.innerText = "Microphone Access Required";
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Permission Blocked:</span> Click the <strong>camera/mic icon</strong> in the Chrome address bar, select <strong>"Allow"</strong>, and refresh the page.';
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">No Mic Found:</span> Please plug in or enable an audio input device in system settings.';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Microphone Busy:</span> Another app (Zoom, Meet, ALSA) is holding exclusive access to your mic.';
+                } else {
+                    statusSub.innerText = "Microphone error: " + (err.message || err.name);
+                }
             }
         }
 
@@ -12190,7 +12206,9 @@ Account ID: ${u.id || ''}`;
             const numBars = 32;
 
             for (let i = 0; i < numBars; i++) {
-                const rawVal = dataArray ? dataArray[i * 2] || 0 : 0;
+                const freqVal = dataArray ? dataArray[i * 2] || 0 : 0;
+                const rmsBoost = Math.min(255, Math.round(currentRmsVolume * 650));
+                const rawVal = Math.max(freqVal, rmsBoost);
                 const targetHeight = (rawVal / 255) * 34;
                 // Fluid damping: smooth factor 0.28 eliminates jitter while maintaining real-time responsiveness
                 smoothVisualizerBars[i] += (targetHeight - smoothVisualizerBars[i]) * 0.28;
@@ -12225,12 +12243,14 @@ Account ID: ${u.id || ''}`;
 
                 analyser.getByteFrequencyData(dataArray);
                 let vocalEnergy = 0;
-                const minBin = 4; // ~350Hz (human vocal fundamental band)
-                const maxBin = Math.min(22, dataArray.length); // ~2800Hz
+                const minBin = 1; // From ~100Hz upwards (captures full human vocal range)
+                const maxBin = Math.min(32, dataArray.length); // Up to ~3500Hz
                 for (let i = minBin; i < maxBin; i++) {
                     vocalEnergy += dataArray[i];
                 }
-                const vocalVolume = vocalEnergy / (maxBin - minBin);
+                const freqVolume = vocalEnergy / (maxBin - minBin);
+                const rmsVolume = Math.min(100, Math.round(currentRmsVolume * 450));
+                const vocalVolume = Math.max(freqVolume, rmsVolume);
 
                 if (!isSpeaking) {
                     // Smoothly track background room noise baseline
@@ -12242,9 +12262,8 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    // Intentional speech onset: sensitive to conversational voice (volume 18-50),
-                    // adapts to ambient room noise floor without false-triggering on background hum.
-                    const speechTriggerLevel = Math.max(20, Math.round(ambientFloor + 8));
+                    // Adaptive speech onset: sensitive to conversational voice even with quiet laptop mics
+                    const speechTriggerLevel = Math.max(10, Math.round(ambientFloor + 5));
 
                     if (vocalVolume >= speechTriggerLevel) {
                         consecutiveSpeechFrames++;
@@ -12257,7 +12276,7 @@ Account ID: ${u.id || ''}`;
                             consecutiveResumeFrames = 0;
                             speechPcmBuffers = [...preRollPcmBuffers];
                             statusText.innerText = "Listening to you...";
-                            statusSub.innerText = "Listening...";
+                            statusSub.innerText = "Recording voice... speak naturally.";
                             orbCore.className = 'orb-core user-speaking';
                         }
                     } else {
@@ -12276,11 +12295,11 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    const speechTriggerLevel = Math.max(20, Math.round(ambientFloor + 8));
+                    const speechTriggerLevel = Math.max(10, Math.round(ambientFloor + 5));
                     // Turn-taking pause threshold: volume dropping back near ambient baseline
-                    const pauseThreshold = Math.max(14, Math.round(ambientFloor + 4));
-                    // Adaptive turn-taking: 750ms if user spoke a full sentence (>1.4s), 950ms for short utterance
-                    const requiredSilence = (speechDuration > 1400) ? 750 : 950;
+                    const pauseThreshold = Math.max(6, Math.round(ambientFloor + 2));
+                    // Low-latency conversational turn-taking: 450ms for complete sentences (>1.2s), 650ms for short commands
+                    const requiredSilence = (speechDuration > 1200) ? 450 : 650;
 
                     if (vocalVolume < pauseThreshold) {
                         consecutiveResumeFrames = 0;
@@ -12367,11 +12386,19 @@ Account ID: ${u.id || ''}`;
             }
 
             try {
-                // Call originalFetch directly with formData and NO headers.
-                // The browser natively attaches multipart/form-data with the correct boundary.
+                // Attach Authorization header or demo mode while omitting Content-Type so the browser computes multipart boundary
                 const fetchFn = (typeof originalFetch === 'function') ? originalFetch : fetch;
+                const token = (typeof getAccessToken === 'function') ? getAccessToken() : null;
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                } else {
+                    headers['x-demo-mode'] = 'true';
+                    headers['x-demo-role'] = 'admin';
+                }
                 const res = await fetchFn('/api/chat', {
                     method: 'POST',
+                    headers: headers,
                     body: formData
                 });
 
@@ -12410,10 +12437,15 @@ Account ID: ${u.id || ''}`;
                     data.assistant_message.audio_url = data.audio_url;
                 }
 
-                if (data.user_message && !renderedMessageIds.has(data.user_message.id)) {
-                    renderedMessageIds.add(data.user_message.id);
-                    appendMessageToDOM(data.user_message);
-                    if (data.user_message.id > lastMessageId) lastMessageId = data.user_message.id;
+                // User message rendering (deduplicated against polling)
+                if (data.user_message) {
+                    const uId = data.user_message.id;
+                    if (uId != null && !renderedMessageIds.has(uId) && !renderedMessageIds.has(String(uId))) {
+                        renderedMessageIds.add(uId);
+                        renderedMessageIds.add(String(uId));
+                        appendMessageToDOM(data.user_message);
+                        if (uId > lastMessageId) lastMessageId = uId;
+                    }
                 } else if (data.user_text) {
                     appendMessageToDOM({
                         role: 'user',
@@ -12424,11 +12456,15 @@ Account ID: ${u.id || ''}`;
                     });
                 }
 
-                // Instantly append assistant response to conversation transcript
-                if (data.assistant_message && !renderedMessageIds.has(data.assistant_message.id)) {
-                    renderedMessageIds.add(data.assistant_message.id);
-                    appendMessageToDOM(data.assistant_message);
-                    if (data.assistant_message.id > lastMessageId) lastMessageId = data.assistant_message.id;
+                // Assistant response rendering (deduplicated against polling)
+                if (data.assistant_message) {
+                    const aId = data.assistant_message.id;
+                    if (aId != null && !renderedMessageIds.has(aId) && !renderedMessageIds.has(String(aId))) {
+                        renderedMessageIds.add(aId);
+                        renderedMessageIds.add(String(aId));
+                        appendMessageToDOM(data.assistant_message);
+                        if (aId > lastMessageId) lastMessageId = aId;
+                    }
                 } else if (data.reply_text) {
                     appendMessageToDOM({
                         role: 'assistant',
@@ -12597,13 +12633,16 @@ Account ID: ${u.id || ''}`;
         async function pollConversation() {
             try {
                 const res = await fetch(`/api/conversation?after=${lastMessageId}`);
+                if (!res.ok) return;
                 const data = await res.json();
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
-                        if (!renderedMessageIds.has(msg.id)) {
-                            renderedMessageIds.add(msg.id);
+                        const mId = msg.id;
+                        if (mId != null && !renderedMessageIds.has(mId) && !renderedMessageIds.has(String(mId))) {
+                            renderedMessageIds.add(mId);
+                            renderedMessageIds.add(String(mId));
                             appendMessageToDOM(msg);
-                            if (msg.id > lastMessageId) lastMessageId = msg.id;
+                            if (mId > lastMessageId) lastMessageId = mId;
                         }
                     });
                 }
@@ -12681,10 +12720,25 @@ Account ID: ${u.id || ''}`;
         }
 
         function appendMessageToDOM(msg) {
+            if (!msg) return;
+
+            // Strict deduplication guard against race conditions between polling and chat API
+            if (msg.id != null) {
+                const idStr = String(msg.id);
+                if (document.querySelector(`[data-msg-id="${idStr}"]`)) {
+                    return;
+                }
+                renderedMessageIds.add(msg.id);
+                renderedMessageIds.add(idStr);
+            }
+
             if (emptyState) emptyState.style.display = 'none';
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${msg.role}`;
+            if (msg.id != null) {
+                msgDiv.setAttribute('data-msg-id', String(msg.id));
+            }
 
             const isUser = msg.role === 'user';
             const senderIcon = isUser ? '👤' : '🤖';
