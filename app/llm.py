@@ -21,7 +21,7 @@ logger = logging.getLogger("voice_agent.llm")
 
 def clean_text_for_speech(text: str) -> str:
     """
-    Cleans markdown formatting and special symbols so the text sounds natural
+    Cleans markdown formatting, emojis, and special symbols so the text sounds natural
     when read aloud by Text-To-Speech (TTS).
     """
     if not text:
@@ -40,12 +40,47 @@ def clean_text_for_speech(text: str) -> str:
     # Remove bullet points and list markers
     text = re.sub(r"^\s*[-*+]\s+", "", text, flags=re.MULTILINE)
     text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.MULTILINE)
-    # Remove emojis or unusual symbols if necessary
+    # Remove emojis and miscellaneous symbols
+    text = re.sub(r"[\U00010000-\U0010ffff]", "", text)
+    # Remove invisible control characters
     text = re.sub(r"[\xa0\u200b\u200e\u200f]", " ", text)
     # Normalize whitespace
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n\s*\n+", "\n", text).strip()
     return text
+
+
+def clean_multilingual_speech(text: str, target_lang: Optional[str] = None) -> str:
+    """
+    Sanitizes LLM outputs for spoken voice in multilingual conversations.
+    Eliminates parenthetical transliterations, e.g. '(Tumcha naav Prabhas ahe...)',
+    English translations, e.g. '(Translation: ...)', and trailing English filler questions,
+    ensuring only pure, natural native speech is delivered to TTS.
+    """
+    if not text:
+        return ""
+    cleaned = clean_text_for_speech(text)
+    lang = (target_lang or "").lower().strip()
+
+    # Indic languages with non-Latin native scripts (Marathi, Hindi, Bengali, etc.)
+    if lang in ("mr", "hi", "bn", "ta", "te", "gu", "kn", "ml", "pa", "ur"):
+        # 1. Strip parenthetical content (Latin transliterations, translations, notes)
+        cleaned = re.sub(r"\s*\([^)]*\)", "", cleaned)
+        cleaned = re.sub(r"\s*\[[^\]]*\]", "", cleaned)
+        # 2. Extract authentic native script block if present
+        indic_match = re.search(r"([\u0900-\u0d7f][\u0900-\u0d7f\s.,?!|]*)", cleaned)
+        if indic_match:
+            native_str = indic_match.group(1).strip()
+            # If native string contains substantial content (at least 3 characters), use it
+            if len(native_str) >= 3:
+                cleaned = native_str
+    else:
+        # For Latin-based languages, strip bracketed translations
+        cleaned = re.sub(r"\s*\([Tt]ranslation:?[^)]*\)", "", cleaned)
+        cleaned = re.sub(r"\s*\[[Tt]ranslation:?[^\]]*\]", "", cleaned)
+
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
 
 
 class GeminiApiClient:

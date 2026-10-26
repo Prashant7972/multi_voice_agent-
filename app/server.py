@@ -31,7 +31,7 @@ from app.config import (
     PIPER_VOICE_NAME,
 )
 from app.stt import STTClient
-from app.llm import LLMClient
+from app.llm import LLMClient, clean_multilingual_speech
 from app.tts import TTSClient
 from app.twilio_handler import TwilioService, TwilioMediaStreamSession
 from app.tunnel import TunnelManager
@@ -3492,14 +3492,18 @@ async def chat_endpoint(
                         f"CRITICAL MULTILINGUAL MANDATE: The user spoke in {lang_name_en} ({lang_name_native}).\n"
                         f"- You are a native speaker of {lang_name_en} ({lang_name_native}).\n"
                         f"- You MUST respond 100% EXCLUSIVELY in authentic, natural {lang_name_en} ({lang_name_native}) using its native script.\n"
+                        f"- ABSOLUTE PROHIBITION: NEVER output English transliteration or pronunciation in parentheses (e.g. do NOT write '(Tumcha naav...)').\n"
+                        f"- ABSOLUTE PROHIBITION: NEVER output English translation in parentheses (e.g. do NOT write '(Translation: ...)').\n"
+                        f"- ABSOLUTE PROHIBITION: NEVER output English conversational filler or sign-offs (e.g. do NOT ask 'Do you want to say anything else?').\n"
                         f"- ABSOLUTE PROHIBITION: NEVER ask the user to switch to English. NEVER say 'इंग्रजीमध्ये बोलू शकता का', 'can you speak English', 'please speak in English', or 'I do not understand your language'.\n"
-                        f"- NEVER say you only speak English. If the user greets you or asks if you know {lang_name_en}, warmly confirm in {lang_name_en} that you speak {lang_name_en} fluently.\n"
+                        f"- NEVER say you only speak English. If the user greets you or asks if you know {lang_name_en}, warmly confirm in {lang_name_native} that you speak {lang_name_native} fluently.\n"
                         f"- Speak warmly, helpfully, and concisely in 1 to 2 spoken sentences (maximum 25 words)."
                     )
             else:
                 lang_directive = (
                     f"CRITICAL MULTILINGUAL MANDATE: The user spoke in language code '{detected_language}'.\n"
                     f"- You MUST respond in the EXACT SAME language ({detected_language}) using its native script.\n"
+                    f"- ABSOLUTE PROHIBITION: NEVER output English transliteration or translation in brackets/parentheses.\n"
                     f"- NEVER ask the user to switch to English.\n"
                     f"- Speak naturally and concisely in 1 to 2 spoken sentences (maximum 25 words)."
                 )
@@ -3534,10 +3538,15 @@ async def chat_endpoint(
 
             msgs = [{"role": "system", "content": speech_system_prompt}] + history_to_use + [{"role": "user", "content": user_turn_prompt}]
 
+            # Indic / Non-Latin scripts require higher token ceilings due to multi-byte UTF-8 byte tokens
+            effective_tokens = 95 if detected_language != "en" else 45
             if llm and hasattr(llm, "chat_messages"):
-                reply_text = await asyncio.to_thread(llm.chat_messages, msgs, max_tokens=42, clean_speech=True, temperature=0.2)
+                reply_text = await asyncio.to_thread(llm.chat_messages, msgs, max_tokens=effective_tokens, clean_speech=True, temperature=0.2)
             else:
                 reply_text = "I am here."
+
+            # Sanitize multilingual output: eliminate parenthetical Latin transliteration/translation and emojis
+            reply_text = clean_multilingual_speech(reply_text, detected_language)
 
             # Multilingual Script Guard & Refusal Interceptor
             if detected_language != "en" and reply_text:

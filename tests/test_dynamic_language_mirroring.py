@@ -80,3 +80,33 @@ def test_language_refusal_interceptor():
     assert is_language_refusal_or_deflection("हाँ, मैं सुन रहा हूँ। बताइए, मैं आपकी क्या सहायता कर सकता हूँ?", "hi") is False
     assert is_language_refusal_or_deflection("Hello, how can I help you today?", "en") is False
 
+
+def test_clean_multilingual_speech_strips_brackets_and_transliterations():
+    from app.llm import clean_multilingual_speech
+
+    # Exact Gemma 3:4b output from user's live test:
+    gemma_sample1 = (
+        "तुमचं नाव प्रभास आहे, हे ऐकून खूप आनंद झाला! (Tumcha naav Prabhas ahe, he aakun kupa aanud haala!) "
+        "(Translation: I am very happy to hear your name is Prabhas!) Do you want to say anything else? 😊"
+    )
+    cleaned1 = clean_multilingual_speech(gemma_sample1, "mr")
+    assert cleaned1 == "तुमचं नाव प्रभास आहे, हे ऐकून खूप आनंद झाला!"
+
+    # Second Gemma 3:4b output from user's live test:
+    gemma_sample2 = (
+        "तुम्ही मला एक ग्लास पाणी द्या, प्लीज! (Tumhi mala ek ghaas paani dya, please!) "
+        "(Translation: Please give me a glass of water!) Would you like to say anything else? 😊"
+    )
+    cleaned2 = clean_multilingual_speech(gemma_sample2, "mr")
+    assert cleaned2 == "तुम्ही मला एक ग्लास पाणी द्या, प्लीज!"
+
+    # Hindi output with parenthetical English notes
+    hindi_sample = "नमस्ते, मैं आपकी पूरी सहायता करूँगा। (Translation: Hello, I will help you completely.)"
+    cleaned_hi = clean_multilingual_speech(hindi_sample, "hi")
+    assert cleaned_hi == "नमस्ते, मैं आपकी पूरी सहायता करूँगा।"
+
+    # English output stays intact
+    english_sample = "Hello there! I am ready to help you with your question."
+    cleaned_en = clean_multilingual_speech(english_sample, "en")
+    assert cleaned_en == "Hello there! I am ready to help you with your question."
+
