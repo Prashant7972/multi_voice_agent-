@@ -5625,6 +5625,11 @@
                     <span class="sidebar-item-text">Campaigns</span>
                     <span class="sidebar-item-count" id="sidebarCampaignsCountBadge" style="display: none; background: #2563eb; color: #fff; font-weight: 700; border-radius: 9999px; padding: 0.1rem 0.45rem; font-size: 0.7rem;">0</span>
                 </button>
+                <button type="button" class="sidebar-nav-item" id="sidebarNavVoiceStudio" onclick="handleSidebarNav('voices')" title="AI Agent Voice Persona Studio">
+                    <span class="sidebar-item-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span>
+                    <span class="sidebar-item-text">Voice Studio</span>
+                    <span class="sidebar-item-pill" style="background: #eff6ff; color: #2563eb; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">AI</span>
+                </button>
                 <button type="button" class="sidebar-nav-item" id="sidebarNavMessaging" onclick="handleSidebarNav('messaging')" title="Team Messaging & Channels">
                     <span class="sidebar-item-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                     <span class="sidebar-item-text">Messaging</span>
@@ -6217,6 +6222,212 @@
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==============================================
+                 SECTION: AI AGENT VOICE STUDIO (Demographics, Timbre & Personas)
+                 ============================================== -->
+            <div id="orgSectionVoiceStudio" style="display: none; flex-direction: column; gap: 1.25rem;">
+                <!-- Header Card with Agent Switcher -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.25rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.25);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">AI Agent Voice Studio</h2>
+                                <span style="font-size: 0.7rem; background: #eff6ff; color: #2563eb; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; border: 1px solid #bfdbfe;">Neural Edge-TTS + Piper</span>
+                            </div>
+                            <p style="font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0;">Select an agent to customize speaking voice, age demographics, timbre, pitch, and conversational persona.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label for="voiceStudioAgentSelect" style="font-size: 0.82rem; font-weight: 600; color: #475569; margin: 0;">Configuring Agent:</label>
+                            <select id="voiceStudioAgentSelect" class="form-select" onchange="onVoiceStudioAgentChange(this.value)" style="min-width: 220px; font-weight: 600; color: #0f172a; padding: 0.45rem 0.75rem; border-color: #cbd5e1;">
+                                <!-- Dynamic Agent Options -->
+                            </select>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="saveVoiceStudioConfig()" id="btnVoiceStudioSave" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            <span>Save & Apply Voice</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status / Success Alert Banner -->
+                <div id="voiceStudioAlertBanner" style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.82rem; font-weight: 500; align-items: center; justify-content: space-between;"></div>
+
+                <!-- Two-Column Studio Layout -->
+                <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.25rem;">
+                    <!-- LEFT COLUMN: Demographic Personas & Voice Selection -->
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- Step 1: Gender & Demographic Archetype -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">1</span>
+                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Gender & Vocal Persona</h3>
+                                </div>
+                                <span style="font-size: 0.75rem; color: #64748b;">Demographic inflection</span>
+                            </div>
+
+                            <!-- 4 Selectable Gender Cards: Female, Male, Child, Aged -->
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem;" id="voiceGenderCardsContainer">
+                                <div class="voice-persona-card active" data-gender="female" onclick="selectVoiceStudioGender('female')" style="cursor: pointer; border: 2px solid #2563eb; background: #eff6ff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👩</div>
+                                    <div style="font-weight: 700; font-size: 0.82rem; color: #1e3a8a;">Female</div>
+                                    <div style="font-size: 0.68rem; color: #3b82f6; margin-top: 0.15rem;">Warm & Melodic</div>
+                                </div>
+                                <div class="voice-persona-card" data-gender="male" onclick="selectVoiceStudioGender('male')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👨</div>
+                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Male</div>
+                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Resonant Timbre</div>
+                                </div>
+                                <div class="voice-persona-card" data-gender="child" onclick="selectVoiceStudioGender('child')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">🧒</div>
+                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Child</div>
+                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Youthful (8–14 yrs)</div>
+                                </div>
+                                <div class="voice-persona-card" data-gender="aged" onclick="selectVoiceStudioGender('aged')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👴</div>
+                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Aged / Senior</div>
+                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Distinguished (60+)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Age Bracket & Personality Archetype -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">2</span>
+                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Age Bracket & Speaking Archetype</h3>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <!-- Age Option Selection -->
+                                <div>
+                                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Target Age Demographic</label>
+                                    <div style="display: flex; flex-direction: column; gap: 0.4rem;" id="voiceAgeOptionsContainer">
+                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="voiceStudioAge" value="child" onchange="onVoiceStudioAgeChange('child')">
+                                            <span>🎈 <strong>Child</strong> (8–14 yrs)</span>
+                                        </label>
+                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="voiceStudioAge" value="young_adult" checked onchange="onVoiceStudioAgeChange('young_adult')">
+                                            <span>⚡ <strong>Young Adult</strong> (18–28 yrs)</span>
+                                        </label>
+                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="voiceStudioAge" value="mature_adult" onchange="onVoiceStudioAgeChange('mature_adult')">
+                                            <span>💼 <strong>Mature Adult</strong> (30–55 yrs)</span>
+                                        </label>
+                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="voiceStudioAge" value="senior" onchange="onVoiceStudioAgeChange('senior')">
+                                            <span>👓 <strong>Senior / Aged</strong> (60+ yrs)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Personality Archetype -->
+                                <div>
+                                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Speaking Personality Archetype</label>
+                                    <select id="voiceStudioPersonalitySelect" class="form-select" onchange="onVoiceStudioPersonalityChange(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
+                                        <option value="friendly_warm">🤝 Friendly & Warm (Approachable, Welcoming)</option>
+                                        <option value="professional_crisp">💼 Professional & Crisp (Executive, Articulate)</option>
+                                        <option value="empathetic_caregiver">❤️ Empathetic Caregiver (Gentle, Supportive)</option>
+                                        <option value="energetic_sales">🔥 Energetic Sales (Dynamic, Persuasive)</option>
+                                        <option value="calm_advisor">🧘 Calm Advisor (Distinguished, Reassuring)</option>
+                                    </select>
+
+                                    <!-- Step 3: Neural Voice Engine Model Selection -->
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Specific Voice Model</label>
+                                        <select id="voiceStudioModelSelect" class="form-select" onchange="onVoiceStudioModelSelect(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
+                                            <!-- Dynamic models from catalog -->
+                                        </select>
+                                    </div>
+
+                                    <div id="voiceStudioModelDetailsBox" style="margin-top: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.65rem 0.75rem;">
+                                        <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a;" id="voiceStudioModelTitle">Ava (Neural)</div>
+                                        <div style="font-size: 0.73rem; color: #64748b; margin-top: 0.2rem;" id="voiceStudioModelDesc">Expressive, welcoming natural tone suited for customer engagement.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Pitch & Rate Sliders + Audition Studio -->
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- Acoustic Tuning Card -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Acoustic Fine Tuning</h3>
+                                </div>
+                                <button type="button" onclick="resetVoiceStudioSliders()" style="background: none; border: none; font-size: 0.73rem; color: #2563eb; cursor: pointer; text-decoration: underline;">Reset to Default</button>
+                            </div>
+
+                            <!-- Pitch Slider -->
+                            <div style="margin-bottom: 1.25rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                    <label for="voiceStudioPitchSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Vocal Pitch</label>
+                                    <span id="voiceStudioPitchBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">+0Hz (Default)</span>
+                                </div>
+                                <input type="range" id="voiceStudioPitchSlider" min="-30" max="30" step="1" value="0" oninput="updateVoiceStudioPitchVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
+                                    <span>-30Hz (Deep Baritone)</span>
+                                    <span>0Hz</span>
+                                    <span>+30Hz (High Melodic)</span>
+                                </div>
+                            </div>
+
+                            <!-- Speed / Rate Slider -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                    <label for="voiceStudioRateSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Speech Rate / Cadence</label>
+                                    <span id="voiceStudioRateBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">1.00x (+0%)</span>
+                                </div>
+                                <input type="range" id="voiceStudioRateSlider" min="75" max="135" step="1" value="100" oninput="updateVoiceStudioRateVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
+                                    <span>0.75x (Deliberate)</span>
+                                    <span>1.0x (Natural)</span>
+                                    <span>1.35x (Fast Cadence)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Audition Studio Card -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">4</span>
+                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Live Voice Audition</h3>
+                                </div>
+                                <span style="font-size: 0.72rem; color: #16a34a; font-weight: 600;" id="voiceStudioPlayerStatus">Ready to test</span>
+                            </div>
+
+                            <div style="margin-bottom: 0.75rem;">
+                                <label for="voiceStudioTestText" style="display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem;">Sample Spoken Text</label>
+                                <textarea id="voiceStudioTestText" class="form-textarea" rows="2" style="font-size: 0.82rem; resize: vertical;" placeholder="Type custom audition speech or leave empty for agent sample phrase..."></textarea>
+                            </div>
+
+                            <!-- Audition Action & Audio Element -->
+                            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                                <button type="button" class="btn-primary" id="btnVoiceStudioAudition" onclick="previewVoiceStudioAudio()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    <span id="voiceStudioAuditionBtnText">▶ Test Listen Voice</span>
+                                </button>
+
+                                <audio id="voiceStudioAudioPlayer" controls style="width: 100%; height: 36px; display: none;"></audio>
                             </div>
                         </div>
                     </div>
@@ -7091,7 +7302,49 @@
                         <label class="checkbox-label">
                             <input type="checkbox" id="capLiveVoice" checked> Live Voice Interaction
                         </label>
+                </div>
+
+                <!-- Speaking Voice Persona Selector -->
+                <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.65rem; padding: 0.85rem; margin-top: 0.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; color: #0f172a; font-weight: 700;">
+                            <span>🎙️</span> Speaking Voice & Demographic Persona
+                        </label>
+                        <button type="button" class="btn-secondary" id="agentModalAuditionBtn" onclick="auditionModalVoice()" style="font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 9999px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <span>▶</span> <span id="agentModalAuditionBtnText">Test Sample</span>
+                        </button>
                     </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-bottom: 0.5rem;">
+                        <div>
+                            <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Gender / Persona</label>
+                            <select id="agentModalVoiceGender" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalGenderChange(this.value)">
+                                <option value="female">👩 Female</option>
+                                <option value="male">👨 Male</option>
+                                <option value="child">🧒 Child (8–14 yrs)</option>
+                                <option value="aged">👴 Senior / Aged (60+ yrs)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Personality Archetype</label>
+                            <select id="agentModalVoicePersonality" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalPersonalityChange(this.value)">
+                                <option value="friendly_warm">Friendly & Warm</option>
+                                <option value="professional_crisp">Professional & Crisp</option>
+                                <option value="empathetic_caregiver">Empathetic Caregiver</option>
+                                <option value="energetic_sales">Energetic Sales</option>
+                                <option value="calm_advisor">Calm Advisor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Voice Model</label>
+                        <select id="agentModalVoiceModel" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalVoiceModelChange(this.value)">
+                            <!-- Populated dynamically from VOICE_CATALOG -->
+                        </select>
+                    </div>
+                    <p style="font-size: 0.72rem; color: #64748b; margin-top: 0.4rem; margin-bottom: 0;" id="agentModalVoiceDesc">
+                        Natural feminine tone suited for customer engagement and voice assistance.
+                    </p>
+                    <audio id="agentModalAudioPlayer" style="display: none;"></audio>
                 </div>
 
                 <div class="modal-actions-footer">
@@ -9648,6 +9901,11 @@ Account ID: ${u.id || ''}`;
                 if (item) item.classList.add('active');
                 switchTab('agents');
                 switchOrgSection('campaigns');
+            } else if (dest === 'voices') {
+                const item = document.getElementById('sidebarNavVoiceStudio');
+                if (item) item.classList.add('active');
+                switchTab('agents');
+                switchOrgSection('voices');
             } else if (dest === 'contacts') {
                 const item = document.getElementById('sidebarNavContacts');
                 if (item) item.classList.add('active');
@@ -9873,6 +10131,7 @@ Account ID: ${u.id || ''}`;
             const sideAgents = document.getElementById('sidebarNavAgents');
             const sideKnowledge = document.getElementById('sidebarNavKnowledge');
             const sideCampaigns = document.getElementById('sidebarNavCampaigns');
+            const sideVoices = document.getElementById('sidebarNavVoiceStudio');
             const sideContacts = document.getElementById('sidebarNavContacts');
             const sideMessaging = document.getElementById('sidebarNavMessaging');
             const sideSettings = document.getElementById('sidebarNavSettings');
@@ -9880,17 +10139,19 @@ Account ID: ${u.id || ''}`;
             const secAgents = document.getElementById('orgSectionAgents');
             const secKnowledge = document.getElementById('orgSectionKnowledge');
             const secCampaigns = document.getElementById('orgSectionCampaigns');
+            const secVoices = document.getElementById('orgSectionVoiceStudio');
             const secContacts = document.getElementById('orgSectionContacts');
             const secMessaging = document.getElementById('orgSectionMessaging');
             const secSettings = document.getElementById('orgSectionSettings');
 
             // Reset active states
             [btnTrack, btnAgents, btnKnowledge, btnMessaging, btnSettings].forEach(b => b && b.classList.remove('active'));
-            [sideTrack, sideAgents, sideKnowledge, sideCampaigns, sideContacts, sideMessaging, sideSettings].forEach(s => s && s.classList.remove('active'));
+            [sideTrack, sideAgents, sideKnowledge, sideCampaigns, sideVoices, sideContacts, sideMessaging, sideSettings].forEach(s => s && s.classList.remove('active'));
             if (secTrack) secTrack.style.display = 'none';
             if (secAgents) secAgents.style.display = 'none';
             if (secKnowledge) secKnowledge.style.display = 'none';
             if (secCampaigns) secCampaigns.style.display = 'none';
+            if (secVoices) secVoices.style.display = 'none';
             if (secContacts) secContacts.style.display = 'none';
             if (secMessaging) secMessaging.style.display = 'none';
             if (secSettings) secSettings.style.display = 'none';
@@ -9913,6 +10174,10 @@ Account ID: ${u.id || ''}`;
                 if (sideCampaigns) sideCampaigns.classList.add('active');
                 if (secCampaigns) secCampaigns.style.display = 'flex';
                 loadCampaignsDashboard();
+            } else if (section === 'voices') {
+                if (sideVoices) sideVoices.classList.add('active');
+                if (secVoices) secVoices.style.display = 'flex';
+                loadVoiceStudio();
             } else if (section === 'contacts') {
                 if (sideContacts) sideContacts.classList.add('active');
                 if (secContacts) secContacts.style.display = 'flex';
@@ -11767,6 +12032,132 @@ Account ID: ${u.id || ''}`;
             renderAgents(filtered);
         }
 
+        // -------------------------------------------------------------
+        // Voice Catalog Cache & Modal Voice Selectors
+        // -------------------------------------------------------------
+        window.voiceCatalogCache = null;
+        window.voiceDemographicsCache = null;
+
+        async function fetchVoiceCatalog() {
+            if (window.voiceCatalogCache && window.voiceDemographicsCache) {
+                return { catalog: window.voiceCatalogCache, demographics: window.voiceDemographicsCache };
+            }
+            try {
+                const res = await fetch('/api/voices/catalog');
+                if (res.ok) {
+                    const data = await res.json();
+                    window.voiceCatalogCache = data.catalog || [];
+                    window.voiceDemographicsCache = data.demographics || {};
+                    return data;
+                }
+            } catch (err) {
+                console.error("Failed to fetch voice catalog:", err);
+            }
+            return { catalog: [], demographics: {} };
+        }
+
+        async function populateAgentModalVoices(targetVoiceId, targetGender, targetPersonality) {
+            const data = await fetchVoiceCatalog();
+            const catalog = data.catalog || [];
+            const selectEl = document.getElementById('agentModalVoiceModel');
+            if (!selectEl) return;
+
+            selectEl.innerHTML = '';
+            const genderVal = targetGender || document.getElementById('agentModalVoiceGender')?.value || 'female';
+
+            let matchingVoices = catalog.filter(v => v.gender === genderVal);
+            if (matchingVoices.length === 0) matchingVoices = catalog;
+
+            matchingVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = `${v.display_name} (${v.age_label || v.age_group})`;
+                opt.dataset.desc = v.description;
+                opt.dataset.sample = v.sample_phrase || '';
+                opt.dataset.gender = v.gender;
+                opt.dataset.ageGroup = v.age_group;
+                opt.dataset.personality = v.personality;
+                opt.dataset.pitch = v.pitch_default || '+0Hz';
+                opt.dataset.rate = v.rate_default || '+0%';
+                if (v.id === targetVoiceId) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+
+            if (!selectEl.value && matchingVoices.length > 0) {
+                selectEl.value = matchingVoices[0].id;
+            }
+
+            const genderEl = document.getElementById('agentModalVoiceGender');
+            if (genderEl && targetGender) genderEl.value = targetGender;
+
+            const persEl = document.getElementById('agentModalVoicePersonality');
+            if (persEl && targetPersonality) persEl.value = targetPersonality;
+
+            onAgentModalVoiceModelChange(selectEl.value);
+        }
+
+        function onAgentModalGenderChange(gender) {
+            populateAgentModalVoices(null, gender, document.getElementById('agentModalVoicePersonality')?.value);
+        }
+
+        function onAgentModalPersonalityChange(personality) {
+            const catalog = window.voiceCatalogCache || [];
+            const gender = document.getElementById('agentModalVoiceGender')?.value;
+            const match = catalog.find(v => v.personality === personality && (!gender || v.gender === gender));
+            if (match) {
+                const selectEl = document.getElementById('agentModalVoiceModel');
+                if (selectEl) {
+                    selectEl.value = match.id;
+                    onAgentModalVoiceModelChange(match.id);
+                }
+            }
+        }
+
+        function onAgentModalVoiceModelChange(modelId) {
+            const catalog = window.voiceCatalogCache || [];
+            const voice = catalog.find(v => v.id === modelId);
+            const descEl = document.getElementById('agentModalVoiceDesc');
+            if (descEl && voice) {
+                descEl.innerText = `${voice.description} • Sample: "${voice.sample_phrase || ''}"`;
+            }
+        }
+
+        async function auditionModalVoice() {
+            const voiceModel = document.getElementById('agentModalVoiceModel')?.value || 'en-US-AvaNeural';
+            const btn = document.getElementById('agentModalAuditionBtn');
+            const btnText = document.getElementById('agentModalAuditionBtnText');
+            const audioEl = document.getElementById('agentModalAudioPlayer');
+
+            if (btnText) btnText.innerText = 'Synthesizing...';
+            if (btn) btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/voices/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice_model: voiceModel,
+                        pitch: '+0Hz',
+                        rate: '+0%'
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (audioEl && data.audio_url) {
+                        audioEl.src = data.audio_url;
+                        audioEl.play().catch(e => console.warn("Audition auto-play blocked:", e));
+                    }
+                } else {
+                    alert("Could not generate voice preview.");
+                }
+            } catch (err) {
+                console.error("Modal voice audition error:", err);
+            } finally {
+                if (btnText) btnText.innerText = 'Test Sample';
+                if (btn) btn.disabled = false;
+            }
+        }
+
         function openCreateAgentModal() {
             document.getElementById('modalHeaderTitle').innerText = 'ADD NEW AGENT';
             document.getElementById('modalHeroTitle').innerText = 'Build a New Agent';
@@ -11781,6 +12172,8 @@ Account ID: ${u.id || ''}`;
             document.getElementById('capReportGen').checked = true;
             document.getElementById('capTelephony').checked = true;
             document.getElementById('capLiveVoice').checked = true;
+
+            populateAgentModalVoices('en-US-AvaNeural', 'female', 'friendly_warm');
             document.getElementById('agentModal').classList.add('active-modal');
         }
 
@@ -11804,11 +12197,23 @@ Account ID: ${u.id || ''}`;
             document.getElementById('capTelephony').checked = caps.includes('Twilio Telephony Calling');
             document.getElementById('capLiveVoice').checked = caps.includes('Live Voice Interaction');
 
+            const vc = agent.voice_config || {};
+            populateAgentModalVoices(
+                vc.voice_id || 'en-US-AvaNeural',
+                vc.gender || 'female',
+                vc.personality || 'friendly_warm'
+            );
+
             document.getElementById('agentModal').classList.add('active-modal');
         }
 
         function closeAgentModal() {
             document.getElementById('agentModal').classList.remove('active-modal');
+            const audioEl = document.getElementById('agentModalAudioPlayer');
+            if (audioEl) {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            }
         }
 
         function onRoleSelectChange(role) {
@@ -11848,6 +12253,26 @@ Account ID: ${u.id || ''}`;
                 payload.org_id = activeOrg ? activeOrg.id : 'apex-ai-innovations';
             }
 
+            // Extract selected voice persona configuration
+            const voiceModelEl = document.getElementById('agentModalVoiceModel');
+            const voiceGenderEl = document.getElementById('agentModalVoiceGender');
+            const voicePersEl = document.getElementById('agentModalVoicePersonality');
+            if (voiceModelEl && voiceModelEl.value) {
+                const catalog = window.voiceCatalogCache || [];
+                const voiceData = catalog.find(v => v.id === voiceModelEl.value) || {};
+                payload.voice_config = {
+                    voice_id: voiceModelEl.value,
+                    voice_name: voiceData.name || voiceModelEl.value,
+                    gender: voiceGenderEl ? voiceGenderEl.value : (voiceData.gender || 'female'),
+                    age_group: voiceData.age_group || 'young_adult',
+                    personality: voicePersEl ? voicePersEl.value : (voiceData.personality || 'friendly_warm'),
+                    pitch: voiceData.pitch_default || '+0Hz',
+                    rate: voiceData.rate_default || '+0%',
+                    language: voiceData.language || 'en',
+                    notes: voiceData.description || 'Configured via agent modal'
+                };
+            }
+
             try {
                 if (editId) {
                     const res = await fetch(`/api/agents/${editId}`, {
@@ -11882,6 +12307,393 @@ Account ID: ${u.id || ''}`;
                 await loadAgents();
             } catch (e) {
                 alert('Delete failed: ' + e.message);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Voice Studio (Demographic Personas, Timbre, Live Audition)
+        // -------------------------------------------------------------
+        window.currentStudioAgentId = null;
+        window.selectedStudioGender = 'female';
+        window.selectedStudioAge = 'young_adult';
+
+        async function loadVoiceStudio() {
+            const data = await fetchVoiceCatalog();
+            const catalog = data.catalog || [];
+
+            // Populate Agent Switcher
+            const agentSelect = document.getElementById('voiceStudioAgentSelect');
+            if (agentSelect) {
+                agentSelect.innerHTML = '';
+                allAgents.forEach(ag => {
+                    const opt = document.createElement('option');
+                    opt.value = ag.id;
+                    const vName = ag.voice_config?.voice_name || 'Standard Neural';
+                    opt.textContent = `${ag.name} (${ag.role}) — [${vName}]`;
+                    if (ag.id === (activeAgent ? activeAgent.id : allAgents[0]?.id)) {
+                        opt.selected = true;
+                    }
+                    agentSelect.appendChild(opt);
+                });
+            }
+
+            const initialAgentId = agentSelect?.value || (activeAgent ? activeAgent.id : allAgents[0]?.id);
+            if (initialAgentId) {
+                syncVoiceStudioToAgent(initialAgentId);
+            }
+        }
+
+        function onVoiceStudioAgentChange(agentId) {
+            syncVoiceStudioToAgent(agentId);
+        }
+
+        function syncVoiceStudioToAgent(agentId) {
+            window.currentStudioAgentId = agentId;
+            const agent = allAgents.find(a => a.id === agentId);
+            const vc = (agent && agent.voice_config) ? agent.voice_config : {
+                voice_id: 'en-US-AvaNeural',
+                gender: 'female',
+                age_group: 'young_adult',
+                personality: 'friendly_warm',
+                pitch: '+0Hz',
+                rate: '+0%'
+            };
+
+            // 1. Sync Gender Cards
+            selectVoiceStudioGender(vc.gender || 'female', false);
+
+            // 2. Sync Age Radio Group
+            window.selectedStudioAge = vc.age_group || 'young_adult';
+            const ageRadios = document.querySelectorAll('input[name="voiceStudioAge"]');
+            ageRadios.forEach(r => {
+                r.checked = (r.value === window.selectedStudioAge);
+            });
+
+            // 3. Sync Personality Dropdown
+            const persSelect = document.getElementById('voiceStudioPersonalitySelect');
+            if (persSelect) {
+                persSelect.value = vc.personality || 'friendly_warm';
+            }
+
+            // 4. Sync Voice Model Dropdown
+            populateVoiceStudioModels(vc.voice_id || 'en-US-AvaNeural');
+
+            // 5. Sync Sliders & Badges
+            // Pitch
+            let pitchInt = 0;
+            if (vc.pitch) {
+                const m = vc.pitch.match(/([+-]?\d+)/);
+                if (m) pitchInt = parseInt(m[1], 10);
+            }
+            const pitchSlider = document.getElementById('voiceStudioPitchSlider');
+            if (pitchSlider) {
+                pitchSlider.value = pitchInt;
+                updateVoiceStudioPitchVal(pitchInt);
+            }
+
+            // Rate (Cadence)
+            let rateInt = 100;
+            if (vc.rate) {
+                const m = vc.rate.match(/([+-]?\d+)/);
+                if (m) rateInt = 100 + parseInt(m[1], 10);
+            }
+            const rateSlider = document.getElementById('voiceStudioRateSlider');
+            if (rateSlider) {
+                rateSlider.value = Math.max(75, Math.min(135, rateInt));
+                updateVoiceStudioRateVal(rateSlider.value);
+            }
+
+            // Sample text
+            const catalog = window.voiceCatalogCache || [];
+            const voiceObj = catalog.find(v => v.id === vc.voice_id);
+            const testTextEl = document.getElementById('voiceStudioTestText');
+            if (testTextEl && voiceObj && voiceObj.sample_phrase) {
+                testTextEl.value = voiceObj.sample_phrase;
+            }
+        }
+
+        function selectVoiceStudioGender(gender, autoSelectModel = true) {
+            window.selectedStudioGender = gender;
+            const container = document.getElementById('voiceGenderCardsContainer');
+            if (container) {
+                const cards = container.querySelectorAll('.voice-persona-card');
+                cards.forEach(card => {
+                    const isSelected = card.getAttribute('data-gender') === gender;
+                    if (isSelected) {
+                        card.classList.add('active');
+                        card.style.border = '2px solid #2563eb';
+                        card.style.background = '#eff6ff';
+                        const title = card.querySelector('div:nth-child(2)');
+                        if (title) title.style.color = '#1e3a8a';
+                    } else {
+                        card.classList.remove('active');
+                        card.style.border = '1px solid #e2e8f0';
+                        card.style.background = '#ffffff';
+                        const title = card.querySelector('div:nth-child(2)');
+                        if (title) title.style.color = '#334155';
+                    }
+                });
+            }
+
+            if (autoSelectModel) {
+                // Auto-sync age group preset for child / aged
+                if (gender === 'child') {
+                    window.selectedStudioAge = 'child';
+                } else if (gender === 'aged') {
+                    window.selectedStudioAge = 'senior';
+                }
+                const ageRadios = document.querySelectorAll('input[name="voiceStudioAge"]');
+                ageRadios.forEach(r => { r.checked = (r.value === window.selectedStudioAge); });
+
+                populateVoiceStudioModels();
+            }
+        }
+
+        function onVoiceStudioAgeChange(ageGroup) {
+            window.selectedStudioAge = ageGroup;
+            if (ageGroup === 'child') {
+                selectVoiceStudioGender('child', false);
+            } else if (ageGroup === 'senior') {
+                selectVoiceStudioGender('aged', false);
+            }
+            populateVoiceStudioModels();
+        }
+
+        function onVoiceStudioPersonalityChange(personality) {
+            populateVoiceStudioModels();
+        }
+
+        function populateVoiceStudioModels(preferredModelId) {
+            const catalog = window.voiceCatalogCache || [];
+            const modelSelect = document.getElementById('voiceStudioModelSelect');
+            if (!modelSelect) return;
+
+            modelSelect.innerHTML = '';
+            const gender = window.selectedStudioGender;
+            const ageGroup = window.selectedStudioAge;
+
+            let filtered = catalog.filter(v => v.gender === gender);
+            if (filtered.length === 0) {
+                filtered = catalog.filter(v => v.age_group === ageGroup);
+            }
+            if (filtered.length === 0) filtered = catalog;
+
+            filtered.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = `${v.display_name} — ${v.personality_label || v.personality}`;
+                if (preferredModelId && v.id === preferredModelId) {
+                    opt.selected = true;
+                }
+                modelSelect.appendChild(opt);
+            });
+
+            if (!modelSelect.value && filtered.length > 0) {
+                modelSelect.value = filtered[0].id;
+            }
+
+            onVoiceStudioModelSelect(modelSelect.value);
+        }
+
+        function onVoiceStudioModelSelect(modelId) {
+            const catalog = window.voiceCatalogCache || [];
+            const voice = catalog.find(v => v.id === modelId);
+            if (!voice) return;
+
+            const titleEl = document.getElementById('voiceStudioModelTitle');
+            const descEl = document.getElementById('voiceStudioModelDesc');
+            const testTextEl = document.getElementById('voiceStudioTestText');
+
+            if (titleEl) titleEl.innerText = `${voice.display_name} (${voice.language_name || voice.language})`;
+            if (descEl) descEl.innerText = `${voice.description} • Speaking Archetype: ${voice.personality_label || voice.personality}`;
+            if (testTextEl && !testTextEl.value.trim() && voice.sample_phrase) {
+                testTextEl.value = voice.sample_phrase;
+            }
+        }
+
+        function updateVoiceStudioPitchVal(val) {
+            const badge = document.getElementById('voiceStudioPitchBadge');
+            const intVal = parseInt(val, 10);
+            const prefix = intVal >= 0 ? '+' : '';
+            if (badge) {
+                badge.innerText = `${prefix}${intVal}Hz ${intVal === 0 ? '(Default)' : ''}`;
+            }
+        }
+
+        function updateVoiceStudioRateVal(val) {
+            const badge = document.getElementById('voiceStudioRateBadge');
+            const intVal = parseInt(val, 10);
+            const mult = (intVal / 100).toFixed(2);
+            const pct = intVal - 100;
+            const prefix = pct >= 0 ? '+' : '';
+            if (badge) {
+                badge.innerText = `${mult}x (${prefix}${pct}%)`;
+            }
+        }
+
+        function resetVoiceStudioSliders() {
+            const pitchSlider = document.getElementById('voiceStudioPitchSlider');
+            const rateSlider = document.getElementById('voiceStudioRateSlider');
+            if (pitchSlider) {
+                pitchSlider.value = 0;
+                updateVoiceStudioPitchVal(0);
+            }
+            if (rateSlider) {
+                rateSlider.value = 100;
+                updateVoiceStudioRateVal(100);
+            }
+        }
+
+        async function previewVoiceStudioAudio() {
+            const voiceModel = document.getElementById('voiceStudioModelSelect')?.value || 'en-US-AvaNeural';
+            const pitchVal = parseInt(document.getElementById('voiceStudioPitchSlider')?.value || 0, 10);
+            const rateInt = parseInt(document.getElementById('voiceStudioRateSlider')?.value || 100, 10);
+            const pitchStr = `${pitchVal >= 0 ? '+' : ''}${pitchVal}Hz`;
+            const ratePct = rateInt - 100;
+            const rateStr = `${ratePct >= 0 ? '+' : ''}${ratePct}%`;
+
+            const testText = document.getElementById('voiceStudioTestText')?.value.trim();
+            const btn = document.getElementById('btnVoiceStudioAudition');
+            const btnText = document.getElementById('voiceStudioAuditionBtnText');
+            const statusEl = document.getElementById('voiceStudioPlayerStatus');
+            const audioEl = document.getElementById('voiceStudioAudioPlayer');
+
+            if (btnText) btnText.innerText = 'Synthesizing Audio...';
+            if (btn) btn.disabled = true;
+            if (statusEl) {
+                statusEl.innerText = 'Generating neural speech sample...';
+                statusEl.style.color = '#2563eb';
+            }
+
+            try {
+                const res = await fetch('/api/voices/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice_model: voiceModel,
+                        pitch: pitchStr,
+                        rate: rateStr,
+                        text: testText
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (audioEl && data.audio_url) {
+                        audioEl.style.display = 'block';
+                        audioEl.src = data.audio_url;
+                        await audioEl.play().catch(e => console.warn("Audio autoplay blocked by browser:", e));
+                        if (statusEl) {
+                            statusEl.innerText = '▶ Playing Audition Sample';
+                            statusEl.style.color = '#16a34a';
+                        }
+                    }
+                } else {
+                    const err = await res.json();
+                    if (statusEl) {
+                        statusEl.innerText = `Error: ${err.detail || 'Preview failed'}`;
+                        statusEl.style.color = '#dc2626';
+                    }
+                }
+            } catch (err) {
+                console.error("Voice audition error:", err);
+                if (statusEl) {
+                    statusEl.innerText = 'Network error generating preview';
+                    statusEl.style.color = '#dc2626';
+                }
+            } finally {
+                if (btnText) btnText.innerText = '▶ Test Listen Voice';
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function saveVoiceStudioConfig() {
+            const agentId = window.currentStudioAgentId || document.getElementById('voiceStudioAgentSelect')?.value;
+            if (!agentId) {
+                alert("Please select an agent to apply this voice configuration.");
+                return;
+            }
+
+            const voiceModel = document.getElementById('voiceStudioModelSelect')?.value || 'en-US-AvaNeural';
+            const catalog = window.voiceCatalogCache || [];
+            const voiceObj = catalog.find(v => v.id === voiceModel) || {};
+
+            const pitchVal = parseInt(document.getElementById('voiceStudioPitchSlider')?.value || 0, 10);
+            const rateInt = parseInt(document.getElementById('voiceStudioRateSlider')?.value || 100, 10);
+            const pitchStr = `${pitchVal >= 0 ? '+' : ''}${pitchVal}Hz`;
+            const ratePct = rateInt - 100;
+            const rateStr = `${ratePct >= 0 ? '+' : ''}${ratePct}%`;
+
+            const payload = {
+                voice_id: voiceModel,
+                voice_name: voiceObj.name || voiceModel,
+                gender: window.selectedStudioGender || 'female',
+                age_group: window.selectedStudioAge || 'young_adult',
+                personality: document.getElementById('voiceStudioPersonalitySelect')?.value || 'friendly_warm',
+                pitch: pitchStr,
+                rate: rateStr,
+                language: voiceObj.language || 'en',
+                notes: voiceObj.description || 'Customized in AI Voice Studio'
+            };
+
+            const saveBtn = document.getElementById('btnVoiceStudioSave');
+            if (saveBtn) saveBtn.disabled = true;
+
+            const banner = document.getElementById('voiceStudioAlertBanner');
+
+            try {
+                const res = await fetch(`/api/agents/${agentId}/voice`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Update local agent caches
+                    const targetAgent = allAgents.find(a => a.id === agentId);
+                    if (targetAgent) {
+                        targetAgent.voice_config = data.voice_config;
+                    }
+                    if (activeAgent && activeAgent.id === agentId) {
+                        activeAgent.voice_config = data.voice_config;
+                    }
+
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        banner.style.background = '#f0fdf4';
+                        banner.style.color = '#15803d';
+                        banner.style.border = '1px solid #bbf7d0';
+                        banner.innerHTML = `
+                            <span>✅ Voice persona successfully updated for <strong>${escapeHtml(targetAgent ? targetAgent.name : agentId)}</strong> (${payload.voice_name}, ${payload.gender}, ${payload.pitch}, ${payload.rate}).</span>
+                            <button onclick="document.getElementById('voiceStudioAlertBanner').style.display='none'" style="background:none; border:none; color:#15803d; font-weight:700; cursor:pointer;">✕</button>
+                        `;
+                        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 6000);
+                    }
+
+                    // Refresh dropdown labels
+                    loadVoiceStudio();
+                } else {
+                    const err = await res.json();
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        banner.style.background = '#fef2f2';
+                        banner.style.color = '#b91c1c';
+                        banner.style.border = '1px solid #fecaca';
+                        banner.innerHTML = `<span>❌ Error: ${escapeHtml(err.detail || 'Could not save voice configuration.')}</span>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Save voice studio config error:", err);
+                if (banner) {
+                    banner.style.display = 'flex';
+                    banner.style.background = '#fef2f2';
+                    banner.style.color = '#b91c1c';
+                    banner.style.border = '1px solid #fecaca';
+                    banner.innerHTML = `<span>❌ Network error saving voice persona.</span>`;
+                }
+            } finally {
+                if (saveBtn) saveBtn.disabled = false;
             }
         }
 

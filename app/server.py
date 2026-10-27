@@ -32,7 +32,7 @@ from app.config import (
 )
 from app.stt import STTClient
 from app.llm import LLMClient, clean_multilingual_speech
-from app.tts import TTSClient
+from app.tts import TTSClient, VOICE_CATALOG, VOICE_DEMOGRAPHICS
 from app.twilio_handler import TwilioService, TwilioMediaStreamSession
 from app.tunnel import TunnelManager
 from app.pipecat_agent import PipecatNeuralVAD, VADState
@@ -2953,6 +2953,100 @@ async def activate_agent(agent_id: str):
     return JSONResponse({"success": True, "active_agent": target})
 
 
+# -------------------------------------------------------------
+# Voice Persona & Studio Endpoints
+# -------------------------------------------------------------
+@app.get("/api/voices/catalog")
+async def get_voice_catalog():
+    """Returns the catalog of available neural voices, age groups, and demographic personas."""
+    return JSONResponse({
+        "catalog": VOICE_CATALOG,
+        "demographics": VOICE_DEMOGRAPHICS,
+    })
+
+
+@app.post("/api/voices/preview")
+async def preview_voice(payload: Dict[str, Any] = Body(...)):
+    """
+    Synthesizes and returns a preview audio sample for a selected voice model,
+    demographic persona, pitch, speed rate, and text.
+    """
+    global tts
+    if not tts:
+        raise HTTPException(status_code=503, detail="TTS service is not initialized")
+
+    text = (payload.get("text") or "").strip()
+    voice_model = payload.get("voice_model") or "en-US-AvaNeural"
+    pitch = payload.get("pitch", "+0Hz")
+    rate = payload.get("rate", "+0%")
+    language = payload.get("language") or "en"
+
+    if not text:
+        # Pick sample phrase from catalog if available, or default
+        sample_phrase = "Hello! This is a test audition of my voice persona. How do I sound?"
+        for v in VOICE_CATALOG:
+            if v["id"] == voice_model and v.get("sample_phrase"):
+                sample_phrase = v["sample_phrase"]
+                break
+        text = sample_phrase
+
+    clean_voice_id = re.sub(r"[^a-zA-Z0-9_-]", "_", voice_model)
+    preview_filename = f"preview_{clean_voice_id}_{int(time.time() * 1000)}.wav"
+    output_path = AUDIO_DIR / preview_filename
+
+    try:
+        await asyncio.to_thread(
+            tts.synthesize,
+            text=text,
+            output_path=output_path,
+            language=language,
+            voice_model=voice_model,
+            pitch=pitch,
+            rate=rate,
+        )
+        return JSONResponse({
+            "success": True,
+            "audio_url": f"/api/audio/{preview_filename}",
+            "filename": preview_filename,
+            "voice_model": voice_model,
+            "pitch": pitch,
+            "rate": rate,
+            "text": text,
+        })
+    except Exception as e:
+        logger.error("Voice preview synthesis failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Voice synthesis failed: {str(e)}")
+
+
+@app.get("/api/agents/{agent_id}/voice")
+async def get_agent_voice_config(agent_id: str):
+    """Retrieves the voice persona and speech demographic configuration for a specific agent."""
+    agent = agent_manager.get_agent(agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    voice_config = agent_manager.get_agent_voice(agent_id)
+    return JSONResponse({
+        "agent_id": agent_id,
+        "agent_name": agent.get("name"),
+        "voice_config": voice_config,
+    })
+
+
+@app.put("/api/agents/{agent_id}/voice")
+async def update_agent_voice_config(agent_id: str, payload: Dict[str, Any] = Body(...)):
+    """Updates the voice persona configuration for an agent."""
+    updated = agent_manager.update_agent_voice(agent_id, payload)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    logger.info("Updated voice persona for agent %s: %s", agent_id, updated.get("voice_config"))
+    return JSONResponse({
+        "success": True,
+        "agent_id": agent_id,
+        "agent": updated,
+        "voice_config": updated.get("voice_config"),
+    })
+
+
 
 # -------------------------------------------------------------
 # Interactive Agent Chatbot Endpoint (with RAG Grounding)
@@ -3288,16 +3382,42 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
     global tts
     text = payload.get("text", "").strip()
     language = payload.get("language", "en")
+    voice_model = payload.get("voice_model")
+    pitch = payload.get("pitch")
+    rate = payload.get("rate")
+    agent_id = payload.get("agent_id")
+
     if not text:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
+
+    if not voice_model and agent_id:
+        agent = agent_manager.get_agent(agent_id)
+        if agent and agent.get("voice_config"):
+            vc = agent["voice_config"]
+            voice_model = vc.get("voice_id")
+            pitch = pitch or vc.get("pitch")
+            rate = rate or vc.get("rate")
+            language = language or vc.get("language", "en")
+
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}.wav"
     try:
         if tts:
-            await asyncio.to_thread(tts.synthesize, text, output_path=reply_wav_path, language=language)
+            await asyncio.to_thread(
+                tts.synthesize,
+                text,
+                output_path=reply_wav_path,
+                language=language,
+                voice_model=voice_model,
+                pitch=pitch,
+                rate=rate,
+            )
             return JSONResponse({
                 "success": True,
                 "audio_url": f"/api/audio/{reply_wav_path.name}",
                 "language": language,
+                "voice_model": voice_model,
+                "pitch": pitch,
+                "rate": rate,
             })
         return JSONResponse({"success": False, "error": "TTS engine not initialized"}, status_code=503)
     except Exception as e:
@@ -3635,11 +3755,28 @@ async def chat_endpoint(
             reply_text = "I'm having trouble connecting to my local language model. Please make sure Ollama is running."
         llm_duration = time.time() - t_llm_start
 
-        # Step 3: TTS (Multilingual Edge-TTS / Piper fallback matching user's spoken language)
+        # Step 3: TTS (Multilingual Edge-TTS / Piper fallback with agent voice persona)
         t_tts_start = time.time()
         try:
             if tts:
-                await asyncio.to_thread(tts.synthesize, reply_text, output_path=reply_wav_path, language=detected_language)
+                agent_voice_id = None
+                agent_pitch = None
+                agent_rate = None
+                if active_agent and isinstance(active_agent, dict):
+                    vc = active_agent.get("voice_config") or {}
+                    agent_voice_id = vc.get("voice_id")
+                    agent_pitch = vc.get("pitch")
+                    agent_rate = vc.get("rate")
+
+                await asyncio.to_thread(
+                    tts.synthesize,
+                    reply_text,
+                    output_path=reply_wav_path,
+                    language=detected_language,
+                    voice_model=agent_voice_id,
+                    pitch=agent_pitch,
+                    rate=agent_rate,
+                )
         except Exception as e:
             logger.error("Audio route TTS error: %s", e)
         tts_duration = time.time() - t_tts_start
@@ -4299,7 +4436,14 @@ async def twiml_incoming(request: Request):
         reply_filename = f"greeting_{int(time.time() * 1000)}.wav"
         reply_path = AUDIO_DIR / reply_filename
         try:
-            tts.synthesize(agent_greeting, output_path=reply_path)
+            tg_vc = (target_agent.get("voice_config") or {}) if target_agent else {}
+            tts.synthesize(
+                agent_greeting,
+                output_path=reply_path,
+                voice_model=tg_vc.get("voice_id"),
+                pitch=tg_vc.get("pitch"),
+                rate=tg_vc.get("rate"),
+            )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'
         except Exception as e:
@@ -4482,7 +4626,14 @@ async def twiml_respond(request: Request):
         reply_filename = f"phone_reply_{int(time.time() * 1000)}.wav"
         reply_path = AUDIO_DIR / reply_filename
         try:
-            tts.synthesize(reply_text, output_path=reply_path)
+            tg_vc = (target_agent.get("voice_config") or {}) if target_agent else {}
+            tts.synthesize(
+                reply_text,
+                output_path=reply_path,
+                voice_model=tg_vc.get("voice_id"),
+                pitch=tg_vc.get("pitch"),
+                rate=tg_vc.get("rate"),
+            )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'
         except Exception as e:

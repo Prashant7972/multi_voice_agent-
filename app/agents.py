@@ -19,6 +19,15 @@ DEFAULT_SYSTEM_TEMPLATE = (
     "- When user speaks or asks questions, address them directly."
 )
 
+DEFAULT_VOICE_CONFIG: Dict[str, Any] = {
+    "gender": "Female",
+    "age_group": "Young Adult (18–28 yrs)",
+    "personality": "Friendly & Warm",
+    "voice_model": "en-US-AvaNeural",
+    "pitch": "+0Hz",
+    "rate": "+0%",
+}
+
 
 def slugify(text: str) -> str:
     """Converts a title or name into a URL-friendly slug."""
@@ -55,6 +64,36 @@ class AgentManager:
                     for ag in self.agents:
                         if "org_id" not in ag:
                             ag["org_id"] = "apex-ai-innovations"
+                        if "voice_config" not in ag:
+                            if ag.get("id") == "market-analysis-pro":
+                                ag["voice_config"] = {
+                                    "gender": "Male",
+                                    "age_group": "Mature Adult (30–55 yrs)",
+                                    "personality": "Professional & Crisp",
+                                    "voice_model": "en-US-AndrewNeural",
+                                    "pitch": "-10Hz",
+                                    "rate": "+0%",
+                                }
+                            elif ag.get("id") == "content-writer-bot":
+                                ag["voice_config"] = {
+                                    "gender": "Female",
+                                    "age_group": "Young Adult (18–28 yrs)",
+                                    "personality": "Energetic Sales",
+                                    "voice_model": "en-US-AvaNeural",
+                                    "pitch": "+5Hz",
+                                    "rate": "+5%",
+                                }
+                            elif ag.get("id") == "customer-support-ai":
+                                ag["voice_config"] = {
+                                    "gender": "Female",
+                                    "age_group": "Young Adult (18–28 yrs)",
+                                    "personality": "Empathetic Caregiver",
+                                    "voice_model": "hi-IN-SwaraNeural",
+                                    "pitch": "+0Hz",
+                                    "rate": "+0%",
+                                }
+                            else:
+                                ag["voice_config"] = DEFAULT_VOICE_CONFIG.copy()
             except Exception as e:
                 print(f"⚠️ [AgentManager] Error reading {self.storage_path}: {e}")
                 self.agents = []
@@ -80,6 +119,14 @@ class AgentManager:
                         "Neural VAD Noise Filter",
                         "Conversational Barge-In"
                     ],
+                    "voice_config": {
+                        "gender": "Female",
+                        "age_group": "Young Adult (18–28 yrs)",
+                        "personality": "Friendly & Warm",
+                        "voice_model": "en-US-AvaNeural",
+                        "pitch": "+0Hz",
+                        "rate": "+0%",
+                    },
                     "is_active": True,
                 },
                 {
@@ -103,6 +150,14 @@ class AgentManager:
                         "Live Voice Interaction",
                         "Twilio Telephony Calling"
                     ],
+                    "voice_config": {
+                        "gender": "Male",
+                        "age_group": "Mature Adult (30–55 yrs)",
+                        "personality": "Professional & Crisp",
+                        "voice_model": "en-US-AndrewNeural",
+                        "pitch": "-10Hz",
+                        "rate": "+0%",
+                    },
                     "is_active": False,
                 },
                 {
@@ -125,6 +180,14 @@ class AgentManager:
                         "Live Voice Interaction",
                         "Twilio Telephony Calling"
                     ],
+                    "voice_config": {
+                        "gender": "Female",
+                        "age_group": "Young Adult (18–28 yrs)",
+                        "personality": "Energetic Sales",
+                        "voice_model": "en-US-AvaNeural",
+                        "pitch": "+5Hz",
+                        "rate": "+5%",
+                    },
                     "is_active": False,
                 },
                 {
@@ -147,6 +210,14 @@ class AgentManager:
                         "Live Voice Interaction",
                         "Twilio Telephony Calling"
                     ],
+                    "voice_config": {
+                        "gender": "Female",
+                        "age_group": "Young Adult (18–28 yrs)",
+                        "personality": "Empathetic Caregiver",
+                        "voice_model": "hi-IN-SwaraNeural",
+                        "pitch": "+0Hz",
+                        "rate": "+0%",
+                    },
                     "is_active": False,
                 },
             ]
@@ -231,6 +302,12 @@ class AgentManager:
         if not capabilities:
             capabilities = ["Live Voice Interaction", "Twilio Telephony Calling"]
 
+        voice_config = data.get("voice_config")
+        if not voice_config or not isinstance(voice_config, dict):
+            voice_config = DEFAULT_VOICE_CONFIG.copy()
+        else:
+            voice_config = {**DEFAULT_VOICE_CONFIG.copy(), **voice_config}
+
         new_agent = {
             "id": agent_id,
             "org_id": org_id,
@@ -242,6 +319,7 @@ class AgentManager:
             "goals": goals,
             "system_prompt": system_prompt,
             "capabilities": capabilities,
+            "voice_config": voice_config,
             "is_active": False,
         }
 
@@ -269,9 +347,32 @@ class AgentManager:
             )
         if "capabilities" in data and isinstance(data["capabilities"], list):
             agent["capabilities"] = data["capabilities"]
+        if "voice_config" in data and isinstance(data["voice_config"], dict):
+            current_vc = agent.get("voice_config", DEFAULT_VOICE_CONFIG.copy())
+            agent["voice_config"] = {**current_vc, **data["voice_config"]}
         if "status" in data:
             agent["status"] = data["status"]
 
+        agent["last_updated"] = "Just now"
+        agent["updated_at"] = time.time()
+        self.save()
+        return agent
+
+    def get_agent_voice(self, agent_id: str) -> Optional[Dict[str, Any]]:
+        """Gets voice configuration for a specific agent."""
+        agent = self.get_agent(agent_id)
+        if not agent:
+            return None
+        return agent.get("voice_config", DEFAULT_VOICE_CONFIG.copy())
+
+    def update_agent_voice(self, agent_id: str, voice_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Updates voice configuration specifically for an agent."""
+        agent = self.get_agent(agent_id)
+        if not agent:
+            return None
+        current_vc = agent.get("voice_config", DEFAULT_VOICE_CONFIG.copy())
+        current_vc.update(voice_config)
+        agent["voice_config"] = current_vc
         agent["last_updated"] = "Just now"
         agent["updated_at"] = time.time()
         self.save()
