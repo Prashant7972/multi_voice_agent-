@@ -6349,7 +6349,21 @@
 
                                     <!-- Step 3: Neural Voice Engine Model Selection -->
                                     <div style="margin-top: 1rem;">
-                                        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Specific Voice Model</label>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                            <label style="font-size: 0.78rem; font-weight: 600; color: #475569; margin: 0;">Specific Voice Model</label>
+                                            <select id="voiceStudioLanguageFilter" class="form-select" onchange="onVoiceStudioLanguageFilterChange(this.value)" style="font-size: 0.72rem; padding: 0.2rem 0.4rem; max-width: 140px; border-color: #cbd5e1; border-radius: 0.375rem; color: #334155;">
+                                                <option value="all">All Languages</option>
+                                                <option value="en">English (US/UK)</option>
+                                                <option value="hi">Hindi (हिन्दी)</option>
+                                                <option value="mr">Marathi (मराठी)</option>
+                                                <option value="es">Spanish (Español)</option>
+                                                <option value="fr">French (Français)</option>
+                                                <option value="de">German (Deutsch)</option>
+                                                <option value="ja">Japanese (日本語)</option>
+                                                <option value="ta">Tamil (தமிழ்)</option>
+                                                <option value="te">Telugu (తెలుగు)</option>
+                                            </select>
+                                        </div>
                                         <select id="voiceStudioModelSelect" class="form-select" onchange="onVoiceStudioModelSelect(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
                                             <!-- Dynamic models from catalog -->
                                         </select>
@@ -6358,6 +6372,11 @@
                                     <div id="voiceStudioModelDetailsBox" style="margin-top: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.65rem 0.75rem;">
                                         <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a;" id="voiceStudioModelTitle">Ava (Neural)</div>
                                         <div style="font-size: 0.73rem; color: #64748b; margin-top: 0.2rem;" id="voiceStudioModelDesc">Expressive, welcoming natural tone suited for customer engagement.</div>
+                                    </div>
+
+                                    <div id="voiceStudioMultilingualInfo" style="margin-top: 0.6rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.5rem 0.65rem; font-size: 0.72rem; color: #166534; display: flex; align-items: flex-start; gap: 0.45rem;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        <span><strong>Adaptive Multilingual Persona:</strong> Voice persona dynamically adapts to matching gender and tone across Hindi, Marathi, Spanish, etc.</span>
                                     </div>
                                 </div>
                             </div>
@@ -7345,6 +7364,10 @@
                     <p style="font-size: 0.72rem; color: #64748b; margin-top: 0.4rem; margin-bottom: 0;" id="agentModalVoiceDesc">
                         Natural feminine tone suited for customer engagement and voice assistance.
                     </p>
+                    <div style="margin-top: 0.4rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.375rem; padding: 0.35rem 0.5rem; font-size: 0.7rem; color: #166534; display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <span>Multilingual Adaptation: Selected persona automatically maps to matching gender in Hindi, Marathi, Spanish, etc.</span>
+                    </div>
                     <audio id="agentModalAudioPlayer" style="display: none;"></audio>
                 </div>
 
@@ -12072,7 +12095,7 @@ Account ID: ${u.id || ''}`;
             matchingVoices.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.id;
-                opt.textContent = `${v.display_name} (${v.age_label || v.age_group})`;
+                opt.textContent = `${v.display_name} (${v.language_name || v.language || 'EN'}, ${v.age_label || v.age_group})`;
                 opt.dataset.desc = v.description;
                 opt.dataset.sample = v.sample_phrase || '';
                 opt.dataset.gender = v.gender;
@@ -12125,6 +12148,10 @@ Account ID: ${u.id || ''}`;
 
         async function auditionModalVoice() {
             const voiceModel = document.getElementById('agentModalVoiceModel')?.value || 'en-US-AvaNeural';
+            const catalog = window.voiceCatalogCache || [];
+            const voiceData = catalog.find(v => v.id === voiceModel) || {};
+            const gender = document.getElementById('agentModalVoiceGender')?.value || voiceData.gender || 'female';
+            const lang = voiceData.language || 'en';
             const btn = document.getElementById('agentModalAuditionBtn');
             const btnText = document.getElementById('agentModalAuditionBtnText');
             const audioEl = document.getElementById('agentModalAudioPlayer');
@@ -12139,7 +12166,9 @@ Account ID: ${u.id || ''}`;
                     body: JSON.stringify({
                         voice_model: voiceModel,
                         pitch: '+0Hz',
-                        rate: '+0%'
+                        rate: '+0%',
+                        gender: gender,
+                        language: lang
                     })
                 });
                 if (res.ok) {
@@ -12465,6 +12494,10 @@ Account ID: ${u.id || ''}`;
             populateVoiceStudioModels();
         }
 
+        function onVoiceStudioLanguageFilterChange(lang) {
+            populateVoiceStudioModels();
+        }
+
         function populateVoiceStudioModels(preferredModelId) {
             const catalog = window.voiceCatalogCache || [];
             const modelSelect = document.getElementById('voiceStudioModelSelect');
@@ -12473,17 +12506,23 @@ Account ID: ${u.id || ''}`;
             modelSelect.innerHTML = '';
             const gender = window.selectedStudioGender;
             const ageGroup = window.selectedStudioAge;
+            const langFilter = document.getElementById('voiceStudioLanguageFilter')?.value || 'all';
 
-            let filtered = catalog.filter(v => v.gender === gender);
-            if (filtered.length === 0) {
-                filtered = catalog.filter(v => v.age_group === ageGroup);
+            let pool = catalog;
+            if (langFilter && langFilter !== 'all') {
+                pool = pool.filter(v => (v.language || '').toLowerCase() === langFilter.toLowerCase());
             }
-            if (filtered.length === 0) filtered = catalog;
+
+            let filtered = pool.filter(v => v.gender === gender);
+            if (filtered.length === 0 && ageGroup) {
+                filtered = pool.filter(v => v.age_group === ageGroup);
+            }
+            if (filtered.length === 0) filtered = pool;
 
             filtered.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.id;
-                opt.textContent = `${v.display_name} — ${v.personality_label || v.personality}`;
+                opt.textContent = `${v.display_name} (${v.language_name || v.language || 'EN'}) — ${v.personality_label || v.personality}`;
                 if (preferredModelId && v.id === preferredModelId) {
                     opt.selected = true;
                 }
@@ -12506,9 +12545,9 @@ Account ID: ${u.id || ''}`;
             const descEl = document.getElementById('voiceStudioModelDesc');
             const testTextEl = document.getElementById('voiceStudioTestText');
 
-            if (titleEl) titleEl.innerText = `${voice.display_name} (${voice.language_name || voice.language})`;
+            if (titleEl) titleEl.innerText = `${voice.display_name} (${voice.language_name || voice.language || 'English'})`;
             if (descEl) descEl.innerText = `${voice.description} • Speaking Archetype: ${voice.personality_label || voice.personality}`;
-            if (testTextEl && !testTextEl.value.trim() && voice.sample_phrase) {
+            if (testTextEl && voice.sample_phrase) {
                 testTextEl.value = voice.sample_phrase;
             }
         }
@@ -12548,6 +12587,10 @@ Account ID: ${u.id || ''}`;
 
         async function previewVoiceStudioAudio() {
             const voiceModel = document.getElementById('voiceStudioModelSelect')?.value || 'en-US-AvaNeural';
+            const catalog = window.voiceCatalogCache || [];
+            const voiceObj = catalog.find(v => v.id === voiceModel) || {};
+            const lang = voiceObj.language || 'en';
+
             const pitchVal = parseInt(document.getElementById('voiceStudioPitchSlider')?.value || 0, 10);
             const rateInt = parseInt(document.getElementById('voiceStudioRateSlider')?.value || 100, 10);
             const pitchStr = `${pitchVal >= 0 ? '+' : ''}${pitchVal}Hz`;
@@ -12575,6 +12618,8 @@ Account ID: ${u.id || ''}`;
                         voice_model: voiceModel,
                         pitch: pitchStr,
                         rate: rateStr,
+                        gender: window.selectedStudioGender || 'female',
+                        language: lang,
                         text: testText
                     })
                 });

@@ -32,7 +32,13 @@ from app.config import (
 )
 from app.stt import STTClient
 from app.llm import LLMClient, clean_multilingual_speech
-from app.tts import TTSClient, VOICE_CATALOG, VOICE_DEMOGRAPHICS
+from app.tts import (
+    TTSClient,
+    VOICE_CATALOG,
+    VOICE_DEMOGRAPHICS,
+    LANGUAGE_DEMOGRAPHIC_VOICES,
+    resolve_voice_for_language,
+)
 from app.twilio_handler import TwilioService, TwilioMediaStreamSession
 from app.tunnel import TunnelManager
 from app.pipecat_agent import PipecatNeuralVAD, VADState
@@ -2962,6 +2968,7 @@ async def get_voice_catalog():
     return JSONResponse({
         "catalog": VOICE_CATALOG,
         "demographics": VOICE_DEMOGRAPHICS,
+        "language_demographics": LANGUAGE_DEMOGRAPHIC_VOICES,
     })
 
 
@@ -2980,6 +2987,7 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
     pitch = payload.get("pitch", "+0Hz")
     rate = payload.get("rate", "+0%")
     language = payload.get("language") or "en"
+    gender = payload.get("gender")
 
     if not text:
         # Pick sample phrase from catalog if available, or default
@@ -3003,6 +3011,7 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
             voice_model=voice_model,
             pitch=pitch,
             rate=rate,
+            gender=gender,
         )
         return JSONResponse({
             "success": True,
@@ -3011,6 +3020,8 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
             "voice_model": voice_model,
             "pitch": pitch,
             "rate": rate,
+            "gender": gender,
+            "language": language,
             "text": text,
         })
     except Exception as e:
@@ -3385,18 +3396,21 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
     voice_model = payload.get("voice_model")
     pitch = payload.get("pitch")
     rate = payload.get("rate")
+    gender = payload.get("gender")
     agent_id = payload.get("agent_id")
 
     if not text:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
-    if not voice_model and agent_id:
+    if agent_id:
         agent = agent_manager.get_agent(agent_id)
         if agent and agent.get("voice_config"):
             vc = agent["voice_config"]
-            voice_model = vc.get("voice_id")
+            if not voice_model:
+                voice_model = vc.get("voice_id")
             pitch = pitch or vc.get("pitch")
             rate = rate or vc.get("rate")
+            gender = gender or vc.get("gender")
             language = language or vc.get("language", "en")
 
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}.wav"
@@ -3410,6 +3424,7 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
                 voice_model=voice_model,
                 pitch=pitch,
                 rate=rate,
+                gender=gender,
             )
             return JSONResponse({
                 "success": True,
@@ -3418,6 +3433,7 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
                 "voice_model": voice_model,
                 "pitch": pitch,
                 "rate": rate,
+                "gender": gender,
             })
         return JSONResponse({"success": False, "error": "TTS engine not initialized"}, status_code=503)
     except Exception as e:
@@ -3762,11 +3778,13 @@ async def chat_endpoint(
                 agent_voice_id = None
                 agent_pitch = None
                 agent_rate = None
+                agent_gender = None
                 if active_agent and isinstance(active_agent, dict):
                     vc = active_agent.get("voice_config") or {}
                     agent_voice_id = vc.get("voice_id")
                     agent_pitch = vc.get("pitch")
                     agent_rate = vc.get("rate")
+                    agent_gender = vc.get("gender")
 
                 await asyncio.to_thread(
                     tts.synthesize,
@@ -3776,6 +3794,7 @@ async def chat_endpoint(
                     voice_model=agent_voice_id,
                     pitch=agent_pitch,
                     rate=agent_rate,
+                    gender=agent_gender,
                 )
         except Exception as e:
             logger.error("Audio route TTS error: %s", e)
@@ -4443,6 +4462,7 @@ async def twiml_incoming(request: Request):
                 voice_model=tg_vc.get("voice_id"),
                 pitch=tg_vc.get("pitch"),
                 rate=tg_vc.get("rate"),
+                gender=tg_vc.get("gender"),
             )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'
@@ -4633,6 +4653,7 @@ async def twiml_respond(request: Request):
                 voice_model=tg_vc.get("voice_id"),
                 pitch=tg_vc.get("pitch"),
                 rate=tg_vc.get("rate"),
+                gender=tg_vc.get("gender"),
             )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'

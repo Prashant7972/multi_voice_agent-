@@ -218,6 +218,198 @@ VOICE_CATALOG: List[Dict[str, Any]] = [
         "rate_default": "+0%",
         "sample_phrase": "नमस्कार. मी मनोहर. आपल्या सेवेसाठी मी सदैव तत्पर आहे.",
     },
+    {
+        "id": "es-ES-ElviraNeural",
+        "name": "Elvira",
+        "display_name": "Elvira (Spanish - Warm & Clear)",
+        "language": "es",
+        "language_name": "Spanish (Spain)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "Voz femenina cálida, expresiva y profesional, ideal para atención y soporte.",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "¡Hola! Soy Elvira, tu asistente de voz. ¿En qué puedo ayudarte hoy?",
+    },
+    {
+        "id": "es-ES-AlvaroNeural",
+        "name": "Alvaro",
+        "display_name": "Alvaro (Spanish - Executive & Confident)",
+        "language": "es",
+        "language_name": "Spanish (Spain)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "Voz masculina clara, equilibrada y ejecutiva para consultoría y negocios.",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "Buenos días. Soy Alvaro. Repasemos los objetivos de su organización.",
+    },
+    {
+        "id": "fr-FR-DeniseNeural",
+        "name": "Denise",
+        "display_name": "Denise (French - Elegant & Engaging)",
+        "language": "fr",
+        "language_name": "French (France)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "Voix féminine naturelle et élégante pour l'engagement client.",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "Bonjour ! Je suis Denise, votre assistante vocale. Comment puis-je vous aider ?",
+    },
+    {
+        "id": "fr-FR-HenriNeural",
+        "name": "Henri",
+        "display_name": "Henri (French - Articulate & Professional)",
+        "language": "fr",
+        "language_name": "French (France)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "Voix masculine articulée, posée et professionnelle.",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "Bonjour. Je suis Henri. Prêt à optimiser vos opérations professionnelles.",
+    },
+    {
+        "id": "de-DE-KatjaNeural",
+        "name": "Katja",
+        "display_name": "Katja (German - Friendly & Clear)",
+        "language": "de",
+        "language_name": "German (Germany)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "Freundliche, klare und ausdrucksstarke deutsche Stimme.",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "Hallo! Ich bin Katja, Ihre KI-Assistentin. Wie kann ich heute behilflich sein?",
+    },
+    {
+        "id": "de-DE-KillianNeural",
+        "name": "Killian",
+        "display_name": "Killian (German - Authoritative & Calm)",
+        "language": "de",
+        "language_name": "German (Germany)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "Souveräne und verlässliche männliche Stimme für Unternehmen.",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "Guten Tag. Ich bin Killian. Lassen Sie uns die wichtigsten Ziele analysieren.",
+    },
+    {
+        "id": "ja-JP-NanamiNeural",
+        "name": "Nanami",
+        "display_name": "Nanami (Japanese - Polite & Warm)",
+        "language": "ja",
+        "language_name": "Japanese (Japan)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "親切で聞き取りやすい日本語の音声アシスタントです。",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "こんにちは！私はナナミです。何かお手伝いできることはありますか？",
+    },
+    {
+        "id": "ja-JP-KeitaNeural",
+        "name": "Keita",
+        "display_name": "Keita (Japanese - Confident & Calm)",
+        "language": "ja",
+        "language_name": "Japanese (Japan)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "落ち着きがあり信頼感のあるビジネス向け男性音声です。",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "こんにちは。ケイタです。本日の業務効率化をサポートします。",
+    },
+    {
+        "id": "ta-IN-PallaviNeural",
+        "name": "Pallavi",
+        "display_name": "Pallavi (Tamil - Expressive & Polite)",
+        "language": "ta",
+        "language_name": "Tamil (India)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "தெளிவான மற்றும் மென்மையான தமிழ் குரல்.",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "வணக்கம்! நான் பல்லவி, உங்கள் AI குரல் உதவியாளர். உங்களுக்கு எப்படி உதவ முடியும்?",
+    },
+    {
+        "id": "ta-IN-ValluvarNeural",
+        "name": "Valluvar",
+        "display_name": "Valluvar (Tamil - Dignified & Resonant)",
+        "language": "ta",
+        "language_name": "Tamil (India)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "அமைதியான மற்றும் அதிகாரப்பூர்வ தமிழ் ஆண் குரல்.",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "வணக்கம். நான் வள்ளுவர். உங்கள் பணிகளுக்கு உதவ தயாராக உள்ளேன்.",
+    },
+    {
+        "id": "te-IN-ShrutiNeural",
+        "name": "Shruti",
+        "display_name": "Shruti (Telugu - Melodious & Friendly)",
+        "language": "te",
+        "language_name": "Telugu (India)",
+        "gender": "female",
+        "age_group": "young_adult",
+        "age_label": "Young Adult (18-28)",
+        "personality": "friendly_warm",
+        "personality_label": "Friendly & Warm",
+        "description": "మధురమైన మరియు స్పష్టమైన తెలుగు స్వరము.",
+        "pitch_default": "+0Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "నమస్కారం! నేను శృతి, మీ ఏఐ వాయిస్ అసిస్టెంట్. ఈరోజు మీకు ఎలా సహాయపడగలను?",
+    },
+    {
+        "id": "te-IN-MohanNeural",
+        "name": "Mohan",
+        "display_name": "Mohan (Telugu - Dignified & Crisp)",
+        "language": "te",
+        "language_name": "Telugu (India)",
+        "gender": "male",
+        "age_group": "mature_adult",
+        "age_label": "Mature Adult (30-55)",
+        "personality": "professional_crisp",
+        "personality_label": "Professional & Crisp",
+        "description": "గౌరవప్రదమైన మరియు స్పష్టమైన తెలుగు పురుష స్వరం.",
+        "pitch_default": "-5Hz",
+        "rate_default": "+0%",
+        "sample_phrase": "నమస్కారం. నేను మోహన్. మీ సహాయార్థం ఇక్కడ ఉన్నాను.",
+    },
 ]
 
 
@@ -308,6 +500,123 @@ LANGUAGE_VOICE_MAP: Dict[str, str] = {
     "th": "th-TH-NiwatNeural",
 }
 
+LANGUAGE_DEMOGRAPHIC_VOICES: Dict[str, Dict[str, str]] = {
+    "en": {
+        "female": "en-US-AvaNeural",
+        "male": "en-US-AndrewNeural",
+        "child": "en-US-AnaNeural",
+        "aged": "en-US-BrianNeural",
+    },
+    "hi": {
+        "female": "hi-IN-SwaraNeural",
+        "male": "hi-IN-MadhurNeural",
+    },
+    "mr": {
+        "female": "mr-IN-AarohiNeural",
+        "male": "mr-IN-ManoharNeural",
+    },
+    "es": {
+        "female": "es-ES-ElviraNeural",
+        "male": "es-ES-AlvaroNeural",
+    },
+    "fr": {
+        "female": "fr-FR-DeniseNeural",
+        "male": "fr-FR-HenriNeural",
+    },
+    "de": {
+        "female": "de-DE-KatjaNeural",
+        "male": "de-DE-KillianNeural",
+    },
+    "it": {
+        "female": "it-IT-ElsaNeural",
+        "male": "it-IT-DiegoNeural",
+    },
+    "ja": {
+        "female": "ja-JP-NanamiNeural",
+        "male": "ja-JP-KeitaNeural",
+    },
+    "zh": {
+        "female": "zh-CN-XiaoxiaoNeural",
+        "male": "zh-CN-YunjianNeural",
+    },
+    "ru": {
+        "female": "ru-RU-SvetlanaNeural",
+        "male": "ru-RU-DmitryNeural",
+    },
+    "pt": {
+        "female": "pt-BR-FranciscaNeural",
+        "male": "pt-BR-AntonioNeural",
+    },
+    "ar": {
+        "female": "ar-SA-ZariyahNeural",
+        "male": "ar-SA-HamedNeural",
+    },
+    "ta": {
+        "female": "ta-IN-PallaviNeural",
+        "male": "ta-IN-ValluvarNeural",
+    },
+    "te": {
+        "female": "te-IN-ShrutiNeural",
+        "male": "te-IN-MohanNeural",
+    },
+    "bn": {
+        "female": "bn-IN-TanishaaNeural",
+        "male": "bn-IN-BashkarNeural",
+    },
+    "gu": {
+        "female": "gu-IN-DhwaniNeural",
+        "male": "gu-IN-NiranjanNeural",
+    },
+    "kn": {
+        "female": "kn-IN-SapnaNeural",
+        "male": "kn-IN-GaganNeural",
+    },
+    "ml": {
+        "female": "ml-IN-SobhanaNeural",
+        "male": "ml-IN-MidhunNeural",
+    },
+    "pa": {
+        "female": "pa-IN-RaaviNeural",
+        "male": "pa-IN-OjasNeural",
+    },
+    "ur": {
+        "female": "ur-PK-UzmaNeural",
+        "male": "ur-PK-AsadNeural",
+    },
+    "ko": {
+        "female": "ko-KR-SunHiNeural",
+        "male": "ko-KR-InJoonNeural",
+    },
+    "nl": {
+        "female": "nl-NL-FennaNeural",
+        "male": "nl-NL-MaartenNeural",
+    },
+    "tr": {
+        "female": "tr-TR-EmelNeural",
+        "male": "tr-TR-AhmetNeural",
+    },
+    "pl": {
+        "female": "pl-PL-ZofiaNeural",
+        "male": "pl-PL-MarekNeural",
+    },
+    "sv": {
+        "female": "sv-SE-SofieNeural",
+        "male": "sv-SE-MattiasNeural",
+    },
+    "id": {
+        "female": "id-ID-GadisNeural",
+        "male": "id-ID-ArdiNeural",
+    },
+    "vi": {
+        "female": "vi-VN-HoaiMyNeural",
+        "male": "vi-VN-NamMinhNeural",
+    },
+    "th": {
+        "female": "th-TH-PremwadeeNeural",
+        "male": "th-TH-NiwatNeural",
+    },
+}
+
 LANGUAGE_NAME_ALIASES: Dict[str, str] = {
     "english": "en",
     "hindi": "hi",
@@ -353,6 +662,77 @@ def normalize_language_code(lang: Optional[str]) -> str:
     return clean
 
 
+def get_voice_language(voice_id: Optional[str]) -> Optional[str]:
+    """Extracts 2-letter language code from voice_id (e.g. 'en-US-AvaNeural' -> 'en', 'hi-IN-SwaraNeural' -> 'hi')."""
+    if not voice_id:
+        return None
+    parts = voice_id.split("-")
+    if parts:
+        return parts[0].lower()
+    return None
+
+
+def resolve_voice_for_language(
+    target_language: str,
+    preferred_voice_id: Optional[str] = None,
+    gender: Optional[str] = None,
+    age_group: Optional[str] = None,
+    personality: Optional[str] = None,
+) -> str:
+    """
+    Intelligently resolves the optimal neural voice for the target language while
+    faithfully preserving the agent's demographic persona (gender, age, personality).
+
+    1. If preferred_voice_id directly matches target_language, it is preserved.
+    2. If preferred_voice_id is for a different language (e.g. 'en-US-AvaNeural' during Hindi speech),
+       the persona's gender (female/male/child/senior) is preserved and mapped to the target language's
+       corresponding demographic voice.
+    3. Preserves backwards-compatibility with LANGUAGE_VOICE_MAP defaults if no persona is specified.
+    """
+    lang = normalize_language_code(target_language)
+
+    # Infer gender from preferred_voice_id if gender not explicitly passed
+    resolved_gender = (gender or "").strip().lower()
+    if not resolved_gender and preferred_voice_id:
+        for v in VOICE_CATALOG:
+            if v["id"] == preferred_voice_id:
+                resolved_gender = (v.get("gender") or "").lower()
+                break
+
+    # If preferred_voice_id is compatible with the target language:
+    if preferred_voice_id:
+        v_lang = get_voice_language(preferred_voice_id)
+        if v_lang == lang:
+            return preferred_voice_id
+        # Microsoft Multilingual voices can speak multiple Latin-based languages
+        if "Multilingual" in preferred_voice_id and lang in ("en", "es", "fr", "de", "it", "pt"):
+            return preferred_voice_id
+
+    # If target language has demographic options for gender:
+    if lang in LANGUAGE_DEMOGRAPHIC_VOICES:
+        demo_map = LANGUAGE_DEMOGRAPHIC_VOICES[lang]
+        if resolved_gender:
+            # Direct match (female, male, child, aged)
+            if resolved_gender in demo_map:
+                return demo_map[resolved_gender]
+            # Normalize child/aged
+            if resolved_gender == "child" and "female" in demo_map:
+                return demo_map["female"]
+            if resolved_gender == "aged" and "male" in demo_map:
+                return demo_map["male"]
+
+        # If no gender specified, use LANGUAGE_VOICE_MAP default for backwards compatibility
+        if lang in LANGUAGE_VOICE_MAP:
+            return LANGUAGE_VOICE_MAP[lang]
+        if "female" in demo_map:
+            return demo_map["female"]
+        if "male" in demo_map:
+            return demo_map["male"]
+
+    # Fallback to general voice map or default
+    return LANGUAGE_VOICE_MAP.get(lang, "en-US-AvaNeural")
+
+
 def _run_async(coro):
     """Executes an async coroutine synchronously, safe inside or outside running event loops."""
     try:
@@ -394,10 +774,9 @@ class TTSClient:
         return sorted(list(LANGUAGE_VOICE_MAP.keys()))
 
     @classmethod
-    def get_voice_for_language(cls, lang: str) -> str:
-        """Returns the mapped neural voice name for the given language."""
-        code = normalize_language_code(lang)
-        return LANGUAGE_VOICE_MAP.get(code, "en-US-AvaNeural")
+    def get_voice_for_language(cls, lang: str, gender: Optional[str] = None) -> str:
+        """Returns the mapped neural voice name for the given language, optionally matching demographic gender."""
+        return resolve_voice_for_language(lang, gender=gender)
 
     def _synthesize_piper(self, text: str, output_path: Path) -> Path:
         """Fallback synthesis using local Piper neural voice."""
@@ -422,14 +801,16 @@ class TTSClient:
         voice_model: Optional[str] = None,
         pitch: Optional[Union[str, int, float]] = None,
         rate: Optional[Union[str, int, float]] = None,
+        gender: Optional[str] = None,
     ) -> Path:
         """
         Synthesize text to a WAV audio file.
-        Supports explicit voice_model (e.g. from VOICE_CATALOG or edge_tts) with customized
+        Supports explicit voice_model and demographic persona with customized
         pitch and speech rate.
-        If voice_model is not explicitly set:
-          - For English ('en'), utilizes local Piper neural voice for lowest offline latency.
-          - For non-English languages, utilizes mapped Edge-TTS neural multilingual voices.
+        If language is English ('en') and no voice_model is requested:
+          - Utilizes local Piper neural voice for lowest offline latency.
+        For non-English languages or specific voice personas:
+          - Automatically resolves the matching demographic voice in the target language.
         Falls back seamlessly to local Piper if network is unreachable or Edge-TTS is unavailable.
         """
         if not text or not text.strip():
@@ -443,7 +824,15 @@ class TTSClient:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         lang_code = normalize_language_code(language)
-        selected_voice = voice_model or (LANGUAGE_VOICE_MAP.get(lang_code) if lang_code != "en" else None)
+
+        # Resolve voice model according to target language and persona
+        selected_voice = None
+        if voice_model or lang_code != "en":
+            selected_voice = resolve_voice_for_language(
+                target_language=lang_code,
+                preferred_voice_id=voice_model,
+                gender=gender,
+            )
 
         pitch_str = format_pitch(pitch)
         rate_str = format_rate(rate)
