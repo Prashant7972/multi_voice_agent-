@@ -5534,6 +5534,18 @@
 
             <!-- Sidebar Bottom: Settings on top of Logged Out (Clean, no emails) -->
             <div class="sidebar-footer">
+                <!-- Swagger API Documentation Link -->
+                <a href="/docs" target="_blank" rel="noopener noreferrer" class="sidebar-nav-item" id="sidebarNavSwagger" title="Open Interactive Swagger API Explorer & Test Endpoints" style="margin-top: 0.25rem; margin-bottom: 0.25rem; width: 100%; display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.75rem; text-decoration: none; color: inherit; border-radius: 0.5rem; transition: background 0.15s ease;">
+                    <span class="sidebar-item-icon" style="flex-shrink: 0; display: flex; align-items: center; color: #10b981;">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" style="font-size: 0.85rem; font-weight: 600; flex: 1; text-align: left; color: #1e293b;">Swagger API</span>
+                    <span class="sidebar-item-pill" style="background: #ecfdf5; color: #059669; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">TEST</span>
+                </a>
+
                 <!-- Settings Nav Item (Placed directly on top of Logged Out button) -->
                 <button type="button" class="sidebar-nav-item" id="sidebarNavSettings" onclick="handleSidebarNav('settings')" title="Organization Settings & Management" style="margin-top: 0.25rem; margin-bottom: 0.25rem; width: 100%; display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.75rem;">
                     <span class="sidebar-item-icon" style="flex-shrink: 0; display: flex; align-items: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
@@ -11998,7 +12010,10 @@ Account ID: ${u.id || ''}`;
             return result;
         }
 
+        let isStartingVoiceAssistant = false;
+
         async function toggleVoiceAssistant() {
+            if (isStartingVoiceAssistant) return;
             if (!isRunning) {
                 await startAssistant();
             } else {
@@ -12007,6 +12022,14 @@ Account ID: ${u.id || ''}`;
         }
 
         async function startAssistant() {
+            isStartingVoiceAssistant = true;
+            if (startBtn) {
+                startBtn.innerHTML = '<span id="btnIcon">🔄</span> <span id="btnText">Connecting Mic...</span>';
+                startBtn.style.opacity = '0.85';
+            }
+            statusText.innerText = "Requesting Microphone...";
+            statusSub.innerText = "Connecting audio input hardware... please grant permission if prompted.";
+
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error("Your browser or connection does not support microphone capture (requires localhost or HTTPS).");
@@ -12094,8 +12117,9 @@ Account ID: ${u.id || ''}`;
                 };
 
                 if (startBtn) {
+                    startBtn.style.opacity = '1';
                     startBtn.style.display = 'inline-flex';
-                    startBtn.innerHTML = '<span id="btnIcon">⏹️</span> <span id="btnText">Stop Hands-Free</span>';
+                    startBtn.innerHTML = '<span id="btnIcon">⏹️</span> <span id="btnText">Stop Session</span>';
                     startBtn.style.background = 'rgba(239, 68, 68, 0.15)';
                     startBtn.style.color = '#ef4444';
                     startBtn.style.border = '1px solid rgba(239, 68, 68, 0.3)';
@@ -12113,15 +12137,25 @@ Account ID: ${u.id || ''}`;
                 isRunning = false;
                 orbCore.className = 'orb-core';
                 statusText.innerText = "Microphone Access Required";
+                if (startBtn) {
+                    startBtn.style.opacity = '1';
+                    startBtn.innerHTML = '<span id="btnIcon">🎙️</span> <span id="btnText">Start Session</span>';
+                    startBtn.style.background = '';
+                    startBtn.style.color = '';
+                    startBtn.style.border = '';
+                    startBtn.style.boxShadow = '';
+                }
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Permission Blocked:</span> Click the <strong>camera/mic icon</strong> in the Chrome address bar, select <strong>"Allow"</strong>, and refresh the page.';
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Permission Blocked:</span> Click the <strong>microphone icon</strong> in the browser address bar, select <strong>"Allow"</strong>, and refresh the page.';
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                     statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">No Mic Found:</span> Please plug in or enable an audio input device in system settings.';
-                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Microphone Busy:</span> Another app (Zoom, Meet, ALSA) is holding exclusive access to your mic.';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError' || err.name === 'AbortError') {
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Microphone Busy:</span> Another application (like Google Meet in your browser tabs) has exclusive lock on your Bluetooth mic (Mivi DuoPods). Mute Meet or switch to your laptop\'s built-in mic in the address bar.';
                 } else {
                     statusSub.innerText = "Microphone error: " + (err.message || err.name);
                 }
+            } finally {
+                isStartingVoiceAssistant = false;
             }
         }
 
@@ -12130,11 +12164,13 @@ Account ID: ${u.id || ''}`;
             isSpeaking = false;
             isAgentSpeaking = false;
             isProcessingTurn = false;
+            isStartingVoiceAssistant = false;
             silenceStartTime = null;
 
             if (startBtn) {
+                startBtn.style.opacity = '1';
                 startBtn.style.display = 'inline-flex';
-                startBtn.innerHTML = '<span id="btnIcon">🎙️</span> <span id="btnText">Start Hands-Free</span>';
+                startBtn.innerHTML = '<span id="btnIcon">🎙️</span> <span id="btnText">Start Session</span>';
                 startBtn.style.background = '';
                 startBtn.style.color = '';
                 startBtn.style.border = '';
@@ -12142,7 +12178,7 @@ Account ID: ${u.id || ''}`;
             }
 
             statusText.innerText = "Ready to Talk";
-            statusSub.innerText = "Click the orb or Start Hands-Free to begin.";
+            statusSub.innerText = "Click the orb or Start Session to begin.";
 
             if (currentAudio) {
                 currentAudio.pause();

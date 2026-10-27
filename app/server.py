@@ -61,9 +61,56 @@ from app.security import (
     mask_phone_number,
     mask_email,
 )
-from app.maintenance import cleanup_old_audio_files
+from fastapi.openapi.utils import get_openapi
 
-app = FastAPI(title="Local Voice Agent")
+app = FastAPI(
+    title="Apex Voice AI — Swagger API Explorer",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    swagger_ui_parameters={"persistAuthorization": True, "displayRequestDuration": True},
+)
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Apex Voice AI — Interactive Swagger API",
+        version="2.0.0",
+        description=(
+            "### 🎙️ Apex Voice AI Platform REST & Telephony API\n\n"
+            "Interactive Swagger documentation and sandbox for testing all 92+ operational endpoints.\n\n"
+            "#### 🔑 How to Authorize & Test Endpoints:\n"
+            "1. Click the green **Authorize 🔓** button below.\n"
+            "2. In **BearerAuth**, paste your JWT Access Token from `/api/auth/login` (or copy from the Web UI `localStorage`).\n"
+            "3. Alternatively, in **DemoModeAuth**, enter `true` to authenticate via local development demo mode.\n"
+            "4. Choose any endpoint, click **Try it out**, fill parameters, and hit **Execute**."
+        ),
+        routes=app.routes,
+    )
+    openapi_schema["components"] = openapi_schema.get("components", {})
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "JWT Bearer access token (Bearer <token>)",
+        },
+        "DemoModeAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "x-demo-mode",
+            "description": "Local demo mode header (value: 'true')",
+        },
+    }
+    openapi_schema["security"] = [{"BearerAuth": []}, {"DemoModeAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 # Suppress harmless browser HTTPS/TLS upgrade probe warnings on plain HTTP socket
 class SuppressInvalidHTTPRequestFilter(logging.Filter):
@@ -172,6 +219,9 @@ async def jwt_auth_middleware(request: Request, call_next):
     # Public paths that do not require JWT Bearer authentication
     is_public = (
         path == "/"
+        or path == "/docs"
+        or path == "/redoc"
+        or path == "/openapi.json"
         or path == "/healthz"
         or path == "/ready"
         or path == "/metrics"
