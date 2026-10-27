@@ -4335,7 +4335,7 @@
             height: 100vh;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(8px);
-            z-index: 100;
+            z-index: 5000;
             display: none;
             align-items: center;
             justify-content: center;
@@ -5793,7 +5793,7 @@
             <!-- Organization Context Banner inside Agents Hub (Hidden to prevent duplicate with topbar) -->
             <div class="org-context-pill-banner" style="display: none !important;">
                 <div class="org-context-left">
-                    <span class="org-context-icon">🏢</span>
+                    <span class="org-context-icon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/><path d="M14 9h1"/><path d="M14 13h1"/><path d="M14 17h1"/></svg></span>
                     <span>Active Organization: <strong id="agentsHubOrgName">Apex AI Innovations</strong></span>
                     <span class="org-context-tag" id="agentsHubOrgIndustry" style="display: none;"></span>
                 </div>
@@ -5905,7 +5905,7 @@
                         </button>
                     </div>
                     <div class="search-box-wrapper">
-                        <span class="search-icon">🔍</span>
+                        <span class="search-icon" style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
                         <input type="text" id="agentSearchInput" class="search-input" placeholder="Search Agents..." oninput="filterAgents(this.value)">
                     </div>
                 </div>
@@ -6281,23 +6281,23 @@
                             <!-- 4 Selectable Gender Cards: Female, Male, Child, Aged -->
                             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem;" id="voiceGenderCardsContainer">
                                 <div class="voice-persona-card active" data-gender="female" onclick="selectVoiceStudioGender('female')" style="cursor: pointer; border: 2px solid #2563eb; background: #eff6ff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👩</div>
-                                    <div style="font-weight: 700; font-size: 0.82rem; color: #1e3a8a;">Female</div>
+                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #e0e7ff; color: #4338ca;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg></div></div>
+                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #1e3a8a;">Female</div>
                                     <div style="font-size: 0.68rem; color: #3b82f6; margin-top: 0.15rem;">Warm & Melodic</div>
                                 </div>
                                 <div class="voice-persona-card" data-gender="male" onclick="selectVoiceStudioGender('male')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👨</div>
-                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Male</div>
+                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #475569;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div></div>
+                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Male</div>
                                     <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Resonant Timbre</div>
                                 </div>
                                 <div class="voice-persona-card" data-gender="child" onclick="selectVoiceStudioGender('child')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">🧒</div>
-                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Child</div>
+                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M7 21v-2a5 5 0 0 1 10 0v2"/></svg></div></div>
+                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Child</div>
                                     <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Youthful (8–14 yrs)</div>
                                 </div>
                                 <div class="voice-persona-card" data-gender="aged" onclick="selectVoiceStudioGender('aged')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">👴</div>
-                                    <div style="font-weight: 700; font-size: 0.82rem; color: #334155;">Aged / Senior</div>
+                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ede9fe; color: #7c3aed;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><circle cx="12" cy="7" r="1"/></svg></div></div>
+                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Aged / Senior</div>
                                     <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Distinguished (60+)</div>
                                 </div>
                             </div>
@@ -6319,19 +6319,19 @@
                                     <div style="display: flex; flex-direction: column; gap: 0.4rem;" id="voiceAgeOptionsContainer">
                                         <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
                                             <input type="radio" name="voiceStudioAge" value="child" onchange="onVoiceStudioAgeChange('child')">
-                                            <span>🎈 <strong>Child</strong> (8–14 yrs)</span>
+                                            <span><strong>Child</strong> (8–14 yrs)</span>
                                         </label>
                                         <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
                                             <input type="radio" name="voiceStudioAge" value="young_adult" checked onchange="onVoiceStudioAgeChange('young_adult')">
-                                            <span>⚡ <strong>Young Adult</strong> (18–28 yrs)</span>
+                                            <span><strong>Young Adult</strong> (18–28 yrs)</span>
                                         </label>
                                         <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
                                             <input type="radio" name="voiceStudioAge" value="mature_adult" onchange="onVoiceStudioAgeChange('mature_adult')">
-                                            <span>💼 <strong>Mature Adult</strong> (30–55 yrs)</span>
+                                            <span><strong>Mature Adult</strong> (30–55 yrs)</span>
                                         </label>
                                         <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
                                             <input type="radio" name="voiceStudioAge" value="senior" onchange="onVoiceStudioAgeChange('senior')">
-                                            <span>👓 <strong>Senior / Aged</strong> (60+ yrs)</span>
+                                            <span><strong>Senior / Aged</strong> (60+ yrs)</span>
                                         </label>
                                     </div>
                                 </div>
@@ -6340,11 +6340,11 @@
                                 <div>
                                     <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Speaking Personality Archetype</label>
                                     <select id="voiceStudioPersonalitySelect" class="form-select" onchange="onVoiceStudioPersonalityChange(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
-                                        <option value="friendly_warm">🤝 Friendly & Warm (Approachable, Welcoming)</option>
-                                        <option value="professional_crisp">💼 Professional & Crisp (Executive, Articulate)</option>
-                                        <option value="empathetic_caregiver">❤️ Empathetic Caregiver (Gentle, Supportive)</option>
-                                        <option value="energetic_sales">🔥 Energetic Sales (Dynamic, Persuasive)</option>
-                                        <option value="calm_advisor">🧘 Calm Advisor (Distinguished, Reassuring)</option>
+                                        <option value="friendly_warm">Friendly & Warm (Approachable, Welcoming)</option>
+                                        <option value="professional_crisp">Professional & Crisp (Executive, Articulate)</option>
+                                        <option value="empathetic_caregiver">Empathetic Caregiver (Gentle, Supportive)</option>
+                                        <option value="energetic_sales">Energetic Sales (Dynamic, Persuasive)</option>
+                                        <option value="calm_advisor">Calm Advisor (Distinguished, Reassuring)</option>
                                     </select>
 
                                     <!-- Step 3: Neural Voice Engine Model Selection -->
@@ -7027,27 +7027,27 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                         <select id="voiceLanguageSelect" class="lang-select-dropdown" style="background: rgba(30, 41, 59, 0.95); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.45rem 0.75rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; outline: none;" onchange="saveVoiceLanguageChoice(this.value)" title="Choose the language you are speaking in, or keep Auto-Detect">
-                            <option value="auto">🌐 Auto-Detect Language</option>
-                            <option value="mr">🇮🇳 Marathi (मराठी)</option>
-                            <option value="hi">🇮🇳 Hindi (हिंदी)</option>
-                            <option value="en">🇬🇧 English</option>
-                            <option value="es">🇪🇸 Spanish (Español)</option>
-                            <option value="fr">🇫🇷 French (Français)</option>
-                            <option value="de">🇩🇪 German (Deutsch)</option>
-                            <option value="it">🇮🇹 Italian (Italiano)</option>
-                            <option value="ja">🇯🇵 Japanese (日本語)</option>
-                            <option value="zh">🇨🇳 Chinese (中文)</option>
-                            <option value="ru">🇷🇺 Russian (Русский)</option>
-                            <option value="pt">🇧🇷 Portuguese (Português)</option>
-                            <option value="ar">🇸🇦 Arabic (العربية)</option>
-                            <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
-                            <option value="te">🇮🇳 Telugu (తెలుగు)</option>
-                            <option value="bn">🇮🇳 Bengali (বাংলা)</option>
-                            <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
-                            <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
-                            <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
-                            <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
-                            <option value="ur">🇵🇰 Urdu (اردو)</option>
+                            <option value="auto">Auto-Detect Language</option>
+                            <option value="mr">Marathi (मराठी)</option>
+                            <option value="hi">Hindi (हिंदी)</option>
+                            <option value="en">English</option>
+                            <option value="es">Spanish (Español)</option>
+                            <option value="fr">French (Français)</option>
+                            <option value="de">German (Deutsch)</option>
+                            <option value="it">Italian (Italiano)</option>
+                            <option value="ja">Japanese (日本語)</option>
+                            <option value="zh">Chinese (中文)</option>
+                            <option value="ru">Russian (Русский)</option>
+                            <option value="pt">Portuguese (Português)</option>
+                            <option value="ar">Arabic (العربية)</option>
+                            <option value="ta">Tamil (தமிழ்)</option>
+                            <option value="te">Telugu (తెలుగు)</option>
+                            <option value="bn">Bengali (বাংলা)</option>
+                            <option value="gu">Gujarati (ગુજરાતી)</option>
+                            <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                            <option value="ml">Malayalam (മലയാളം)</option>
+                            <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                            <option value="ur">Urdu (اردو)</option>
                         </select>
                         <button class="btn-switch-agent" onclick="switchTab('agents')">
                             Switch Agent
@@ -7302,26 +7302,27 @@
                         <label class="checkbox-label">
                             <input type="checkbox" id="capLiveVoice" checked> Live Voice Interaction
                         </label>
+                    </div>
                 </div>
 
                 <!-- Speaking Voice Persona Selector -->
                 <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.65rem; padding: 0.85rem; margin-top: 0.5rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
                         <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; color: #0f172a; font-weight: 700;">
-                            <span>🎙️</span> Speaking Voice & Demographic Persona
+                            <span style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span> Speaking Voice & Demographic Persona
                         </label>
                         <button type="button" class="btn-secondary" id="agentModalAuditionBtn" onclick="auditionModalVoice()" style="font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 9999px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
-                            <span>▶</span> <span id="agentModalAuditionBtnText">Test Sample</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span id="agentModalAuditionBtnText">Test Sample</span>
                         </button>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-bottom: 0.5rem;">
                         <div>
                             <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Gender / Persona</label>
                             <select id="agentModalVoiceGender" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalGenderChange(this.value)">
-                                <option value="female">👩 Female</option>
-                                <option value="male">👨 Male</option>
-                                <option value="child">🧒 Child (8–14 yrs)</option>
-                                <option value="aged">👴 Senior / Aged (60+ yrs)</option>
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="child">Child (8–14 yrs)</option>
+                                <option value="aged">Senior / Aged (60+ yrs)</option>
                             </select>
                         </div>
                         <div>
@@ -8532,8 +8533,8 @@
                     <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #ffffff; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                         <div class="drawer-content-centered" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 38px; height: 38px; border-radius: 0.65rem; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(37,99,235,0.12);">
-                                    💬
+                                <div style="width: 38px; height: 38px; border-radius: 0.65rem; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(37,99,235,0.12);">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 0.15rem;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -8542,7 +8543,7 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.45rem;">
                                         <span id="drawerConnectionId" style="font-size: 0.75rem; font-family: monospace; color: #2563eb; font-weight: 700;">conv-apex-101</span>
-                                        <button type="button" onclick="copyDrawerConnectionId()" title="Copy Connection ID" style="background: none; border: none; padding: 0; cursor: pointer; color: #94a3b8; font-size: 0.75rem; display: inline-flex; align-items: center;">📋</button>
+                                        <button type="button" onclick="copyDrawerConnectionId()" title="Copy Connection ID" style="background: none; border: none; padding: 0; cursor: pointer; color: #94a3b8; font-size: 0.75rem; display: inline-flex; align-items: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
                                     </div>
                                 </div>
                             </div>
@@ -9982,11 +9983,11 @@ Account ID: ${u.id || ''}`;
                     // Directly route to that organization's Track & Agent dashboard
                     switchTab('agents');
                     switchOrgSection('track');
-                    console.log(`🚀 [Routing] User (${targetOrg.user_role}) routed directly to '${targetOrg.name}' workspace.`);
+                    console.log(`[Routing] User (${targetOrg.user_role}) routed directly to '${targetOrg.name}' workspace.`);
                 } else {
                     // Non-member or new user: show All Organizations dashboard to explore or apply
                     switchTab('org');
-                    console.log("🏢 [Routing] User routed to All Organizations dashboard.");
+                    console.log("[Routing] User routed to All Organizations dashboard.");
                 }
             } catch (navErr) {
                 console.error("Error in navigateInitialUserDashboard:", navErr);
@@ -11313,7 +11314,7 @@ Account ID: ${u.id || ''}`;
             if (newPassword) {
                 if (newPassword.length < 4) {
                     if (alertBox) {
-                        alertBox.innerText = "❌ New password must be at least 4 characters long.";
+                        alertBox.innerText = "New password must be at least 4 characters long.";
                         alertBox.style.background = "#fef2f2";
                         alertBox.style.color = "#991b1b";
                         alertBox.style.border = "1px solid #fecaca";
@@ -12159,6 +12160,7 @@ Account ID: ${u.id || ''}`;
         }
 
         function openCreateAgentModal() {
+            closeLaunchModal();
             document.getElementById('modalHeaderTitle').innerText = 'ADD NEW AGENT';
             document.getElementById('modalHeroTitle').innerText = 'Build a New Agent';
             document.getElementById('modalSubmitBtn').innerText = 'Create Agent';
@@ -12423,13 +12425,13 @@ Account ID: ${u.id || ''}`;
                         card.classList.add('active');
                         card.style.border = '2px solid #2563eb';
                         card.style.background = '#eff6ff';
-                        const title = card.querySelector('div:nth-child(2)');
+                        const title = card.querySelector('.voice-persona-title') || card.querySelector('div:nth-child(2)');
                         if (title) title.style.color = '#1e3a8a';
                     } else {
                         card.classList.remove('active');
                         card.style.border = '1px solid #e2e8f0';
                         card.style.background = '#ffffff';
-                        const title = card.querySelector('div:nth-child(2)');
+                        const title = card.querySelector('.voice-persona-title') || card.querySelector('div:nth-child(2)');
                         if (title) title.style.color = '#334155';
                     }
                 });
@@ -12665,7 +12667,7 @@ Account ID: ${u.id || ''}`;
                         banner.style.color = '#15803d';
                         banner.style.border = '1px solid #bbf7d0';
                         banner.innerHTML = `
-                            <span>✅ Voice persona successfully updated for <strong>${escapeHtml(targetAgent ? targetAgent.name : agentId)}</strong> (${payload.voice_name}, ${payload.gender}, ${payload.pitch}, ${payload.rate}).</span>
+                            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M20 6L9 17l-5-5"/></svg>Voice persona successfully updated for <strong>${escapeHtml(targetAgent ? targetAgent.name : agentId)}</strong> (${payload.voice_name}, ${payload.gender}, ${payload.pitch}, ${payload.rate}).</span>
                             <button onclick="document.getElementById('voiceStudioAlertBanner').style.display='none'" style="background:none; border:none; color:#15803d; font-weight:700; cursor:pointer;">✕</button>
                         `;
                         setTimeout(() => { if (banner) banner.style.display = 'none'; }, 6000);
@@ -12680,7 +12682,7 @@ Account ID: ${u.id || ''}`;
                         banner.style.background = '#fef2f2';
                         banner.style.color = '#b91c1c';
                         banner.style.border = '1px solid #fecaca';
-                        banner.innerHTML = `<span>❌ Error: ${escapeHtml(err.detail || 'Could not save voice configuration.')}</span>`;
+                        banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Error: ${escapeHtml(err.detail || 'Could not save voice configuration.')}</span>`;
                     }
                 }
             } catch (err) {
@@ -12690,7 +12692,7 @@ Account ID: ${u.id || ''}`;
                     banner.style.background = '#fef2f2';
                     banner.style.color = '#b91c1c';
                     banner.style.border = '1px solid #fecaca';
-                    banner.innerHTML = `<span>❌ Network error saving voice persona.</span>`;
+                    banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Network error saving voice persona.</span>`;
                 }
             } finally {
                 if (saveBtn) saveBtn.disabled = false;
@@ -12701,6 +12703,7 @@ Account ID: ${u.id || ''}`;
         // Interaction Launch Modal (Dual Mode Selection)
         // -------------------------------------------------------------
         function openLaunchModal(agentId) {
+            closeAgentModal();
             selectedAgentForLaunch = allAgents.find(a => a.id === agentId);
             if (!selectedAgentForLaunch) return;
 
@@ -12743,7 +12746,7 @@ Account ID: ${u.id || ''}`;
                     <b>Agent ID:</b> <code>${agent.id}</code><br>
                     <b>Role:</b> ${escapeHtml(agent.role)}<br>
                     <b>Goals:</b> ${escapeHtml(agent.goals || 'None specified')}<br>
-                    <b>Status:</b> ${agent.is_active ? '🟢 Currently Active' : '⚪ Idle'}
+                    <b>Status:</b> ${agent.is_active ? '<span style="color: #16a34a; font-weight: 600;">Active</span>' : '<span style="color: #64748b;">Idle</span>'}
                 </div>
                 <div style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #0f172a;">Recent Interactions:</div>
                 <div style="font-size: 0.82rem; color: #64748b; background: #ffffff; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
@@ -12839,19 +12842,19 @@ Account ID: ${u.id || ''}`;
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    statusEl.innerHTML = `✅ <b>Call initiated!</b> SID: <code>${data.call_sid}</code>. Destination ringing...`;
-                    appendSystemMessage(`📞 Outbound call ringing on ${toPhone} with agent ${activeAgent ? activeAgent.name : ''}`);
+                    statusEl.innerHTML = `<b>Call initiated!</b> SID: <code>${data.call_sid}</code>. Destination ringing...`;
+                    appendSystemMessage(`Outbound call ringing on ${toPhone} with agent ${activeAgent ? activeAgent.name : ''}`);
                 } else if (data.status === 'mock_mode') {
-                    statusEl.innerText = `ℹ️ Simulated call: ${data.message}`;
-                    appendSystemMessage(`📞 Simulated call to ${toPhone}`);
+                    statusEl.innerText = `Simulated call: ${data.message}`;
+                    appendSystemMessage(`Simulated call to ${toPhone}`);
                 } else {
-                    statusEl.innerHTML = `⚠️ <b>Error:</b> ${data.message}`;
+                    statusEl.innerHTML = `<b>Error:</b> ${data.message}`;
                 }
             } catch (e) {
-                statusEl.innerText = `⚠️ Error: ${e.message}`;
+                statusEl.innerText = `Error: ${e.message}`;
             } finally {
                 btn.disabled = false;
-                btn.innerText = '📞 Place Call';
+                btn.innerText = 'Place Call';
             }
         }
 
@@ -12972,7 +12975,7 @@ Account ID: ${u.id || ''}`;
         async function startAssistant() {
             isStartingVoiceAssistant = true;
             if (startBtn) {
-                startBtn.innerHTML = '<span id="btnIcon">🔄</span> <span id="btnText">Connecting Mic...</span>';
+                startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg></span> <span id="btnText">Connecting Mic...</span>';
                 startBtn.style.opacity = '0.85';
             }
             statusText.innerText = "Requesting Microphone...";
@@ -13067,7 +13070,7 @@ Account ID: ${u.id || ''}`;
                 if (startBtn) {
                     startBtn.style.opacity = '1';
                     startBtn.style.display = 'inline-flex';
-                    startBtn.innerHTML = '<span id="btnIcon">⏹️</span> <span id="btnText">Stop Session</span>';
+                    startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></span> <span id="btnText">Stop Session</span>';
                     startBtn.style.background = 'rgba(239, 68, 68, 0.15)';
                     startBtn.style.color = '#ef4444';
                     startBtn.style.border = '1px solid rgba(239, 68, 68, 0.3)';
@@ -13087,7 +13090,7 @@ Account ID: ${u.id || ''}`;
                 statusText.innerText = "Microphone Access Required";
                 if (startBtn) {
                     startBtn.style.opacity = '1';
-                    startBtn.innerHTML = '<span id="btnIcon">🎙️</span> <span id="btnText">Start Session</span>';
+                    startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span> <span id="btnText">Start Session</span>';
                     startBtn.style.background = '';
                     startBtn.style.color = '';
                     startBtn.style.border = '';
@@ -13118,7 +13121,7 @@ Account ID: ${u.id || ''}`;
             if (startBtn) {
                 startBtn.style.opacity = '1';
                 startBtn.style.display = 'inline-flex';
-                startBtn.innerHTML = '<span id="btnIcon">🎙️</span> <span id="btnText">Start Session</span>';
+                startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span> <span id="btnText">Start Session</span>';
                 startBtn.style.background = '';
                 startBtn.style.color = '';
                 startBtn.style.border = '';
@@ -13636,26 +13639,26 @@ Account ID: ${u.id || ''}`;
         }
 
         const LANG_MAP = {
-            'mr': { flag: '🇮🇳', name: 'Marathi (मराठी)' },
-            'hi': { flag: '🇮🇳', name: 'Hindi (हिन्दी)' },
-            'en': { flag: '🇬🇧', name: 'English' },
-            'es': { flag: '🇪🇸', name: 'Spanish (Español)' },
-            'fr': { flag: '🇫🇷', name: 'French (Français)' },
-            'de': { flag: '🇩🇪', name: 'German (Deutsch)' },
-            'it': { flag: '🇮🇹', name: 'Italian (Italiano)' },
-            'ja': { flag: '🇯🇵', name: 'Japanese (日本語)' },
-            'zh': { flag: '🇨🇳', name: 'Chinese (中文)' },
-            'ru': { flag: '🇷🇺', name: 'Russian (Русский)' },
-            'pt': { flag: '🇧🇷', name: 'Portuguese (Português)' },
-            'ar': { flag: '🇸🇦', name: 'Arabic (العربية)' },
-            'ta': { flag: '🇮🇳', name: 'Tamil (தமிழ்)' },
-            'te': { flag: '🇮🇳', name: 'Telugu (తెలుగు)' },
-            'bn': { flag: '🇮🇳', name: 'Bengali (বাংলা)' },
-            'gu': { flag: '🇮🇳', name: 'Gujarati (ગુજરાતી)' },
-            'kn': { flag: '🇮🇳', name: 'Kannada (ಕನ್ನಡ)' },
-            'ml': { flag: '🇮🇳', name: 'Malayalam (മലയാളം)' },
-            'pa': { flag: '🇮🇳', name: 'Punjabi (ਪੰਜਾਬੀ)' },
-            'ur': { flag: '🇵🇰', name: 'Urdu (اردو)' }
+            'mr': { name: 'Marathi (मराठी)' },
+            'hi': { name: 'Hindi (हिन्दी)' },
+            'en': { name: 'English' },
+            'es': { name: 'Spanish (Español)' },
+            'fr': { name: 'French (Français)' },
+            'de': { name: 'German (Deutsch)' },
+            'it': { name: 'Italian (Italiano)' },
+            'ja': { name: 'Japanese (日本語)' },
+            'zh': { name: 'Chinese (中文)' },
+            'ru': { name: 'Russian (Русский)' },
+            'pt': { name: 'Portuguese (Português)' },
+            'ar': { name: 'Arabic (العربية)' },
+            'ta': { name: 'Tamil (தமிழ்)' },
+            'te': { name: 'Telugu (తెలుగు)' },
+            'bn': { name: 'Bengali (বাংলা)' },
+            'gu': { name: 'Gujarati (ગુજરાતી)' },
+            'kn': { name: 'Kannada (ಕನ್ನಡ)' },
+            'ml': { name: 'Malayalam (മലയാളം)' },
+            'pa': { name: 'Punjabi (ਪੰਜਾਬੀ)' },
+            'ur': { name: 'Urdu (اردو)' }
         };
 
         let messageAudioPlayer = null;
@@ -13725,9 +13728,11 @@ Account ID: ${u.id || ''}`;
             }
 
             const isUser = msg.role === 'user';
-            const senderIcon = isUser ? '👤' : '🤖';
+            const senderIcon = isUser 
+                ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' 
+                : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>';
             const senderName = isUser ? 'You' : (msg.agent_name || (activeAgent ? activeAgent.name : 'AI Assistant'));
-            const sourceText = msg.source === 'phone' ? '📞 Phone' : '🎙️ Mic';
+            const sourceText = msg.source === 'phone' ? 'Phone' : 'Mic';
 
             // Dynamic Language Badge
             let langBadge = '';
@@ -13735,9 +13740,9 @@ Account ID: ${u.id || ''}`;
                 const code = msg.detected_language.toLowerCase();
                 const info = LANG_MAP[code];
                 if (info) {
-                    langBadge = `<span class="message-lang-badge">${info.flag} ${info.name}</span>`;
+                    langBadge = `<span class="message-lang-badge">${info.name}</span>`;
                 } else if (code !== 'en') {
-                    langBadge = `<span class="message-lang-badge">🌐 ${escapeHtml(code.toUpperCase())}</span>`;
+                    langBadge = `<span class="message-lang-badge">${escapeHtml(code.toUpperCase())}</span>`;
                 }
             }
 
@@ -13760,10 +13765,10 @@ Account ID: ${u.id || ''}`;
             if (!isUser && msg.latency) {
                 telemetryHtml = `
                     <div class="telemetry-chips">
-                        <span class="telemetry-chip highlight">⚡ Total: ${msg.latency.total}s</span>
-                        <span class="telemetry-chip">🎙️ STT: ${msg.latency.stt || 0}s</span>
-                        <span class="telemetry-chip">🧠 LLM: ${msg.latency.llm || 0}s</span>
-                        <span class="telemetry-chip">🔊 TTS: ${msg.latency.tts || 0}s</span>
+                        <span class="telemetry-chip highlight">Total: ${msg.latency.total}s</span>
+                        <span class="telemetry-chip">STT: ${msg.latency.stt || 0}s</span>
+                        <span class="telemetry-chip">LLM: ${msg.latency.llm || 0}s</span>
+                        <span class="telemetry-chip">TTS: ${msg.latency.tts || 0}s</span>
                     </div>
                 `;
             }
@@ -13800,7 +13805,7 @@ Account ID: ${u.id || ''}`;
                 renderedMessageIds.clear();
                 lastMessageId = 0;
                 chatConversationHistory = [];
-                appendSystemMessage("🧹 Memory cleared.");
+                appendSystemMessage("Conversation history cleared.");
             } catch (e) {
                 alert("Error clearing memory: " + e.message);
             }
@@ -15625,7 +15630,7 @@ Account ID: ${u.id || ''}`;
             const orig = btn.innerHTML;
             try {
                 btn.disabled = true;
-                btn.innerHTML = `<span style="color: #2563eb;">⏳ Playing...</span>`;
+                btn.innerHTML = `<span style="color: #2563eb;">Playing...</span>`;
                 if (!isUser) {
                     const ttsRes = await fetch('/api/tts', {
                         method: 'POST',
@@ -15786,7 +15791,7 @@ Account ID: ${u.id || ''}`;
             aiCard.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleDrawerAiDetails()">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.05rem;">✨</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
                         <strong style="font-size: 0.9rem; color: #0f172a; font-weight: 800;">Post-Call Intelligence & Insights</strong>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -15854,7 +15859,7 @@ Account ID: ${u.id || ''}`;
                 emptyMsg.className = 'drawer-content-centered';
                 emptyMsg.style.cssText = "text-align: center; color: #94a3b8; padding: 3rem 1.5rem; background: #ffffff; border-radius: 0.75rem; border: 1px dashed #cbd5e1;";
                 emptyMsg.innerHTML = `
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎙️</div>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom: 0.5rem;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                     <div style="font-weight: 700; color: #475569; margin-bottom: 0.25rem;">No Dialogue Recorded</div>
                     <div style="font-size: 0.78rem;">No audio or chat turns recorded for this connection session.</div>
                 `;
@@ -15871,13 +15876,13 @@ Account ID: ${u.id || ''}`;
                 const hasDevanagari = /[\u0900-\u097F]/.test(textContent);
                 let langChip = '';
                 if (hasDevanagari) {
-                    langChip = `<span style="font-size: 0.65rem; background: #fef3c7; color: #b45309; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #fde68a;">🇮🇳 Indic</span>`;
+                    langChip = `<span style="font-size: 0.65rem; background: #fef3c7; color: #b45309; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #fde68a;">Indic</span>`;
                 } else if (textContent) {
-                    langChip = `<span style="font-size: 0.65rem; background: #eff6ff; color: #1d4ed8; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #dbeafe;">🇺🇸 EN</span>`;
+                    langChip = `<span style="font-size: 0.65rem; background: #eff6ff; color: #1d4ed8; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #dbeafe;">EN</span>`;
                 }
 
                 const latencyBadge = (!isUser && m.latency_ms) ? `
-                    <span style="font-size: 0.65rem; background: #eff6ff; color: #0284c7; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">⚡ ${m.latency_ms}ms</span>
+                    <span style="font-size: 0.65rem; background: #eff6ff; color: #0284c7; padding: 0.12rem 0.45rem; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">${m.latency_ms}ms</span>
                 ` : '';
 
                 const container = document.createElement('div');
@@ -15889,7 +15894,7 @@ Account ID: ${u.id || ''}`;
                             <span style="font-size: 0.68rem; color: #94a3b8;">${timeStr}</span>
                             <strong style="color: #2563eb; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
                                 <span>Caller (Customer)</span>
-                                <span style="width: 18px; height: 18px; border-radius: 50%; background: #dbeafe; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem;">👤</span>
+                                <span style="width: 18px; height: 18px; border-radius: 50%; background: #dbeafe; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                             </strong>
                         </div>
                         <div class="chat-bubble-user">
@@ -15904,7 +15909,7 @@ Account ID: ${u.id || ''}`;
                     const copyBtn = document.createElement('button');
                     copyBtn.type = 'button';
                     copyBtn.style.cssText = "background: none; border: none; color: #64748b; cursor: pointer; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;";
-                    copyBtn.innerHTML = "<span>📋 Copy</span>";
+                    copyBtn.innerHTML = "<span><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" style=\"vertical-align: -1px; margin-right: 2px;\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"/><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"/></svg>Copy</span>";
                     copyBtn.onclick = () => copyTurnText(copyBtn, textContent);
                     actionsRow.appendChild(copyBtn);
 
@@ -15921,7 +15926,7 @@ Account ID: ${u.id || ''}`;
                     container.innerHTML = `
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.72rem; color: #64748b; padding-left: 0.35rem; width: 100%;">
                             <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; border: 1px solid #bfdbfe;">🤖</span>
+                                <span style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #bfdbfe;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg></span>
                                 <strong style="color: #0f172a; font-weight: 700;">${escapeHtml(agentName)}</strong>
                                 ${langChip}
                             </div>
@@ -15949,7 +15954,7 @@ Account ID: ${u.id || ''}`;
                     const copyBtn = document.createElement('button');
                     copyBtn.type = 'button';
                     copyBtn.style.cssText = "background: none; border: none; color: #64748b; cursor: pointer; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;";
-                    copyBtn.innerHTML = "<span>📋 Copy</span>";
+                    copyBtn.innerHTML = "<span><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" style=\"vertical-align: -1px; margin-right: 2px;\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"/><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"/></svg>Copy</span>";
                     copyBtn.onclick = () => copyTurnText(copyBtn, textContent);
                     actionsRow.appendChild(copyBtn);
 
@@ -15962,7 +15967,7 @@ Account ID: ${u.id || ''}`;
             const recAudio = t.audio_url || t.recording_url;
             if (audioStatus) {
                 if (recAudio) {
-                    audioStatus.innerHTML = `<strong style="color: #10b981;">✓ Call Recording Available</strong> <a href="${escapeHtml(recAudio)}" target="_blank" download style="margin-left: 0.5rem; color: #2563eb; text-decoration: underline; font-weight: 700;">⬇ Download MP3</a>`;
+                    audioStatus.innerHTML = `<strong style="color: #10b981;">✓ Call Recording Available</strong> <a href="${escapeHtml(recAudio)}" target="_blank" download style="margin-left: 0.5rem; color: #2563eb; text-decoration: underline; font-weight: 700;">Download MP3</a>`;
                 } else {
                     audioStatus.innerText = `${msgs.length} dialogue turns ready for playback`;
                 }
@@ -17560,7 +17565,7 @@ Account ID: ${u.id || ''}`;
                 const conv = allConversations.find(c => c.id === convId);
                 if (conv) {
                     conv.last_message = {
-                        text: msg.text || (msg.attachments && msg.attachments.length ? '📎 Shared attachment' : ''),
+                        text: msg.text || (msg.attachments && msg.attachments.length ? 'Shared attachment' : ''),
                         sender_name: msg.sender_name,
                         timestamp: msg.created_at,
                     };
@@ -17673,7 +17678,7 @@ Account ID: ${u.id || ''}`;
             if (filtered.length === 0) {
                 listEl.innerHTML = `
                     <div style="padding: 2rem 1rem; text-align: center; color: #94a3b8; font-size: 0.8rem;">
-                        <span style="font-size: 1.5rem; display: block; margin-bottom: 0.35rem;">📭</span>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin: 0 auto 0.35rem auto; display: block;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         No conversations found.
                     </div>
                 `;
@@ -17683,12 +17688,14 @@ Account ID: ${u.id || ''}`;
             filtered.forEach(c => {
                 const isActive = activeConversation && activeConversation.id === c.id;
                 const isGroup = c.type === 'group';
-                const avatarIcon = isGroup ? '👥' : '👤';
+                const avatarIconHtml = isGroup 
+                    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' 
+                    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
                 const avatarBg = isGroup ? '#eff6ff' : '#f0fdf4';
                 const avatarColor = isGroup ? '#2563eb' : '#16a34a';
 
                 const title = c.display_name || c.name || (isGroup ? 'Group Channel' : 'Direct Message');
-                const lastSnippet = c.last_message ? (c.last_message.text || '📎 Shared attachment') : 'No messages yet';
+                const lastSnippet = c.last_message ? (c.last_message.text || 'Shared attachment') : 'No messages yet';
                 const lastTime = c.last_message && c.last_message.timestamp ? formatMessageTime(c.last_message.timestamp) : '';
 
                 const item = document.createElement('div');
@@ -17709,8 +17716,8 @@ Account ID: ${u.id || ''}`;
                 item.onclick = () => selectConversation(c.id);
 
                 item.innerHTML = `
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: ${avatarBg}; color: ${avatarColor}; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; flex-shrink: 0;">
-                        ${avatarIcon}
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: ${avatarBg}; color: ${avatarColor}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        ${avatarIconHtml}
                     </div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 0.35rem;">
@@ -17753,7 +17760,7 @@ Account ID: ${u.id || ''}`;
 
             const container = document.getElementById('messagingMessagesContainer');
             if (container) {
-                container.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.82rem; padding: 2rem;">⏳ Loading messages...</div>';
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.82rem; padding: 2rem;">Loading messages...</div>';
             }
 
             try {
@@ -17787,7 +17794,9 @@ Account ID: ${u.id || ''}`;
             if (titleEl) titleEl.innerText = title;
 
             if (avatarEl) {
-                avatarEl.innerText = isGroup ? '👥' : '👤';
+                avatarEl.innerHTML = isGroup 
+                    ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' 
+                    : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
                 avatarEl.style.background = isGroup ? '#eff6ff' : '#f0fdf4';
                 avatarEl.style.color = isGroup ? '#2563eb' : '#16a34a';
             }
@@ -17829,7 +17838,7 @@ Account ID: ${u.id || ''}`;
             if (activeConversationMessages.length === 0) {
                 container.innerHTML = `
                     <div style="margin: auto; text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 2rem;">
-                        <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">👋</span>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin: 0 auto 0.5rem auto; display: block;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         No messages yet in this conversation.<br>
                         Send a message, document, photo, or video to start the discussion!
                     </div>
@@ -17875,7 +17884,7 @@ Account ID: ${u.id || ''}`;
 
             const delBtnHtml = canDeleteMsg ? `
                 <button type="button" onclick="confirmDeleteMessage('${msg.id}')" style="background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 0.72rem; padding: 0.1rem 0.25rem; border-radius: 4px; display: inline-flex; align-items: center;" title="Delete message">
-                    🗑️
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
             ` : '';
 
@@ -17891,7 +17900,7 @@ Account ID: ${u.id || ''}`;
             `;
             metaRow.innerHTML = `
                 <strong>${escapeHtml(msg.sender_name || msg.sender_email.split('@')[0])}</strong>
-                ${isAdminInGroup ? '<span style="font-size: 0.65rem; background: #fef3c7; color: #b45309; padding: 0.05rem 0.35rem; border-radius: 9999px; font-weight: 700;">🛡️ Admin</span>' : ''}
+                ${isAdminInGroup ? '<span style="font-size: 0.65rem; background: #fef3c7; color: #b45309; padding: 0.05rem 0.35rem; border-radius: 9999px; font-weight: 700;">Admin</span>' : ''}
                 <span>• ${formatMessageTime(msg.created_at)}</span>
                 ${delBtnHtml}
             `;
@@ -17940,14 +17949,15 @@ Account ID: ${u.id || ''}`;
                         docCard.style.cssText = "display: flex; align-items: center; justify-content: space-between; gap: 0.65rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.45rem; padding: 0.5rem 0.75rem;";
                         docCard.innerHTML = `
                             <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
-                                <span style="font-size: 1.25rem;">📄</span>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                 <div style="min-width: 0;">
                                     <div style="font-size: 0.8rem; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${escapeHtml(att.filename)}</div>
                                     <div style="font-size: 0.7rem; color: #64748b;">${formatFileSize(att.size)}</div>
                                 </div>
                             </div>
-                            <a href="${att.url}" download="${escapeHtml(att.filename)}" target="_blank" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 0.3rem 0.6rem; border-radius: 0.35rem; font-size: 0.72rem; font-weight: 600; flex-shrink: 0;">
-                                ⬇️ Download
+                            <a href="${att.url}" download="${escapeHtml(att.filename)}" target="_blank" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 0.3rem 0.6rem; border-radius: 0.35rem; font-size: 0.72rem; font-weight: 600; flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Download
                             </a>
                         `;
                         attContainer.appendChild(docCard);
@@ -18005,7 +18015,7 @@ Account ID: ${u.id || ''}`;
             const addBtn = document.createElement('button');
             addBtn.type = 'button';
             addBtn.style.cssText = "background: transparent; border: 1px dashed #cbd5e1; border-radius: 9999px; padding: 0.1rem 0.4rem; font-size: 0.7rem; color: #94a3b8; cursor: pointer;";
-            addBtn.innerText = "+😊";
+            addBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> +';
             addBtn.title = "Add Reaction";
             addBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -18190,7 +18200,7 @@ Account ID: ${u.id || ''}`;
 
             if (previewBar && nameEl && metaEl) {
                 nameEl.innerText = file.name;
-                metaEl.innerText = "⏳ Uploading to server...";
+                metaEl.innerText = "Uploading to server...";
                 previewBar.style.display = 'flex';
             }
 
@@ -18203,7 +18213,11 @@ Account ID: ${u.id || ''}`;
                 if (res.ok && data.success) {
                     stagedAttachment = data.attachment;
                     if (iconEl) {
-                        iconEl.innerText = stagedAttachment.file_type === 'photo' ? '🖼️' : (stagedAttachment.file_type === 'video' ? '🎬' : '📄');
+                        iconEl.innerHTML = stagedAttachment.file_type === 'photo' 
+                            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' 
+                            : (stagedAttachment.file_type === 'video' 
+                                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' 
+                                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>');
                     }
                     if (metaEl) {
                         metaEl.innerText = `${formatFileSize(stagedAttachment.size)} • Ready to send`;
@@ -18364,7 +18378,7 @@ Account ID: ${u.id || ''}`;
                         </div>
                     </div>
                     <button type="button" onclick="startDirectChat('${escapeHtml(m.email)}')" style="background: #2563eb; color: #ffffff; border: none; border-radius: 0.4rem; padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
-                        💬 Chat
+                        Chat
                     </button>
                 `;
                 container.appendChild(item);
@@ -18497,7 +18511,7 @@ Account ID: ${u.id || ''}`;
             const { email } = getEffectiveMessagingIdentity();
             const isAdmin = activeConversation.admins && activeConversation.admins.includes(email);
 
-            document.getElementById('groupManageTitle').innerHTML = `<span>👥 ${escapeHtml(activeConversation.name)}</span>`;
+            document.getElementById('groupManageTitle').innerHTML = `<span style="display: inline-flex; align-items: center; gap: 0.5rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${escapeHtml(activeConversation.name)}</span>`;
             document.getElementById('groupManageSubtitle').innerText = `${(activeConversation.members || []).length} Members • Created by ${activeConversation.creator_email || 'Admin'}`;
 
             // Add Member Section (Admin only)
@@ -18551,9 +18565,9 @@ Account ID: ${u.id || ''}`;
 
                 let roleBadge = '<span style="font-size: 0.68rem; background: #f1f5f9; color: #64748b; padding: 0.1rem 0.4rem; border-radius: 9999px;">Member</span>';
                 if (isCreator) {
-                    roleBadge = '<span style="font-size: 0.68rem; background: #fef3c7; color: #b45309; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">👑 Creator</span>';
+                    roleBadge = '<span style="font-size: 0.68rem; background: #fef3c7; color: #b45309; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">Creator</span>';
                 } else if (isMemberAdmin) {
-                    roleBadge = '<span style="font-size: 0.68rem; background: #e0f2fe; color: #0284c7; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">🛡️ Admin</span>';
+                    roleBadge = '<span style="font-size: 0.68rem; background: #e0f2fe; color: #0284c7; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">Admin</span>';
                 }
 
                 let actions = '';
@@ -18574,7 +18588,7 @@ Account ID: ${u.id || ''}`;
 
                 row.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1rem;">👤</span>
+                        <span style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; color: #64748b; display: inline-flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                         <div>
                             <div style="font-size: 0.82rem; font-weight: 600; color: #0f172a;">${escapeHtml(memEmail)} ${isSelf ? '<span style="color: #64748b; font-size: 0.72rem;">(You)</span>' : ''}</div>
                             <div style="margin-top: 0.1rem;">${roleBadge}</div>

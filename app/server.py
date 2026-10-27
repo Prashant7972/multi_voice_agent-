@@ -80,10 +80,10 @@ def custom_openapi():
         title="Apex Voice AI — Interactive Swagger API",
         version="2.0.0",
         description=(
-            "### 🎙️ Apex Voice AI Platform REST & Telephony API\n\n"
+            "### Apex Voice AI Platform REST & Telephony API\n\n"
             "Interactive Swagger documentation and sandbox for testing all 92+ operational endpoints.\n\n"
-            "#### 🔑 How to Authorize & Test Endpoints:\n"
-            "1. Click the green **Authorize 🔓** button below.\n"
+            "#### How to Authorize & Test Endpoints:\n"
+            "1. Click the green **Authorize** button below.\n"
             "2. In **BearerAuth**, paste your JWT Access Token from `/api/auth/login` (or copy from the Web UI `localStorage`).\n"
             "3. Alternatively, in **DemoModeAuth**, enter `true` to authenticate via local development demo mode.\n"
             "4. Choose any endpoint, click **Try it out**, fill parameters, and hit **Execute**."

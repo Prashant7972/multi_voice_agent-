@@ -21,16 +21,16 @@ logger = logging.getLogger("voice_agent.tts")
 
 VOICE_DEMOGRAPHICS: Dict[str, List[Dict[str, str]]] = {
     "genders": [
-        {"id": "female", "label": "Female", "icon": "👩", "desc": "Natural feminine inflection & tone"},
-        {"id": "male", "label": "Male", "icon": "👨", "desc": "Resonant masculine resonance & timbre"},
-        {"id": "child", "label": "Child", "icon": "🧒", "desc": "High-spirited, youthful cadence (8–14 yrs)"},
-        {"id": "aged", "label": "Senior / Aged", "icon": "👴", "desc": "Distinguished, warm elder wisdom (60+ yrs)"},
+        {"id": "female", "label": "Female", "desc": "Natural feminine inflection & tone"},
+        {"id": "male", "label": "Male", "desc": "Resonant masculine resonance & timbre"},
+        {"id": "child", "label": "Child", "desc": "High-spirited, youthful cadence (8–14 yrs)"},
+        {"id": "aged", "label": "Senior / Aged", "desc": "Distinguished, warm elder wisdom (60+ yrs)"},
     ],
     "age_groups": [
-        {"id": "child", "label": "Child (8–14 yrs)", "icon": "🎈"},
-        {"id": "young_adult", "label": "Young Adult (18–28 yrs)", "icon": "⚡"},
-        {"id": "mature_adult", "label": "Mature Adult (30–55 yrs)", "icon": "💼"},
-        {"id": "senior", "label": "Senior / Aged (60+ yrs)", "icon": "👓"},
+        {"id": "child", "label": "Child (8–14 yrs)"},
+        {"id": "young_adult", "label": "Young Adult (18–28 yrs)"},
+        {"id": "mature_adult", "label": "Mature Adult (30–55 yrs)"},
+        {"id": "senior", "label": "Senior / Aged (60+ yrs)"},
     ],
     "personalities": [
         {"id": "friendly_warm", "label": "Friendly & Warm", "desc": "Approachable, conversational, inviting"},
