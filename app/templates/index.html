@@ -6232,7 +6232,7 @@
                  SECTION: AI AGENT VOICE STUDIO (Demographics, Timbre & Personas)
                  ============================================== -->
             <div id="orgSectionVoiceStudio" style="display: none; flex-direction: column; gap: 1.25rem;">
-                <!-- Header Card with Agent Switcher -->
+                <!-- Header Card with Navigation Tabs and Active Org Badge -->
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 1.25rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                     <div style="display: flex; align-items: center; gap: 0.85rem;">
                         <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.25);">
@@ -6241,22 +6241,27 @@
                         <div>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">AI Agent Voice Studio</h2>
-                                <span style="font-size: 0.7rem; background: #eff6ff; color: #2563eb; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; border: 1px solid #bfdbfe;">Neural Edge-TTS + Piper</span>
+                                <span id="voiceStudioActiveOrgBadge" style="font-size: 0.72rem; background: #eff6ff; color: #2563eb; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 9999px; border: 1px solid #bfdbfe;">Organization: Apex AI Innovations</span>
                             </div>
-                            <p style="font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0;">Select an agent to customize speaking voice, age demographics, timbre, pitch, and conversational persona.</p>
+                            <p style="font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0;">Craft, audition, and manage customized voice personas scoped independently per organization.</p>
                         </div>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label for="voiceStudioAgentSelect" style="font-size: 0.82rem; font-weight: 600; color: #475569; margin: 0;">Configuring Agent:</label>
-                            <select id="voiceStudioAgentSelect" class="form-select" onchange="onVoiceStudioAgentChange(this.value)" style="min-width: 220px; font-weight: 600; color: #0f172a; padding: 0.45rem 0.75rem; border-color: #cbd5e1;">
-                                <!-- Dynamic Agent Options -->
-                            </select>
-                        </div>
-                        <button type="button" class="btn-primary" onclick="saveVoiceStudioConfig()" id="btnVoiceStudioSave" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                            <span>Save & Apply Voice</span>
+                    <!-- 3 Primary Studio Action Tabs -->
+                    <div style="display: flex; align-items: center; gap: 0.35rem; background: #f1f5f9; padding: 0.3rem; border-radius: 0.65rem;">
+                        <button type="button" class="voice-studio-tab active" id="btnVoiceStudioTabGenerate" onclick="switchVoiceStudioTab('generate')" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; border: none; background: #ffffff; color: #1e40af; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.06); transition: all 0.15s ease;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            <span>Generate Voice</span>
+                        </button>
+                        <button type="button" class="voice-studio-tab" id="btnVoiceStudioTabView" onclick="switchVoiceStudioTab('view')" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; border: none; background: transparent; color: #64748b; cursor: pointer; transition: all 0.15s ease;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>View Voices</span>
+                            <span id="voiceStudioCountBadge" style="background: #e2e8f0; color: #475569; font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 9999px;">0</span>
+                        </button>
+                        <button type="button" class="voice-studio-tab" id="btnVoiceStudioTabDelete" onclick="switchVoiceStudioTab('delete')" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; border: none; background: transparent; color: #64748b; cursor: pointer; transition: all 0.15s ease;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            <span>Delete Voices</span>
+                            <span id="voiceStudioDeleteCountBadge" style="background: #fee2e2; color: #b91c1c; font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 9999px;">0</span>
                         </button>
                     </div>
                 </div>
@@ -6264,191 +6269,310 @@
                 <!-- Status / Success Alert Banner -->
                 <div id="voiceStudioAlertBanner" style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.82rem; font-weight: 500; align-items: center; justify-content: space-between;"></div>
 
-                <!-- Two-Column Studio Layout -->
-                <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.25rem;">
-                    <!-- LEFT COLUMN: Demographic Personas & Voice Selection -->
-                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <!-- Step 1: Gender & Demographic Archetype -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">1</span>
-                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Gender & Vocal Persona</h3>
-                                </div>
-                                <span style="font-size: 0.75rem; color: #64748b;">Demographic inflection</span>
-                            </div>
-
-                            <!-- 4 Selectable Gender Cards: Female, Male, Child, Aged -->
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem;" id="voiceGenderCardsContainer">
-                                <div class="voice-persona-card active" data-gender="female" onclick="selectVoiceStudioGender('female')" style="cursor: pointer; border: 2px solid #2563eb; background: #eff6ff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #e0e7ff; color: #4338ca;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg></div></div>
-                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #1e3a8a;">Female</div>
-                                    <div style="font-size: 0.68rem; color: #3b82f6; margin-top: 0.15rem;">Warm & Melodic</div>
-                                </div>
-                                <div class="voice-persona-card" data-gender="male" onclick="selectVoiceStudioGender('male')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #475569;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div></div>
-                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Male</div>
-                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Resonant Timbre</div>
-                                </div>
-                                <div class="voice-persona-card" data-gender="child" onclick="selectVoiceStudioGender('child')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M7 21v-2a5 5 0 0 1 10 0v2"/></svg></div></div>
-                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Child</div>
-                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Youthful (8–14 yrs)</div>
-                                </div>
-                                <div class="voice-persona-card" data-gender="aged" onclick="selectVoiceStudioGender('aged')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
-                                    <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ede9fe; color: #7c3aed;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><circle cx="12" cy="7" r="1"/></svg></div></div>
-                                    <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Aged / Senior</div>
-                                    <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Distinguished (60+)</div>
-                                </div>
-                            </div>
+                <!-- ==========================================
+                     TAB 1 PANE: GENERATE VOICE PERSONA
+                     ========================================== -->
+                <div id="voiceStudioPaneGenerate" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <!-- Persona Name and Target Agent Quick-Link -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 260px;">
+                            <label for="voiceStudioPersonaName" style="font-size: 0.82rem; font-weight: 700; color: #1e293b; margin: 0;">Voice Persona Name</label>
+                            <input type="text" id="voiceStudioPersonaName" class="form-input" placeholder="e.g. Maya - Empathetic Care Specialist" style="font-size: 0.85rem; padding: 0.5rem 0.75rem; font-weight: 600;">
                         </div>
 
-                        <!-- Step 2: Age Bracket & Personality Archetype -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">2</span>
-                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Age Bracket & Speaking Archetype</h3>
-                                </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                <label for="voiceStudioAgentSelect" style="font-size: 0.82rem; font-weight: 600; color: #475569; margin: 0;">Apply to Agent (Optional):</label>
+                                <select id="voiceStudioAgentSelect" class="form-select" onchange="onVoiceStudioAgentChange(this.value)" style="min-width: 220px; font-weight: 600; color: #0f172a; padding: 0.45rem 0.75rem; border-color: #cbd5e1;">
+                                    <!-- Dynamic Agent Options -->
+                                </select>
                             </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <!-- Age Option Selection -->
-                                <div>
-                                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Target Age Demographic</label>
-                                    <div style="display: flex; flex-direction: column; gap: 0.4rem;" id="voiceAgeOptionsContainer">
-                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
-                                            <input type="radio" name="voiceStudioAge" value="child" onchange="onVoiceStudioAgeChange('child')">
-                                            <span><strong>Child</strong> (8–14 yrs)</span>
-                                        </label>
-                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
-                                            <input type="radio" name="voiceStudioAge" value="young_adult" checked onchange="onVoiceStudioAgeChange('young_adult')">
-                                            <span><strong>Young Adult</strong> (18–28 yrs)</span>
-                                        </label>
-                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
-                                            <input type="radio" name="voiceStudioAge" value="mature_adult" onchange="onVoiceStudioAgeChange('mature_adult')">
-                                            <span><strong>Mature Adult</strong> (30–55 yrs)</span>
-                                        </label>
-                                        <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
-                                            <input type="radio" name="voiceStudioAge" value="senior" onchange="onVoiceStudioAgeChange('senior')">
-                                            <span><strong>Senior / Aged</strong> (60+ yrs)</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Personality Archetype -->
-                                <div>
-                                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Speaking Personality Archetype</label>
-                                    <select id="voiceStudioPersonalitySelect" class="form-select" onchange="onVoiceStudioPersonalityChange(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
-                                        <option value="friendly_warm">Friendly & Warm (Approachable, Welcoming)</option>
-                                        <option value="professional_crisp">Professional & Crisp (Executive, Articulate)</option>
-                                        <option value="empathetic_caregiver">Empathetic Caregiver (Gentle, Supportive)</option>
-                                        <option value="energetic_sales">Energetic Sales (Dynamic, Persuasive)</option>
-                                        <option value="calm_advisor">Calm Advisor (Distinguished, Reassuring)</option>
-                                    </select>
-
-                                    <!-- Step 3: Neural Voice Engine Model Selection -->
-                                    <div style="margin-top: 1rem;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                                            <label style="font-size: 0.78rem; font-weight: 600; color: #475569; margin: 0;">Specific Voice Model</label>
-                                            <select id="voiceStudioLanguageFilter" class="form-select" onchange="onVoiceStudioLanguageFilterChange(this.value)" style="font-size: 0.72rem; padding: 0.2rem 0.4rem; max-width: 140px; border-color: #cbd5e1; border-radius: 0.375rem; color: #334155;">
-                                                <option value="all">All Languages</option>
-                                                <option value="en">English (US/UK)</option>
-                                                <option value="hi">Hindi (हिन्दी)</option>
-                                                <option value="mr">Marathi (मराठी)</option>
-                                                <option value="es">Spanish (Español)</option>
-                                                <option value="fr">French (Français)</option>
-                                                <option value="de">German (Deutsch)</option>
-                                                <option value="ja">Japanese (日本語)</option>
-                                                <option value="ta">Tamil (தமிழ்)</option>
-                                                <option value="te">Telugu (తెలుగు)</option>
-                                            </select>
-                                        </div>
-                                        <select id="voiceStudioModelSelect" class="form-select" onchange="onVoiceStudioModelSelect(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
-                                            <!-- Dynamic models from catalog -->
-                                        </select>
-                                    </div>
-
-                                    <div id="voiceStudioModelDetailsBox" style="margin-top: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.65rem 0.75rem;">
-                                        <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a;" id="voiceStudioModelTitle">Ava (Neural)</div>
-                                        <div style="font-size: 0.73rem; color: #64748b; margin-top: 0.2rem;" id="voiceStudioModelDesc">Expressive, welcoming natural tone suited for customer engagement.</div>
-                                    </div>
-
-                                    <div id="voiceStudioMultilingualInfo" style="margin-top: 0.6rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.5rem 0.65rem; font-size: 0.72rem; color: #166534; display: flex; align-items: flex-start; gap: 0.45rem;">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                                        <span><strong>Adaptive Multilingual Persona:</strong> Voice persona dynamically adapts to matching gender and tone across Hindi, Marathi, Spanish, etc.</span>
-                                    </div>
-                                </div>
+                            <div style="display: flex; align-items: flex-end; padding-top: 1.35rem;">
+                                <button type="button" class="btn-primary" onclick="saveVoiceStudioPersona()" id="btnVoiceStudioSavePersona" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1.2rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; background: #2563eb; color: #ffffff; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(37,99,235,0.2);">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                    <span>Save Voice Persona</span>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- RIGHT COLUMN: Pitch & Rate Sliders + Audition Studio -->
-                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <!-- Acoustic Tuning Card -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
-                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Acoustic Fine Tuning</h3>
+                    <!-- Two-Column Studio Layout -->
+                    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.25rem;">
+                        <!-- LEFT COLUMN: Demographic Personas & Voice Selection -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Step 1: Gender & Demographic Archetype -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">1</span>
+                                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Gender & Vocal Persona</h3>
+                                    </div>
+                                    <span style="font-size: 0.75rem; color: #64748b;">Demographic inflection</span>
                                 </div>
-                                <button type="button" onclick="resetVoiceStudioSliders()" style="background: none; border: none; font-size: 0.73rem; color: #2563eb; cursor: pointer; text-decoration: underline;">Reset to Default</button>
+
+                                <!-- 4 Selectable Gender Cards: Female, Male, Child, Aged -->
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem;" id="voiceGenderCardsContainer">
+                                    <div class="voice-persona-card active" data-gender="female" onclick="selectVoiceStudioGender('female')" style="cursor: pointer; border: 2px solid #2563eb; background: #eff6ff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                        <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #e0e7ff; color: #4338ca;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg></div></div>
+                                        <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #1e3a8a;">Female</div>
+                                        <div style="font-size: 0.68rem; color: #3b82f6; margin-top: 0.15rem;">Warm & Melodic</div>
+                                    </div>
+                                    <div class="voice-persona-card" data-gender="male" onclick="selectVoiceStudioGender('male')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                        <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #475569;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div></div>
+                                        <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Male</div>
+                                        <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Resonant Timbre</div>
+                                    </div>
+                                    <div class="voice-persona-card" data-gender="child" onclick="selectVoiceStudioGender('child')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                        <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M7 21v-2a5 5 0 0 1 10 0v2"/></svg></div></div>
+                                        <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Child</div>
+                                        <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Youthful (8–14 yrs)</div>
+                                    </div>
+                                    <div class="voice-persona-card" data-gender="aged" onclick="selectVoiceStudioGender('aged')" style="cursor: pointer; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 0.65rem; padding: 0.75rem 0.5rem; text-align: center; transition: all 0.2s ease;">
+                                        <div style="display: flex; justify-content: center; margin-bottom: 0.35rem;"><div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #ede9fe; color: #7c3aed;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><circle cx="12" cy="7" r="1"/></svg></div></div>
+                                        <div class="voice-persona-title" style="font-weight: 700; font-size: 0.82rem; color: #334155;">Aged / Senior</div>
+                                        <div style="font-size: 0.68rem; color: #64748b; margin-top: 0.15rem;">Distinguished (60+)</div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Pitch Slider -->
-                            <div style="margin-bottom: 1.25rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                                    <label for="voiceStudioPitchSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Vocal Pitch</label>
-                                    <span id="voiceStudioPitchBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">+0Hz (Default)</span>
+                            <!-- Step 2: Age Bracket & Personality Archetype -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">2</span>
+                                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Age Bracket & Speaking Archetype</h3>
+                                    </div>
                                 </div>
-                                <input type="range" id="voiceStudioPitchSlider" min="-30" max="30" step="1" value="0" oninput="updateVoiceStudioPitchVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
-                                    <span>-30Hz (Deep Baritone)</span>
-                                    <span>0Hz</span>
-                                    <span>+30Hz (High Melodic)</span>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <!-- Age Option Selection -->
+                                    <div>
+                                        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Target Age Demographic</label>
+                                        <div style="display: flex; flex-direction: column; gap: 0.4rem;" id="voiceAgeOptionsContainer">
+                                            <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                                <input type="radio" name="voiceStudioAge" value="child" onchange="onVoiceStudioAgeChange('child')">
+                                                <span><strong>Child</strong> (8–14 yrs)</span>
+                                            </label>
+                                            <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                                <input type="radio" name="voiceStudioAge" value="young_adult" checked onchange="onVoiceStudioAgeChange('young_adult')">
+                                                <span><strong>Young Adult</strong> (18–28 yrs)</span>
+                                            </label>
+                                            <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                                <input type="radio" name="voiceStudioAge" value="mature_adult" onchange="onVoiceStudioAgeChange('mature_adult')">
+                                                <span><strong>Mature Adult</strong> (30–55 yrs)</span>
+                                            </label>
+                                            <label class="voice-age-radio-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #334155; padding: 0.45rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer;">
+                                                <input type="radio" name="voiceStudioAge" value="senior" onchange="onVoiceStudioAgeChange('senior')">
+                                                <span><strong>Senior / Aged</strong> (60+ yrs)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Personality Archetype -->
+                                    <div>
+                                        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.35rem;">Speaking Personality Archetype</label>
+                                        <select id="voiceStudioPersonalitySelect" class="form-select" onchange="onVoiceStudioPersonalityChange(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
+                                            <option value="friendly_warm">Friendly & Warm (Approachable, Welcoming)</option>
+                                            <option value="professional_crisp">Professional & Crisp (Executive, Articulate)</option>
+                                            <option value="empathetic_caregiver">Empathetic Caregiver (Gentle, Supportive)</option>
+                                            <option value="energetic_sales">Energetic Sales (Dynamic, Persuasive)</option>
+                                            <option value="calm_advisor">Calm Advisor (Distinguished, Reassuring)</option>
+                                        </select>
+
+                                        <!-- Step 3: Neural Voice Engine Model Selection -->
+                                        <div style="margin-top: 1rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                                <label style="font-size: 0.78rem; font-weight: 600; color: #475569; margin: 0;">Base Voice Model</label>
+                                                <select id="voiceStudioLanguageFilter" class="form-select" onchange="onVoiceStudioLanguageFilterChange(this.value)" style="font-size: 0.72rem; padding: 0.2rem 0.4rem; max-width: 140px; border-color: #cbd5e1; border-radius: 0.375rem; color: #334155;">
+                                                    <option value="all">All Languages</option>
+                                                    <option value="en">English (US/UK)</option>
+                                                    <option value="hi">Hindi (हिन्दी)</option>
+                                                    <option value="mr">Marathi (मराठी)</option>
+                                                    <option value="es">Spanish (Español)</option>
+                                                    <option value="fr">French (Français)</option>
+                                                    <option value="de">German (Deutsch)</option>
+                                                    <option value="ja">Japanese (日本語)</option>
+                                                    <option value="ta">Tamil (தமிழ்)</option>
+                                                    <option value="te">Telugu (తెలుగు)</option>
+                                                </select>
+                                            </div>
+                                            <select id="voiceStudioModelSelect" class="form-select" onchange="onVoiceStudioModelSelect(this.value)" style="width: 100%; font-size: 0.82rem; padding: 0.5rem 0.65rem;">
+                                                <!-- Dynamic models from catalog -->
+                                            </select>
+                                        </div>
+
+                                        <div id="voiceStudioModelDetailsBox" style="margin-top: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.65rem 0.75rem;">
+                                            <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a;" id="voiceStudioModelTitle">Ava (Neural)</div>
+                                            <div style="font-size: 0.73rem; color: #64748b; margin-top: 0.2rem;" id="voiceStudioModelDesc">Expressive, welcoming natural tone suited for customer engagement.</div>
+                                        </div>
+
+                                        <div id="voiceStudioMultilingualInfo" style="margin-top: 0.6rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.5rem 0.65rem; font-size: 0.72rem; color: #166534; display: flex; align-items: flex-start; gap: 0.45rem;">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                            <span><strong>Adaptive Multilingual Persona:</strong> Voice persona dynamically adapts to matching gender and tone across Hindi, Marathi, Spanish, etc.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: Pitch & Rate Sliders + Audition Studio -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Acoustic Tuning Card -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">3</span>
+                                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Acoustic Fine Tuning</h3>
+                                    </div>
+                                    <button type="button" onclick="resetVoiceStudioSliders()" style="background: none; border: none; font-size: 0.73rem; color: #2563eb; cursor: pointer; text-decoration: underline;">Reset to Default</button>
+                                </div>
+
+                                <!-- Pitch Slider -->
+                                <div style="margin-bottom: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                        <label for="voiceStudioPitchSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Vocal Pitch</label>
+                                        <span id="voiceStudioPitchBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">+0Hz (Default)</span>
+                                    </div>
+                                    <input type="range" id="voiceStudioPitchSlider" min="-30" max="30" step="1" value="0" oninput="updateVoiceStudioPitchVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
+                                        <span>-30Hz (Deep Baritone)</span>
+                                        <span>0Hz</span>
+                                        <span>+30Hz (High Melodic)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Speed / Rate Slider -->
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                                        <label for="voiceStudioRateSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Speech Rate / Cadence</label>
+                                        <span id="voiceStudioRateBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">1.00x (+0%)</span>
+                                    </div>
+                                    <input type="range" id="voiceStudioRateSlider" min="75" max="135" step="1" value="100" oninput="updateVoiceStudioRateVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
+                                        <span>0.75x (Deliberate)</span>
+                                        <span>1.0x (Natural)</span>
+                                        <span>1.35x (Fast Cadence)</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Speed / Rate Slider -->
+                            <!-- Live Audition Studio Card -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">4</span>
+                                        <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Live Voice Audition</h3>
+                                    </div>
+                                    <span style="font-size: 0.72rem; color: #16a34a; font-weight: 600;" id="voiceStudioPlayerStatus">Ready to test</span>
+                                </div>
+
+                                <div style="margin-bottom: 0.75rem;">
+                                    <label for="voiceStudioTestText" style="display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem;">Sample Spoken Text</label>
+                                    <textarea id="voiceStudioTestText" class="form-textarea" rows="2" style="font-size: 0.82rem; resize: vertical;" placeholder="Type custom audition speech or leave empty for agent sample phrase..."></textarea>
+                                </div>
+
+                                <!-- Audition Action & Audio Element -->
+                                <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                                    <button type="button" class="btn-primary" id="btnVoiceStudioAudition" onclick="previewVoiceStudioAudio()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        <span id="voiceStudioAuditionBtnText">▶ Test Listen Voice</span>
+                                    </button>
+
+                                    <audio id="voiceStudioAudioPlayer" controls style="width: 100%; height: 36px; display: none;"></audio>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     TAB 2 PANE: VIEW VOICES (Custom + Catalog Library)
+                     ========================================== -->
+                <div id="voiceStudioPaneView" style="display: none; flex-direction: column; gap: 1.25rem;">
+                    <!-- Filter and Search Bar -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; flex: 1;">
+                            <!-- Search -->
+                            <div style="min-width: 200px; flex: 1;">
+                                <input type="text" id="voiceStudioViewSearch" class="form-input" placeholder="Search voices by persona, name, or model..." oninput="renderVoiceStudioViewGrid()" style="font-size: 0.82rem; padding: 0.45rem 0.75rem;">
+                            </div>
+                            <!-- Source Filter -->
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                                    <label for="voiceStudioRateSlider" style="font-size: 0.8rem; font-weight: 600; color: #334155; margin: 0;">Speech Rate / Cadence</label>
-                                    <span id="voiceStudioRateBadge" style="font-size: 0.75rem; font-weight: 700; color: #1e40af; background: #eff6ff; padding: 0.1rem 0.45rem; border-radius: 0.25rem;">1.00x (+0%)</span>
-                                </div>
-                                <input type="range" id="voiceStudioRateSlider" min="75" max="135" step="1" value="100" oninput="updateVoiceStudioRateVal(this.value)" style="width: 100%; accent-color: #2563eb; cursor: pointer;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; margin-top: 0.15rem;">
-                                    <span>0.75x (Deliberate)</span>
-                                    <span>1.0x (Natural)</span>
-                                    <span>1.35x (Fast Cadence)</span>
-                                </div>
+                                <select id="voiceStudioViewSourceFilter" class="form-select" onchange="renderVoiceStudioViewGrid()" style="font-size: 0.8rem; padding: 0.45rem 0.65rem;">
+                                    <option value="all">All Sources (Custom & System)</option>
+                                    <option value="custom">Organization Custom Voices Only</option>
+                                    <option value="catalog">Standard System Presets Only</option>
+                                </select>
+                            </div>
+                            <!-- Language Filter -->
+                            <div>
+                                <select id="voiceStudioViewLangFilter" class="form-select" onchange="renderVoiceStudioViewGrid()" style="font-size: 0.8rem; padding: 0.45rem 0.65rem;">
+                                    <option value="all">All Languages</option>
+                                    <option value="en">English</option>
+                                    <option value="hi">Hindi (हिन्दी)</option>
+                                    <option value="mr">Marathi (मराठी)</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="ta">Tamil</option>
+                                    <option value="te">Telugu</option>
+                                </select>
+                            </div>
+                            <!-- Gender Filter -->
+                            <div>
+                                <select id="voiceStudioViewGenderFilter" class="form-select" onchange="renderVoiceStudioViewGrid()" style="font-size: 0.8rem; padding: 0.45rem 0.65rem;">
+                                    <option value="all">All Genders</option>
+                                    <option value="female">Female</option>
+                                    <option value="male">Male</option>
+                                    <option value="child">Child</option>
+                                    <option value="aged">Senior / Aged</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Live Audition Studio Card -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 700; color: #2563eb; background: #dbeafe; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">4</span>
-                                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Live Voice Audition</h3>
-                                </div>
-                                <span style="font-size: 0.72rem; color: #16a34a; font-weight: 600;" id="voiceStudioPlayerStatus">Ready to test</span>
-                            </div>
-
-                            <div style="margin-bottom: 0.75rem;">
-                                <label for="voiceStudioTestText" style="display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem;">Sample Spoken Text</label>
-                                <textarea id="voiceStudioTestText" class="form-textarea" rows="2" style="font-size: 0.82rem; resize: vertical;" placeholder="Type custom audition speech or leave empty for agent sample phrase..."></textarea>
-                            </div>
-
-                            <!-- Audition Action & Audio Element -->
-                            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
-                                <button type="button" class="btn-primary" id="btnVoiceStudioAudition" onclick="previewVoiceStudioAudio()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                    <span id="voiceStudioAuditionBtnText">▶ Test Listen Voice</span>
-                                </button>
-
-                                <audio id="voiceStudioAudioPlayer" controls style="width: 100%; height: 36px; display: none;"></audio>
-                            </div>
+                        <div>
+                            <button type="button" class="btn-primary" onclick="switchVoiceStudioTab('generate')" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                                <span>+ Generate New Voice</span>
+                            </button>
                         </div>
+                    </div>
+
+                    <!-- Voice Cards Grid -->
+                    <div id="voiceStudioViewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+                        <!-- Dynamically populated voice cards -->
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     TAB 3 PANE: DELETE VOICES (Organization Custom Voices)
+                     ========================================== -->
+                <div id="voiceStudioPaneDelete" style="display: none; flex-direction: column; gap: 1.25rem;">
+                    <!-- Action Bar -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <label style="display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; font-weight: 600; color: #1e293b; cursor: pointer; user-select: none;">
+                                <input type="checkbox" id="chkVoiceStudioSelectAll" onchange="toggleVoiceStudioSelectAll(this.checked)" style="width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer;">
+                                <span>Select All</span>
+                            </label>
+                            <span id="voiceStudioDeleteSelectedText" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">0 selected</span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <button type="button" id="btnDeleteSelectedVoices" onclick="deleteSelectedCustomVoices()" disabled style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; border: none; background: #ef4444; color: #ffffff; cursor: pointer; opacity: 0.5; transition: all 0.15s ease;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                <span>Delete Selected Voices</span>
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="loadVoiceStudio('delete')" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; cursor: pointer;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Voices Delete List / Table Container -->
+                    <div id="voiceStudioDeleteList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Dynamically populated custom voices for the organization -->
                     </div>
                 </div>
             </div>
@@ -7324,48 +7448,34 @@
                     </div>
                 </div>
 
-                <!-- Speaking Voice Persona Selector -->
+                <!-- Speaking Voice Persona Selector (Unified Single Dropdown) -->
                 <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.65rem; padding: 0.85rem; margin-top: 0.5rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; color: #0f172a; font-weight: 700;">
-                            <span style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span> Speaking Voice & Demographic Persona
+                        <label class="form-label" for="agentModalVoiceSelect" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; color: #0f172a; font-weight: 700;">
+                            <span style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></span> Agent Voice Persona
                         </label>
                         <button type="button" class="btn-secondary" id="agentModalAuditionBtn" onclick="auditionModalVoice()" style="font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 9999px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span id="agentModalAuditionBtnText">Test Sample</span>
                         </button>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-bottom: 0.5rem;">
-                        <div>
-                            <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Gender / Persona</label>
-                            <select id="agentModalVoiceGender" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalGenderChange(this.value)">
-                                <option value="female">Female</option>
-                                <option value="male">Male</option>
-                                <option value="child">Child (8–14 yrs)</option>
-                                <option value="aged">Senior / Aged (60+ yrs)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Personality Archetype</label>
-                            <select id="agentModalVoicePersonality" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalPersonalityChange(this.value)">
-                                <option value="friendly_warm">Friendly & Warm</option>
-                                <option value="professional_crisp">Professional & Crisp</option>
-                                <option value="empathetic_caregiver">Empathetic Caregiver</option>
-                                <option value="energetic_sales">Energetic Sales</option>
-                                <option value="calm_advisor">Calm Advisor</option>
-                            </select>
-                        </div>
-                    </div>
+
+                    <!-- Single Clean Dropdown List -->
                     <div>
-                        <label style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 0.2rem;">Voice Model</label>
-                        <select id="agentModalVoiceModel" class="form-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onchange="onAgentModalVoiceModelChange(this.value)">
-                            <!-- Populated dynamically from VOICE_CATALOG -->
+                        <select id="agentModalVoiceSelect" class="form-select" style="font-size: 0.82rem; padding: 0.45rem 0.65rem; font-weight: 600;" onchange="onAgentModalVoiceSelectChange(this.value)">
+                            <!-- Populated dynamically with Custom Voices & Standard Voices -->
                         </select>
                     </div>
-                    <p style="font-size: 0.72rem; color: #64748b; margin-top: 0.4rem; margin-bottom: 0;" id="agentModalVoiceDesc">
-                        Natural feminine tone suited for customer engagement and voice assistance.
+
+                    <div id="agentModalVoiceBadgeRow" style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem;">
+                        <!-- Demographic and acoustic tags dynamically populated -->
+                    </div>
+
+                    <p style="font-size: 0.72rem; color: #64748b; margin-top: 0.35rem; margin-bottom: 0;" id="agentModalVoiceDesc">
+                        Select a voice persona prepared in Voice Studio or choose from standard presets.
                     </p>
+
                     <div style="margin-top: 0.4rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.375rem; padding: 0.35rem 0.5rem; font-size: 0.7rem; color: #166534; display: flex; align-items: center; gap: 0.35rem;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         <span>Multilingual Adaptation: Selected persona automatically maps to matching gender in Hindi, Marathi, Spanish, etc.</span>
                     </div>
                     <audio id="agentModalAudioPlayer" style="display: none;"></audio>
@@ -12067,91 +12177,144 @@ Account ID: ${u.id || ''}`;
                 return { catalog: window.voiceCatalogCache, demographics: window.voiceDemographicsCache };
             }
             try {
-                const res = await fetch('/api/voices/catalog');
+                const orgId = (activeOrg ? activeOrg.id : 'apex-ai-innovations');
+                const res = await fetch(`/api/organizations/${orgId}/voices`);
                 if (res.ok) {
                     const data = await res.json();
                     window.voiceCatalogCache = data.catalog || [];
                     window.voiceDemographicsCache = data.demographics || {};
+                    window.orgCustomVoicesCache = data.custom_voices || [];
                     return data;
                 }
             } catch (err) {
-                console.error("Failed to fetch voice catalog:", err);
+                console.error("Failed to fetch voices:", err);
             }
-            return { catalog: [], demographics: {} };
+            return {
+                catalog: window.voiceCatalogCache || [],
+                demographics: window.voiceDemographicsCache || {},
+                custom_voices: window.orgCustomVoicesCache || []
+            };
         }
 
-        async function populateAgentModalVoices(targetVoiceId, targetGender, targetPersonality) {
+        async function populateAgentModalVoices(targetVoiceId) {
             const data = await fetchVoiceCatalog();
             const catalog = data.catalog || [];
-            const selectEl = document.getElementById('agentModalVoiceModel');
+            const customVoices = data.custom_voices || [];
+            const selectEl = document.getElementById('agentModalVoiceSelect');
             if (!selectEl) return;
 
             selectEl.innerHTML = '';
-            const genderVal = targetGender || document.getElementById('agentModalVoiceGender')?.value || 'female';
+            const orgName = activeOrg ? activeOrg.name : 'Organization';
 
-            let matchingVoices = catalog.filter(v => v.gender === genderVal);
-            if (matchingVoices.length === 0) matchingVoices = catalog;
+            // 1. Group: Organization Custom Voices
+            const customGroup = document.createElement('optgroup');
+            customGroup.label = `⭐ Custom Voices (${orgName})`;
+            if (customVoices.length === 0) {
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = '';
+                emptyOpt.disabled = true;
+                emptyOpt.textContent = 'No custom personas yet (craft in Voice Studio)';
+                customGroup.appendChild(emptyOpt);
+            } else {
+                customVoices.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.dataset.type = 'custom';
+                    opt.textContent = `${v.name} — [${v.gender}, ${v.personality_label || v.personality}, ${v.pitch || '+0Hz'}]`;
+                    if (targetVoiceId && (v.id === targetVoiceId || v.name === targetVoiceId || v.base_voice_id === targetVoiceId)) {
+                        opt.selected = true;
+                    }
+                    customGroup.appendChild(opt);
+                });
+            }
+            selectEl.appendChild(customGroup);
 
-            matchingVoices.forEach(v => {
+            // 2. Group: Standard System Voices
+            const systemGroup = document.createElement('optgroup');
+            systemGroup.label = '🌐 Standard System Voices';
+            catalog.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v.id;
-                opt.textContent = `${v.display_name} (${v.language_name || v.language || 'EN'}, ${v.age_label || v.age_group})`;
-                opt.dataset.desc = v.description;
-                opt.dataset.sample = v.sample_phrase || '';
-                opt.dataset.gender = v.gender;
-                opt.dataset.ageGroup = v.age_group;
-                opt.dataset.personality = v.personality;
-                opt.dataset.pitch = v.pitch_default || '+0Hz';
-                opt.dataset.rate = v.rate_default || '+0%';
-                if (v.id === targetVoiceId) opt.selected = true;
-                selectEl.appendChild(opt);
+                opt.dataset.type = 'catalog';
+                opt.textContent = `${v.display_name} (${v.language_name || v.language || 'EN'}, ${v.gender}) — ${v.personality_label || v.personality}`;
+                if (targetVoiceId && (v.id === targetVoiceId || v.name === targetVoiceId)) {
+                    opt.selected = true;
+                }
+                systemGroup.appendChild(opt);
             });
+            selectEl.appendChild(systemGroup);
 
-            if (!selectEl.value && matchingVoices.length > 0) {
-                selectEl.value = matchingVoices[0].id;
-            }
-
-            const genderEl = document.getElementById('agentModalVoiceGender');
-            if (genderEl && targetGender) genderEl.value = targetGender;
-
-            const persEl = document.getElementById('agentModalVoicePersonality');
-            if (persEl && targetPersonality) persEl.value = targetPersonality;
-
-            onAgentModalVoiceModelChange(selectEl.value);
-        }
-
-        function onAgentModalGenderChange(gender) {
-            populateAgentModalVoices(null, gender, document.getElementById('agentModalVoicePersonality')?.value);
-        }
-
-        function onAgentModalPersonalityChange(personality) {
-            const catalog = window.voiceCatalogCache || [];
-            const gender = document.getElementById('agentModalVoiceGender')?.value;
-            const match = catalog.find(v => v.personality === personality && (!gender || v.gender === gender));
-            if (match) {
-                const selectEl = document.getElementById('agentModalVoiceModel');
-                if (selectEl) {
-                    selectEl.value = match.id;
-                    onAgentModalVoiceModelChange(match.id);
+            // Default selection if none matched
+            if (!selectEl.value) {
+                if (customVoices.length > 0) {
+                    selectEl.value = customVoices[0].id;
+                } else if (catalog.length > 0) {
+                    selectEl.value = catalog[0].id;
                 }
             }
+
+            onAgentModalVoiceSelectChange(selectEl.value);
         }
 
-        function onAgentModalVoiceModelChange(modelId) {
+        function onAgentModalVoiceSelectChange(selectedVal) {
+            const customVoices = window.orgCustomVoicesCache || [];
             const catalog = window.voiceCatalogCache || [];
-            const voice = catalog.find(v => v.id === modelId);
+            const customVoice = customVoices.find(v => v.id === selectedVal);
+            const catalogVoice = catalog.find(v => v.id === selectedVal);
+            const voice = customVoice || catalogVoice;
+
             const descEl = document.getElementById('agentModalVoiceDesc');
-            if (descEl && voice) {
-                descEl.innerText = `${voice.description} • Sample: "${voice.sample_phrase || ''}"`;
+            const badgeRow = document.getElementById('agentModalVoiceBadgeRow');
+
+            if (!voice) {
+                if (descEl) descEl.innerText = 'Select a voice persona for this agent.';
+                if (badgeRow) badgeRow.innerHTML = '';
+                return;
+            }
+
+            const isCustom = !!customVoice;
+            const genderStr = (voice.gender || 'female').toUpperCase();
+            const ageStr = (voice.age_group || 'young_adult').replace('_', ' ').toUpperCase();
+            const archetypeStr = voice.personality_label || (voice.personality ? voice.personality.replace('_', ' ').toUpperCase() : 'STANDARD');
+            const pitchStr = voice.pitch || voice.pitch_default || '+0Hz';
+            const rateStr = voice.rate || voice.rate_default || '+0%';
+            const langStr = voice.language_name || voice.language || 'English';
+
+            if (descEl) {
+                if (isCustom) {
+                    descEl.innerHTML = `<strong>Custom Persona:</strong> ${escapeHtml(voice.notes || 'Configured in Voice Studio')} • <em>Sample: "${escapeHtml(voice.sample_phrase || '')}"</em>`;
+                } else {
+                    descEl.innerHTML = `<strong>Standard Voice:</strong> ${escapeHtml(voice.description || '')} • <em>Sample: "${escapeHtml(voice.sample_phrase || '')}"</em>`;
+                }
+            }
+
+            if (badgeRow) {
+                badgeRow.innerHTML = `
+                    <span style="font-size:0.68rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:9999px; ${isCustom ? 'background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe;' : 'background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;'}">
+                        ${isCustom ? '⭐ Custom Persona' : '🌐 System Voice'}
+                    </span>
+                    <span style="font-size:0.68rem; font-weight:600; padding:0.15rem 0.45rem; border-radius:9999px; background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${genderStr}</span>
+                    <span style="font-size:0.68rem; font-weight:600; padding:0.15rem 0.45rem; border-radius:9999px; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">${archetypeStr}</span>
+                    <span style="font-size:0.68rem; font-weight:600; padding:0.15rem 0.45rem; border-radius:9999px; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;">${langStr}</span>
+                    <span style="font-size:0.68rem; font-weight:600; padding:0.15rem 0.45rem; border-radius:9999px; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">Pitch ${pitchStr} | Cadence ${rateStr}</span>
+                `;
             }
         }
 
         async function auditionModalVoice() {
-            const voiceModel = document.getElementById('agentModalVoiceModel')?.value || 'en-US-AvaNeural';
+            const selectEl = document.getElementById('agentModalVoiceSelect');
+            const selectedVal = selectEl ? selectEl.value : null;
+            const customVoices = window.orgCustomVoicesCache || [];
             const catalog = window.voiceCatalogCache || [];
-            const voiceData = catalog.find(v => v.id === voiceModel) || {};
-            const gender = document.getElementById('agentModalVoiceGender')?.value || voiceData.gender || 'female';
-            const lang = voiceData.language || 'en';
+            const voice = customVoices.find(v => v.id === selectedVal) || catalog.find(v => v.id === selectedVal) || {};
+
+            const voiceModel = voice.base_voice_id || voice.voice_model || voice.id || 'en-US-AvaNeural';
+            const gender = voice.gender || 'female';
+            const lang = voice.language || 'en';
+            const pitch = voice.pitch || voice.pitch_default || '+0Hz';
+            const rate = voice.rate || voice.rate_default || '+0%';
+            const testText = voice.sample_phrase || document.getElementById('agentPrompt')?.value.slice(0, 100) || 'Hello! I am ready to assist you.';
+
             const btn = document.getElementById('agentModalAuditionBtn');
             const btnText = document.getElementById('agentModalAuditionBtnText');
             const audioEl = document.getElementById('agentModalAudioPlayer');
@@ -12165,10 +12328,11 @@ Account ID: ${u.id || ''}`;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         voice_model: voiceModel,
-                        pitch: '+0Hz',
-                        rate: '+0%',
+                        pitch: pitch,
+                        rate: rate,
                         gender: gender,
-                        language: lang
+                        language: lang,
+                        text: testText
                     })
                 });
                 if (res.ok) {
@@ -12204,7 +12368,7 @@ Account ID: ${u.id || ''}`;
             document.getElementById('capTelephony').checked = true;
             document.getElementById('capLiveVoice').checked = true;
 
-            populateAgentModalVoices('en-US-AvaNeural', 'female', 'friendly_warm');
+            populateAgentModalVoices();
             document.getElementById('agentModal').classList.add('active-modal');
         }
 
@@ -12229,11 +12393,7 @@ Account ID: ${u.id || ''}`;
             document.getElementById('capLiveVoice').checked = caps.includes('Live Voice Interaction');
 
             const vc = agent.voice_config || {};
-            populateAgentModalVoices(
-                vc.voice_id || 'en-US-AvaNeural',
-                vc.gender || 'female',
-                vc.personality || 'friendly_warm'
-            );
+            populateAgentModalVoices(vc.custom_voice_id || vc.voice_id || vc.voice_name);
 
             document.getElementById('agentModal').classList.add('active-modal');
         }
@@ -12284,23 +12444,26 @@ Account ID: ${u.id || ''}`;
                 payload.org_id = activeOrg ? activeOrg.id : 'apex-ai-innovations';
             }
 
-            // Extract selected voice persona configuration
-            const voiceModelEl = document.getElementById('agentModalVoiceModel');
-            const voiceGenderEl = document.getElementById('agentModalVoiceGender');
-            const voicePersEl = document.getElementById('agentModalVoicePersonality');
-            if (voiceModelEl && voiceModelEl.value) {
+            // Extract selected unified voice persona
+            const selectedVoiceVal = document.getElementById('agentModalVoiceSelect')?.value;
+            if (selectedVoiceVal) {
+                const customVoices = window.orgCustomVoicesCache || [];
                 const catalog = window.voiceCatalogCache || [];
-                const voiceData = catalog.find(v => v.id === voiceModelEl.value) || {};
+                const customMatch = customVoices.find(v => v.id === selectedVoiceVal);
+                const catalogMatch = catalog.find(v => v.id === selectedVoiceVal);
+                const voiceData = customMatch || catalogMatch || {};
+
                 payload.voice_config = {
-                    voice_id: voiceModelEl.value,
-                    voice_name: voiceData.name || voiceModelEl.value,
-                    gender: voiceGenderEl ? voiceGenderEl.value : (voiceData.gender || 'female'),
+                    voice_id: voiceData.base_voice_id || voiceData.voice_model || voiceData.id || 'en-US-AvaNeural',
+                    voice_name: voiceData.name || voiceData.display_name || voiceData.id,
+                    custom_voice_id: customMatch ? customMatch.id : null,
+                    gender: voiceData.gender || 'female',
                     age_group: voiceData.age_group || 'young_adult',
-                    personality: voicePersEl ? voicePersEl.value : (voiceData.personality || 'friendly_warm'),
-                    pitch: voiceData.pitch_default || '+0Hz',
-                    rate: voiceData.rate_default || '+0%',
+                    personality: voiceData.personality || 'friendly_warm',
+                    pitch: voiceData.pitch || voiceData.pitch_default || '+0Hz',
+                    rate: voiceData.rate || voiceData.rate_default || '+0%',
                     language: voiceData.language || 'en',
-                    notes: voiceData.description || 'Configured via agent modal'
+                    notes: voiceData.notes || voiceData.description || 'Configured via Agent Voice Persona Studio'
                 };
             }
 
@@ -12342,39 +12505,115 @@ Account ID: ${u.id || ''}`;
         }
 
         // -------------------------------------------------------------
-        // Voice Studio (Demographic Personas, Timbre, Live Audition)
+        // Voice Studio (3-Tab Architecture: Generate, View, Delete)
+        // Scoped Independently Per Organization
         // -------------------------------------------------------------
+        window.voiceStudioActiveTab = 'generate';
         window.currentStudioAgentId = null;
         window.selectedStudioGender = 'female';
         window.selectedStudioAge = 'young_adult';
 
-        async function loadVoiceStudio() {
+        function switchVoiceStudioTab(tab) {
+            window.voiceStudioActiveTab = tab;
+            const btnGen = document.getElementById('btnVoiceStudioTabGenerate');
+            const btnView = document.getElementById('btnVoiceStudioTabView');
+            const btnDel = document.getElementById('btnVoiceStudioTabDelete');
+            const paneGen = document.getElementById('voiceStudioPaneGenerate');
+            const paneView = document.getElementById('voiceStudioPaneView');
+            const paneDel = document.getElementById('voiceStudioPaneDelete');
+
+            // Reset tab styles
+            [btnGen, btnView, btnDel].forEach(b => {
+                if (b) {
+                    b.classList.remove('active');
+                    b.style.background = 'transparent';
+                    b.style.color = '#64748b';
+                    b.style.boxShadow = 'none';
+                }
+            });
+
+            if (paneGen) paneGen.style.display = 'none';
+            if (paneView) paneView.style.display = 'none';
+            if (paneDel) paneDel.style.display = 'none';
+
+            if (tab === 'generate') {
+                if (btnGen) {
+                    btnGen.classList.add('active');
+                    btnGen.style.background = '#ffffff';
+                    btnGen.style.color = '#1e40af';
+                    btnGen.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+                }
+                if (paneGen) paneGen.style.display = 'flex';
+            } else if (tab === 'view') {
+                if (btnView) {
+                    btnView.classList.add('active');
+                    btnView.style.background = '#ffffff';
+                    btnView.style.color = '#1e40af';
+                    btnView.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+                }
+                if (paneView) paneView.style.display = 'flex';
+                renderVoiceStudioViewGrid();
+            } else if (tab === 'delete') {
+                if (btnDel) {
+                    btnDel.classList.add('active');
+                    btnDel.style.background = '#ffffff';
+                    btnDel.style.color = '#b91c1c';
+                    btnDel.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+                }
+                if (paneDel) paneDel.style.display = 'flex';
+                renderVoiceStudioDeleteList();
+            }
+        }
+
+        async function loadVoiceStudio(preferredTab) {
+            const orgId = activeOrg ? activeOrg.id : 'apex-ai-innovations';
+            const orgName = activeOrg ? activeOrg.name : 'Apex AI Innovations';
+
+            const orgBadge = document.getElementById('voiceStudioActiveOrgBadge');
+            if (orgBadge) {
+                orgBadge.innerText = `Organization: ${orgName}`;
+            }
+
             const data = await fetchVoiceCatalog();
             const catalog = data.catalog || [];
+            const customVoices = data.custom_voices || [];
 
-            // Populate Agent Switcher
+            // Update badge counts
+            const totalCount = customVoices.length + catalog.length;
+            const countBadge = document.getElementById('voiceStudioCountBadge');
+            if (countBadge) countBadge.innerText = totalCount;
+
+            const delBadge = document.getElementById('voiceStudioDeleteCountBadge');
+            if (delBadge) delBadge.innerText = customVoices.length;
+
+            // Populate Agent Switcher in Generate Tab
             const agentSelect = document.getElementById('voiceStudioAgentSelect');
             if (agentSelect) {
-                agentSelect.innerHTML = '';
+                agentSelect.innerHTML = '<option value="">-- None (Do not assign to agent) --</option>';
                 allAgents.forEach(ag => {
                     const opt = document.createElement('option');
                     opt.value = ag.id;
                     const vName = ag.voice_config?.voice_name || 'Standard Neural';
                     opt.textContent = `${ag.name} (${ag.role}) — [${vName}]`;
-                    if (ag.id === (activeAgent ? activeAgent.id : allAgents[0]?.id)) {
+                    if (ag.id === window.currentStudioAgentId) {
                         opt.selected = true;
                     }
                     agentSelect.appendChild(opt);
                 });
             }
 
-            const initialAgentId = agentSelect?.value || (activeAgent ? activeAgent.id : allAgents[0]?.id);
-            if (initialAgentId) {
-                syncVoiceStudioToAgent(initialAgentId);
+            // Sync initial models dropdown if empty
+            const modelSelect = document.getElementById('voiceStudioModelSelect');
+            if (modelSelect && (!modelSelect.children || modelSelect.children.length === 0)) {
+                populateVoiceStudioModels();
             }
+
+            const targetTab = preferredTab || window.voiceStudioActiveTab || 'generate';
+            switchVoiceStudioTab(targetTab);
         }
 
         function onVoiceStudioAgentChange(agentId) {
+            if (!agentId) return;
             syncVoiceStudioToAgent(agentId);
         }
 
@@ -12410,7 +12649,6 @@ Account ID: ${u.id || ''}`;
             populateVoiceStudioModels(vc.voice_id || 'en-US-AvaNeural');
 
             // 5. Sync Sliders & Badges
-            // Pitch
             let pitchInt = 0;
             if (vc.pitch) {
                 const m = vc.pitch.match(/([+-]?\d+)/);
@@ -12422,7 +12660,6 @@ Account ID: ${u.id || ''}`;
                 updateVoiceStudioPitchVal(pitchInt);
             }
 
-            // Rate (Cadence)
             let rateInt = 100;
             if (vc.rate) {
                 const m = vc.rate.match(/([+-]?\d+)/);
@@ -12467,7 +12704,6 @@ Account ID: ${u.id || ''}`;
             }
 
             if (autoSelectModel) {
-                // Auto-sync age group preset for child / aged
                 if (gender === 'child') {
                     window.selectedStudioAge = 'child';
                 } else if (gender === 'aged') {
@@ -12547,7 +12783,7 @@ Account ID: ${u.id || ''}`;
 
             if (titleEl) titleEl.innerText = `${voice.display_name} (${voice.language_name || voice.language || 'English'})`;
             if (descEl) descEl.innerText = `${voice.description} • Speaking Archetype: ${voice.personality_label || voice.personality}`;
-            if (testTextEl && voice.sample_phrase) {
+            if (testTextEl && voice.sample_phrase && !testTextEl.value.trim()) {
                 testTextEl.value = voice.sample_phrase;
             }
         }
@@ -12654,10 +12890,21 @@ Account ID: ${u.id || ''}`;
             }
         }
 
-        async function saveVoiceStudioConfig() {
-            const agentId = window.currentStudioAgentId || document.getElementById('voiceStudioAgentSelect')?.value;
-            if (!agentId) {
-                alert("Please select an agent to apply this voice configuration.");
+        async function saveVoiceStudioPersona() {
+            const orgId = activeOrg ? activeOrg.id : 'apex-ai-innovations';
+            const nameInput = document.getElementById('voiceStudioPersonaName');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const banner = document.getElementById('voiceStudioAlertBanner');
+
+            if (!name) {
+                if (banner) {
+                    banner.style.display = 'flex';
+                    banner.style.background = '#fef2f2';
+                    banner.style.color = '#b91c1c';
+                    banner.style.border = '1px solid #fecaca';
+                    banner.innerHTML = '<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Please provide a name for this custom voice persona (e.g. Maya - Tech Support).</span>';
+                }
+                if (nameInput) nameInput.focus();
                 return;
             }
 
@@ -12671,39 +12918,48 @@ Account ID: ${u.id || ''}`;
             const ratePct = rateInt - 100;
             const rateStr = `${ratePct >= 0 ? '+' : ''}${ratePct}%`;
 
+            const persSelect = document.getElementById('voiceStudioPersonalitySelect');
+            const personalityVal = persSelect?.value || 'friendly_warm';
+            const personalityLabel = persSelect?.selectedOptions[0]?.textContent || personalityVal;
+
+            const agentSelect = document.getElementById('voiceStudioAgentSelect');
+            const targetAgentId = agentSelect?.value || null;
+
             const payload = {
-                voice_id: voiceModel,
-                voice_name: voiceObj.name || voiceModel,
+                name: name,
                 gender: window.selectedStudioGender || 'female',
                 age_group: window.selectedStudioAge || 'young_adult',
-                personality: document.getElementById('voiceStudioPersonalitySelect')?.value || 'friendly_warm',
+                personality: personalityVal,
+                personality_label: personalityLabel,
+                base_voice_id: voiceModel,
                 pitch: pitchStr,
                 rate: rateStr,
                 language: voiceObj.language || 'en',
-                notes: voiceObj.description || 'Customized in AI Voice Studio'
+                language_name: voiceObj.language_name || 'English',
+                sample_phrase: document.getElementById('voiceStudioTestText')?.value.trim() || voiceObj.sample_phrase || 'Hello! This is a test audition of my voice persona.',
+                notes: `Customized in AI Voice Studio for ${activeOrg ? activeOrg.name : orgId}`,
+                agent_id: targetAgentId
             };
 
-            const saveBtn = document.getElementById('btnVoiceStudioSave');
+            const saveBtn = document.getElementById('btnVoiceStudioSavePersona');
             if (saveBtn) saveBtn.disabled = true;
 
-            const banner = document.getElementById('voiceStudioAlertBanner');
-
             try {
-                const res = await fetch(`/api/agents/${agentId}/voice`, {
-                    method: 'PUT',
+                const res = await fetch(`/api/organizations/${orgId}/voices`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    // Update local agent caches
-                    const targetAgent = allAgents.find(a => a.id === agentId);
-                    if (targetAgent) {
-                        targetAgent.voice_config = data.voice_config;
-                    }
-                    if (activeAgent && activeAgent.id === agentId) {
-                        activeAgent.voice_config = data.voice_config;
+                    if (nameInput) nameInput.value = '';
+
+                    // If linked to an agent, update cached agent voice_config
+                    if (data.assigned_agent) {
+                        const targetAgent = allAgents.find(a => a.id === targetAgentId);
+                        if (targetAgent) targetAgent.voice_config = data.assigned_agent.voice_config;
+                        if (activeAgent && activeAgent.id === targetAgentId) activeAgent.voice_config = data.assigned_agent.voice_config;
                     }
 
                     if (banner) {
@@ -12712,14 +12968,14 @@ Account ID: ${u.id || ''}`;
                         banner.style.color = '#15803d';
                         banner.style.border = '1px solid #bbf7d0';
                         banner.innerHTML = `
-                            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M20 6L9 17l-5-5"/></svg>Voice persona successfully updated for <strong>${escapeHtml(targetAgent ? targetAgent.name : agentId)}</strong> (${payload.voice_name}, ${payload.gender}, ${payload.pitch}, ${payload.rate}).</span>
+                            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M20 6L9 17l-5-5"/></svg>Voice persona <strong>"${escapeHtml(name)}"</strong> saved successfully to organization library! ${data.assigned_agent ? `Applied to agent: <strong>${escapeHtml(data.assigned_agent.name)}</strong>.` : ''}</span>
                             <button onclick="document.getElementById('voiceStudioAlertBanner').style.display='none'" style="background:none; border:none; color:#15803d; font-weight:700; cursor:pointer;">✕</button>
                         `;
                         setTimeout(() => { if (banner) banner.style.display = 'none'; }, 6000);
                     }
 
-                    // Refresh dropdown labels
-                    loadVoiceStudio();
+                    // Reload studio to update View and Delete counts
+                    await loadVoiceStudio(window.voiceStudioActiveTab);
                 } else {
                     const err = await res.json();
                     if (banner) {
@@ -12727,20 +12983,423 @@ Account ID: ${u.id || ''}`;
                         banner.style.background = '#fef2f2';
                         banner.style.color = '#b91c1c';
                         banner.style.border = '1px solid #fecaca';
-                        banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Error: ${escapeHtml(err.detail || 'Could not save voice configuration.')}</span>`;
+                        banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Error: ${escapeHtml(err.detail || 'Could not save voice persona.')}</span>`;
                     }
                 }
             } catch (err) {
-                console.error("Save voice studio config error:", err);
+                console.error("Save voice persona error:", err);
                 if (banner) {
                     banner.style.display = 'flex';
                     banner.style.background = '#fef2f2';
                     banner.style.color = '#b91c1c';
                     banner.style.border = '1px solid #fecaca';
-                    banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Network error saving voice persona.</span>`;
+                    banner.innerHTML = '<span>Network error saving custom voice persona.</span>';
                 }
             } finally {
                 if (saveBtn) saveBtn.disabled = false;
+            }
+        }
+
+        // Backward compatibility alias for any existing handlers
+        function saveVoiceStudioConfig() {
+            return saveVoiceStudioPersona();
+        }
+
+        // -------------------------------------------------------------
+        // Voice Studio: TAB 2 (View Voices Grid & Search)
+        // -------------------------------------------------------------
+        function renderVoiceStudioViewGrid() {
+            const grid = document.getElementById('voiceStudioViewGrid');
+            if (!grid) return;
+
+            const customVoices = window.orgCustomVoicesCache || [];
+            const catalog = window.voiceCatalogCache || [];
+            const orgName = activeOrg ? activeOrg.name : 'Organization';
+
+            const searchQuery = (document.getElementById('voiceStudioViewSearch')?.value || '').toLowerCase().trim();
+            const sourceFilter = document.getElementById('voiceStudioViewSourceFilter')?.value || 'all';
+            const langFilter = document.getElementById('voiceStudioViewLangFilter')?.value || 'all';
+            const genderFilter = document.getElementById('voiceStudioViewGenderFilter')?.value || 'all';
+
+            // Build unified voice list with tagged metadata
+            let items = [];
+            if (sourceFilter === 'all' || sourceFilter === 'custom') {
+                customVoices.forEach(v => {
+                    items.push({
+                        ...v,
+                        is_custom: true,
+                        display_title: v.name,
+                        source_label: `Custom (${orgName})`,
+                        search_corpus: `${v.name} ${v.personality} ${v.personality_label || ''} ${v.language || ''} ${v.language_name || ''} ${v.notes || ''}`.toLowerCase()
+                    });
+                });
+            }
+            if (sourceFilter === 'all' || sourceFilter === 'catalog') {
+                catalog.forEach(v => {
+                    items.push({
+                        ...v,
+                        is_custom: false,
+                        display_title: v.display_name,
+                        source_label: 'System Standard',
+                        search_corpus: `${v.display_name} ${v.name || ''} ${v.personality} ${v.language || ''} ${v.language_name || ''} ${v.description || ''}`.toLowerCase()
+                    });
+                });
+            }
+
+            // Apply filters
+            if (searchQuery) {
+                items = items.filter(it => it.search_corpus.includes(searchQuery));
+            }
+            if (langFilter !== 'all') {
+                items = items.filter(it => (it.language || '').toLowerCase() === langFilter.toLowerCase());
+            }
+            if (genderFilter !== 'all') {
+                items = items.filter(it => (it.gender || '').toLowerCase() === genderFilter.toLowerCase());
+            }
+
+            grid.innerHTML = '';
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 2.5rem 1.5rem; text-align: center;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0 0 0.35rem 0;">No Voices Match Your Filter</h4>
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 1rem 0;">Try adjusting your search query, language, or source filter options.</p>
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('voiceStudioViewSearch').value=''; document.getElementById('voiceStudioViewSourceFilter').value='all'; document.getElementById('voiceStudioViewLangFilter').value='all'; document.getElementById('voiceStudioViewGenderFilter').value='all'; renderVoiceStudioViewGrid();" style="font-size: 0.8rem; padding: 0.4rem 0.85rem; border-radius: 0.45rem; cursor: pointer;">
+                            Reset All Filters
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(it => {
+                const card = document.createElement('div');
+                card.style.background = '#ffffff';
+                card.style.borderRadius = '0.75rem';
+                card.style.padding = '1.15rem';
+                card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.03)';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.justifyContent = 'space-between';
+                card.style.gap = '0.85rem';
+                card.style.transition = 'all 0.15s ease';
+
+                if (it.is_custom) {
+                    card.style.border = '2px solid #3b82f6';
+                    card.style.background = 'linear-gradient(to bottom, #ffffff, #f8fafc)';
+                } else {
+                    card.style.border = '1px solid #e2e8f0';
+                }
+
+                const gender = (it.gender || 'female').toLowerCase();
+                let genderColor = '#4338ca';
+                let genderBg = '#e0e7ff';
+                if (gender === 'male') { genderColor = '#1e40af'; genderBg = '#dbeafe'; }
+                else if (gender === 'child') { genderColor = '#b45309'; genderBg = '#fef3c7'; }
+                else if (gender === 'aged') { genderColor = '#6d28d9'; genderBg = '#ede9fe'; }
+
+                const pitchStr = it.pitch || it.pitch_default || '+0Hz';
+                const rateStr = it.rate || it.rate_default || '+0%';
+                const langName = it.language_name || it.language || 'English';
+                const personalityStr = it.personality_label || (it.personality ? it.personality.replace('_', ' ').toUpperCase() : 'General');
+                const samplePhrase = it.sample_phrase || 'Hello! This is a voice persona preview.';
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Header with Name and Badge -->
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a; line-height: 1.3;">
+                                ${escapeHtml(it.display_title)}
+                            </div>
+                            <span style="font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; white-space: nowrap; ${it.is_custom ? 'background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;' : 'background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;'}">
+                                ${it.is_custom ? '⭐ Custom' : '🌐 System'}
+                            </span>
+                        </div>
+
+                        <!-- Metadata Badges -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem;">
+                            <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 0.3rem; background: ${genderBg}; color: ${genderColor};">
+                                ${gender.toUpperCase()}
+                            </span>
+                            <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 0.3rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">
+                                ${langName}
+                            </span>
+                            <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 0.3rem; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;">
+                                ${personalityStr}
+                            </span>
+                            <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 0.3rem; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                                ${pitchStr} / ${rateStr}
+                            </span>
+                        </div>
+
+                        <!-- Notes or Sample Text -->
+                        <div style="font-size: 0.75rem; color: #64748b; line-height: 1.4; background: #f8fafc; padding: 0.5rem 0.65rem; border-radius: 0.45rem; border: 1px solid #f1f5f9;">
+                            <em>"${escapeHtml(samplePhrase)}"</em>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; padding-top: 0.5rem; border-top: 1px solid #f1f5f9;">
+                        <button type="button" class="btn-audition-card" onclick="previewSpecificVoice('${it.base_voice_id || it.id}', '${pitchStr}', '${rateStr}', '${gender}', '${it.language || 'en'}', '${escapeHtml(samplePhrase).replace(/'/g, "\\'")}', this)" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 600; border-radius: 0.45rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; cursor: pointer; transition: all 0.15s ease;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span>Audition Voice</span>
+                        </button>
+                        ${it.is_custom ? `
+                            <button type="button" onclick="deleteSingleCustomVoice('${it.id}', '${escapeHtml(it.name).replace(/'/g, "\\'")}')" title="Delete Custom Voice" style="padding: 0.4rem 0.65rem; font-size: 0.78rem; border-radius: 0.45rem; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        async function previewSpecificVoice(voiceModel, pitch, rate, gender, language, phrase, btnEl) {
+            const originalHtml = btnEl ? btnEl.innerHTML : '';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<span>Synthesizing...</span>';
+            }
+
+            try {
+                const res = await fetch('/api/voices/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice_model: voiceModel,
+                        pitch: pitch,
+                        rate: rate,
+                        gender: gender,
+                        language: language,
+                        text: phrase
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.audio_url) {
+                        const audio = new Audio(data.audio_url);
+                        if (btnEl) btnEl.innerHTML = '<span>▶ Playing...</span>';
+                        audio.onended = () => {
+                            if (btnEl) {
+                                btnEl.innerHTML = originalHtml;
+                                btnEl.disabled = false;
+                            }
+                        };
+                        audio.onerror = () => {
+                            if (btnEl) {
+                                btnEl.innerHTML = originalHtml;
+                                btnEl.disabled = false;
+                            }
+                        };
+                        await audio.play().catch(e => console.warn("Card preview autoplay blocked:", e));
+                        return;
+                    }
+                } else {
+                    alert("Unable to synthesize audio sample.");
+                }
+            } catch (err) {
+                console.error("Audition specific voice error:", err);
+            } finally {
+                if (btnEl && (!btnEl.innerHTML.includes('Playing'))) {
+                    btnEl.innerHTML = originalHtml;
+                    btnEl.disabled = false;
+                }
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Voice Studio: TAB 3 (Delete Custom Voices List & Batch Delete)
+        // -------------------------------------------------------------
+        function renderVoiceStudioDeleteList() {
+            const container = document.getElementById('voiceStudioDeleteList');
+            if (!container) return;
+
+            const customVoices = window.orgCustomVoicesCache || [];
+            const orgName = activeOrg ? activeOrg.name : 'Organization';
+
+            const selectAllChk = document.getElementById('chkVoiceStudioSelectAll');
+            if (selectAllChk) selectAllChk.checked = false;
+            updateVoiceDeleteSelectedCount();
+
+            container.innerHTML = '';
+
+            if (customVoices.length === 0) {
+                container.innerHTML = `
+                    <div style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 3rem 1.5rem; text-align: center;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0 0 0.35rem 0;">No Custom Voices to Delete</h4>
+                        <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 1.25rem 0;">No custom voice personas currently exist for <strong>${escapeHtml(orgName)}</strong>.</p>
+                        <button type="button" class="btn-primary" onclick="switchVoiceStudioTab('generate')" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; border-radius: 0.45rem; background: #2563eb; color: #ffffff; border: none; cursor: pointer;">
+                            <span>+ Craft New Voice Persona</span>
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            customVoices.forEach(v => {
+                const row = document.createElement('div');
+                row.style.background = '#ffffff';
+                row.style.border = '1px solid #e2e8f0';
+                row.style.borderRadius = '0.65rem';
+                row.style.padding = '0.85rem 1.15rem';
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.justifyContent = 'space-between';
+                row.style.gap = '1rem';
+                row.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
+                row.style.transition = 'all 0.15s ease';
+
+                const gender = (v.gender || 'female').toUpperCase();
+                const archetype = v.personality_label || (v.personality ? v.personality.replace('_', ' ').toUpperCase() : 'STANDARD');
+                const lang = v.language_name || v.language || 'English';
+                const pitch = v.pitch || '+0Hz';
+                const rate = v.rate || '+0%';
+
+                row.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1;">
+                        <input type="checkbox" class="voice-delete-checkbox" value="${v.id}" onchange="updateVoiceDeleteSelectedCount()" style="width: 17px; height: 17px; accent-color: #ef4444; cursor: pointer;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-size: 0.9rem; font-weight: 700; color: #0f172a;">${escapeHtml(v.name)}</span>
+                                <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 9999px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">${gender}</span>
+                                <span style="font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 9999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">${lang}</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; display: flex; align-items: center; gap: 0.65rem;">
+                                <span>Archetype: <strong>${archetype}</strong></span>
+                                <span>•</span>
+                                <span>Pitch: <strong>${pitch}</strong></span>
+                                <span>•</span>
+                                <span>Cadence: <strong>${rate}</strong></span>
+                                <span>•</span>
+                                <span>Base: <code>${v.base_voice_id || v.voice_model}</code></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button type="button" class="btn-audition-card" onclick="previewSpecificVoice('${v.base_voice_id || v.id}', '${pitch}', '${rate}', '${v.gender || 'female'}', '${v.language || 'en'}', '${escapeHtml(v.sample_phrase || '').replace(/'/g, "\\'")}', this)" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.35rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; cursor: pointer;">
+                            ▶ Test
+                        </button>
+                        <button type="button" onclick="deleteSingleCustomVoice('${v.id}', '${escapeHtml(v.name).replace(/'/g, "\\'")}')" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.35rem; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; cursor: pointer;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(row);
+            });
+        }
+
+        function toggleVoiceStudioSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.voice-delete-checkbox');
+            checkboxes.forEach(cb => { cb.checked = checked; });
+            updateVoiceDeleteSelectedCount();
+        }
+
+        function updateVoiceDeleteSelectedCount() {
+            const checkedBoxes = document.querySelectorAll('.voice-delete-checkbox:checked');
+            const count = checkedBoxes.length;
+            const textEl = document.getElementById('voiceStudioDeleteSelectedText');
+            if (textEl) textEl.innerText = `${count} selected`;
+
+            const btn = document.getElementById('btnDeleteSelectedVoices');
+            if (btn) {
+                if (count > 0) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.background = '#dc2626';
+                    btn.style.cursor = 'pointer';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.background = '#ef4444';
+                    btn.style.cursor = 'not-allowed';
+                }
+            }
+        }
+
+        async function deleteSingleCustomVoice(voiceId, voiceName) {
+            if (!confirm(`Are you sure you want to delete custom voice persona "${voiceName}"?`)) return;
+
+            const orgId = activeOrg ? activeOrg.id : 'apex-ai-innovations';
+            const banner = document.getElementById('voiceStudioAlertBanner');
+
+            try {
+                const res = await fetch(`/api/organizations/${orgId}/voices/${voiceId}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.ok) {
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        banner.style.background = '#f0fdf4';
+                        banner.style.color = '#15803d';
+                        banner.style.border = '1px solid #bbf7d0';
+                        banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M20 6L9 17l-5-5"/></svg>Custom voice persona <strong>"${escapeHtml(voiceName)}"</strong> has been deleted.</span>`;
+                        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 5000);
+                    }
+                    await loadVoiceStudio(window.voiceStudioActiveTab || 'delete');
+                } else {
+                    const err = await res.json();
+                    alert(`Could not delete voice: ${err.detail || 'Delete failed'}`);
+                }
+            } catch (err) {
+                console.error("Delete custom voice error:", err);
+                alert("Network error deleting voice persona.");
+            }
+        }
+
+        async function deleteSelectedCustomVoices() {
+            const checkedBoxes = document.querySelectorAll('.voice-delete-checkbox:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (!confirm(`Are you sure you want to delete ${selectedIds.length} custom voice persona(s)? This action cannot be undone.`)) {
+                return;
+            }
+
+            const orgId = activeOrg ? activeOrg.id : 'apex-ai-innovations';
+            const banner = document.getElementById('voiceStudioAlertBanner');
+            const btn = document.getElementById('btnDeleteSelectedVoices');
+            if (btn) btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/organizations/${orgId}/voices`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voice_ids: selectedIds })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        banner.style.background = '#f0fdf4';
+                        banner.style.color = '#15803d';
+                        banner.style.border = '1px solid #bbf7d0';
+                        banner.innerHTML = `<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><path d="M20 6L9 17l-5-5"/></svg>Successfully deleted ${data.deleted_count || selectedIds.length} custom voice persona(s).</span>`;
+                        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 5000);
+                    }
+                    await loadVoiceStudio('delete');
+                } else {
+                    const err = await res.json();
+                    alert(`Could not delete voices: ${err.detail || 'Batch delete failed'}`);
+                }
+            } catch (err) {
+                console.error("Batch delete voices error:", err);
+                alert("Network error during batch voice deletion.");
+            } finally {
+                if (btn) btn.disabled = false;
             }
         }
 

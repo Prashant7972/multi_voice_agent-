@@ -59,6 +59,7 @@ from app.campaigns import CampaignManager
 from app.conversations import ConversationManager, generate_conversation_id
 from app.call_analysis import CallAnalyzer
 from app.maintenance import cleanup_old_audio_files
+from app.voices import VoiceManager
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.security import (
@@ -169,6 +170,7 @@ contacts_manager = ContactsManager.get_instance()
 campaign_manager = CampaignManager.get_instance()
 conversation_manager = ConversationManager.get_instance()
 call_analyzer = CallAnalyzer.get_instance()
+voice_manager = VoiceManager.get_instance()
 
 
 class ConversationMemoryManager:
@@ -3065,6 +3067,91 @@ async def update_agent_voice_config(agent_id: str, payload: Dict[str, Any] = Bod
         "agent_id": agent_id,
         "agent": updated,
         "voice_config": updated.get("voice_config"),
+    })
+
+
+# -------------------------------------------------------------
+# Organization-Scoped Voice Studio Endpoints
+# -------------------------------------------------------------
+@app.get("/api/organizations/{org_id}/voices")
+async def get_organization_voices(org_id: str):
+    """Returns custom voices for a specific organization alongside system catalog presets."""
+    clean_org = org_id.strip().lower()
+    custom_voices = voice_manager.list_voices(clean_org)
+    return JSONResponse({
+        "success": True,
+        "org_id": clean_org,
+        "custom_voices": custom_voices,
+        "catalog": VOICE_CATALOG,
+        "demographics": VOICE_DEMOGRAPHICS,
+        "language_demographics": LANGUAGE_DEMOGRAPHIC_VOICES,
+    })
+
+
+@app.post("/api/organizations/{org_id}/voices")
+async def create_organization_voice(request: Request, org_id: str, payload: Dict[str, Any] = Body(...)):
+    """Creates and saves a new named custom voice persona for an organization."""
+    clean_org = org_id.strip().lower()
+    name = (payload.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Voice persona name cannot be empty")
+
+    user_email = (getattr(request.state, "user", None) or {}).get("email") or payload.get("user_email") or "admin@apexai.io"
+    new_voice = voice_manager.create_voice(clean_org, payload, created_by=user_email)
+
+    # Optional: directly link / assign to an agent if requested
+    assigned_agent = None
+    agent_id = payload.get("agent_id")
+    if agent_id:
+        target_agent = agent_manager.get_agent(agent_id)
+        if target_agent:
+            vc_payload = {
+                "voice_id": new_voice["base_voice_id"],
+                "voice_name": new_voice["name"],
+                "gender": new_voice["gender"],
+                "age_group": new_voice["age_group"],
+                "personality": new_voice["personality"],
+                "pitch": new_voice["pitch"],
+                "rate": new_voice["rate"],
+                "language": new_voice["language"],
+                "notes": new_voice["notes"],
+            }
+            assigned_agent = agent_manager.update_agent_voice(agent_id, vc_payload)
+
+    return JSONResponse({
+        "success": True,
+        "voice": new_voice,
+        "assigned_agent": assigned_agent,
+    })
+
+
+@app.delete("/api/organizations/{org_id}/voices/{voice_id}")
+async def delete_organization_voice(org_id: str, voice_id: str):
+    """Deletes a custom voice persona from an organization."""
+    clean_org = org_id.strip().lower()
+    deleted = voice_manager.delete_voice(clean_org, voice_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Custom voice persona not found in organization")
+    return JSONResponse({
+        "success": True,
+        "deleted_id": voice_id,
+        "org_id": clean_org,
+    })
+
+
+@app.delete("/api/organizations/{org_id}/voices")
+async def delete_organization_voices_batch(org_id: str, payload: Dict[str, Any] = Body(...)):
+    """Deletes multiple custom voice personas by IDs within an organization."""
+    clean_org = org_id.strip().lower()
+    voice_ids = payload.get("voice_ids", [])
+    if not isinstance(voice_ids, list):
+        raise HTTPException(status_code=400, detail="voice_ids must be a list of string IDs")
+
+    count = voice_manager.delete_voices_batch(clean_org, voice_ids)
+    return JSONResponse({
+        "success": True,
+        "deleted_count": count,
+        "org_id": clean_org,
     })
 
 
