@@ -266,3 +266,42 @@ def test_agent_with_custom_voice_persona():
         assert agent["voice_config"]["rate"] == "-5%"
     finally:
         agent_manager.delete_agent(agent_id)
+
+
+def test_quick_switch_agent_voice_persona():
+    """Verifies PUT /api/agents/{agent_id}/voice used by the quick voice switcher button."""
+    org_id = "apex-ai-innovations"
+    agent = agent_manager.create_agent({
+        "name": "Live Voice Agent",
+        "role": "Consultant",
+        "org_id": org_id
+    })
+    agent_id = agent["id"]
+
+    try:
+        # Switch to custom voice persona
+        new_voice = {
+            "voice_id": "en-US-JennyNeural",
+            "voice_name": "Priya - Technical Specialist",
+            "custom_voice_id": "voice-apex-priya-technical",
+            "gender": "female",
+            "age_group": "young_adult",
+            "personality": "professional_crisp",
+            "pitch": "+4Hz",
+            "rate": "+5%",
+            "language": "en"
+        }
+        res = client.put(f"/api/agents/{agent_id}/voice", json=new_voice)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["success"] is True
+        assert data["voice_config"]["voice_name"] == "Priya - Technical Specialist"
+        assert data["voice_config"]["pitch"] == "+4Hz"
+
+        # Verify persisted agent
+        persisted = agent_manager.get_agent(agent_id)
+        assert persisted["voice_config"]["voice_name"] == "Priya - Technical Specialist"
+        assert persisted["voice_config"]["pitch"] == "+4Hz"
+    finally:
+        agent_manager.delete_agent(agent_id)
+

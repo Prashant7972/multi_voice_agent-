@@ -7183,9 +7183,12 @@
                             <option value="ml">Malayalam (മലയാളം)</option>
                             <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
                             <option value="ur">Urdu (اردو)</option>
-                        </select>
                         <button class="btn-switch-agent" onclick="switchTab('agents')">
                             Switch Agent
+                        </button>
+                        <button class="btn-switch-agent" id="btnLiveSwitchVoice" onclick="openChangeVoiceModal()" title="Change voice persona as per your preference" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            <span id="btnLiveSwitchVoiceLabel">Voice</span>
                         </button>
                     </div>
                 </div>
@@ -7254,9 +7257,15 @@
                     <h2>Twilio Telephony Integration</h2>
                     <p>Inbound phone calls will be handled in real time by the active agent: <b id="telephonyActiveAgentName" style="color: var(--accent);">General Voice Assistant</b></p>
                 </div>
-                <button class="btn-switch-agent" onclick="switchTab('agents')">
-                    Switch Agent
-                </button>
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn-switch-agent" onclick="switchTab('agents')">
+                        Switch Agent
+                    </button>
+                    <button class="btn-switch-agent" id="btnTelephonySwitchVoice" onclick="openChangeVoiceModal()" title="Change voice persona as per your preference" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        <span id="btnTelephonySwitchVoiceLabel">Voice</span>
+                    </button>
+                </div>
             </div>
 
             <div class="telephony-cards-grid">
@@ -7505,6 +7514,76 @@
                     <div class="launch-option-title">Interactive Chatbot</div>
                     <div class="launch-option-desc">Chat directly via text with Knowledge Base (RAG) grounding and citations.</div>
                     <button class="btn-launch-mode">Open Chatbot</button>
+                </div>
+            </div>
+        </div>
+    <!-- =========================================================
+         MODAL: QUICK CHANGE VOICE PERSONA (Live Session & Telephony)
+         ========================================================= -->
+    <div class="modal-overlay" id="changeVoiceModal">
+        <div class="modal-card" style="max-width: 540px;">
+            <div class="modal-header">
+                <div class="modal-title-text" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    <span>CHANGE VOICE PERSONA</span>
+                </div>
+                <button class="btn-close-modal" onclick="closeChangeVoiceModal()">✕</button>
+            </div>
+
+            <div style="margin-bottom: 0.9rem;">
+                <p style="font-size: 0.82rem; color: #475569; margin: 0;">
+                    Select the preferred speaking voice persona for <strong id="changeVoiceModalAgentName" style="color: #0f172a;">General Voice Assistant</strong> during live sessions and phone calls.
+                </p>
+            </div>
+
+            <!-- Single Unified Dropdown List -->
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+                    <label class="form-label" for="changeVoiceModalSelect" style="font-size: 0.82rem; font-weight: 700; color: #1e293b; margin: 0;">
+                        Voice Persona
+                    </label>
+                    <button type="button" class="btn-secondary" id="changeVoiceAuditionBtn" onclick="auditionChangeVoiceModal()" style="font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 9999px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span id="changeVoiceAuditionBtnText">Test Sample</span>
+                    </button>
+                </div>
+                <select id="changeVoiceModalSelect" class="form-select" onchange="onChangeVoiceModalSelectChange(this.value)" style="font-size: 0.85rem; padding: 0.5rem 0.75rem; font-weight: 600;">
+                    <!-- Populated dynamically with Custom & System Voices -->
+                </select>
+            </div>
+
+            <!-- Selected Voice Info Card -->
+            <div id="changeVoiceDetailsCard" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.6rem; padding: 0.75rem; margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
+                    <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                        <span id="changeVoiceTypeBadge" style="font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 9999px; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">⭐ Custom Persona</span>
+                        <span id="changeVoiceGenderBadge" style="font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 9999px; background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;">FEMALE</span>
+                        <span id="changeVoiceArchetypeBadge" style="font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 9999px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">FRIENDLY & WARM</span>
+                    </div>
+                    <span id="changeVoicePitchRateBadge" style="font-size: 0.68rem; font-weight: 600; color: #64748b;">Pitch +0Hz • Speed +0%</span>
+                </div>
+                <div id="changeVoiceSampleText" style="font-size: 0.75rem; color: #475569; font-style: italic; margin-top: 0.2rem;">
+                    "Hello! This is a preview of my voice persona."
+                </div>
+            </div>
+
+            <!-- Multilingual Notice -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 0.45rem 0.6rem; font-size: 0.72rem; color: #166534; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Adaptive Multilingual Persona: Selected voice automatically maps to matching gender in Hindi, Marathi, Spanish, etc.</span>
+            </div>
+
+            <audio id="changeVoiceAudioPlayer" style="display: none;"></audio>
+
+            <!-- Actions Footer -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding-top: 0.6rem; border-top: 1px solid #f1f5f9;">
+                <a href="javascript:void(0)" onclick="closeChangeVoiceModal(); switchTab('voice-studio');" style="font-size: 0.76rem; color: #2563eb; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Open Voice Studio →
+                </a>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button type="button" class="btn-cancel-modal" onclick="closeChangeVoiceModal()">Cancel</button>
+                    <button type="button" class="btn-submit-modal" id="btnApplyChangeVoice" onclick="applyChangeVoice()" style="margin-top: 0; width: auto; padding: 0.55rem 1.25rem;">
+                        Apply Voice
+                    </button>
                 </div>
             </div>
         </div>
@@ -12036,6 +12115,14 @@ Account ID: ${u.id || ''}`;
             document.getElementById('voiceActiveAgentName').innerText = activeAgent.name;
             document.getElementById('voiceActiveAgentRole').innerText = `${activeAgent.role} • ${activeAgent.goals || 'Ready for conversation'}`;
             document.getElementById('telephonyActiveAgentName').innerText = activeAgent.name;
+
+            const vc = activeAgent.voice_config || {};
+            const vName = vc.voice_name || (vc.voice_id ? vc.voice_id.replace('en-US-', '').replace('Neural', '') : '');
+            const labelText = vName ? `Voice: ${vName.split(' ')[0]}` : 'Voice';
+            const btnVoiceLive = document.getElementById('btnLiveSwitchVoiceLabel');
+            if (btnVoiceLive) btnVoiceLive.innerText = labelText;
+            const btnVoiceTel = document.getElementById('btnTelephonySwitchVoiceLabel');
+            if (btnVoiceTel) btnVoiceTel.innerText = labelText;
         }
 
         function renderAgents(agents) {
@@ -12234,6 +12321,243 @@ Account ID: ${u.id || ''}`;
 
         function onAgentModalVoiceSelectChange(selectedVal) {
             // Selected voice persona is managed by #agentModalVoiceSelect dropdown
+        }
+
+        // -------------------------------------------------------------
+        // Quick Change Voice Persona Modal (Live Voice & Telephony)
+        // -------------------------------------------------------------
+        async function openChangeVoiceModal() {
+            if (!activeAgent) {
+                alert("Please select or create an agent first.");
+                return;
+            }
+
+            const agentTitle = document.getElementById('changeVoiceModalAgentName');
+            if (agentTitle) agentTitle.innerText = activeAgent.name;
+
+            const vc = activeAgent.voice_config || {};
+            const targetVoiceId = vc.custom_voice_id || vc.voice_id || vc.voice_name;
+
+            const data = await fetchVoiceCatalog();
+            const catalog = data.catalog || [];
+            const customVoices = data.custom_voices || [];
+            const selectEl = document.getElementById('changeVoiceModalSelect');
+            if (!selectEl) return;
+
+            selectEl.innerHTML = '';
+            const orgName = activeOrg ? activeOrg.name : 'Organization';
+
+            // 1. Group: Organization Custom Voices
+            const customGroup = document.createElement('optgroup');
+            customGroup.label = `⭐ Custom Voices (${orgName})`;
+            if (customVoices.length === 0) {
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = '';
+                emptyOpt.disabled = true;
+                emptyOpt.textContent = 'No custom personas yet (craft in Voice Studio)';
+                customGroup.appendChild(emptyOpt);
+            } else {
+                customVoices.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.dataset.type = 'custom';
+                    opt.textContent = `${v.name} — [${v.gender}, ${v.personality_label || v.personality}, ${v.pitch || '+0Hz'}]`;
+                    if (targetVoiceId && (v.id === targetVoiceId || v.name === targetVoiceId || v.base_voice_id === targetVoiceId)) {
+                        opt.selected = true;
+                    }
+                    customGroup.appendChild(opt);
+                });
+            }
+            selectEl.appendChild(customGroup);
+
+            // 2. Group: Standard System Voices
+            const systemGroup = document.createElement('optgroup');
+            systemGroup.label = '🌐 Standard System Voices';
+            catalog.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.dataset.type = 'catalog';
+                opt.textContent = `${v.display_name} (${v.language_name || v.language || 'EN'}, ${v.gender}) — ${v.personality_label || v.personality}`;
+                if (targetVoiceId && (v.id === targetVoiceId || v.name === targetVoiceId)) {
+                    opt.selected = true;
+                }
+                systemGroup.appendChild(opt);
+            });
+            selectEl.appendChild(systemGroup);
+
+            if (!selectEl.value) {
+                if (customVoices.length > 0) selectEl.value = customVoices[0].id;
+                else if (catalog.length > 0) selectEl.value = catalog[0].id;
+            }
+
+            onChangeVoiceModalSelectChange(selectEl.value);
+            document.getElementById('changeVoiceModal').classList.add('active-modal');
+        }
+
+        function closeChangeVoiceModal() {
+            document.getElementById('changeVoiceModal').classList.remove('active-modal');
+            const audioEl = document.getElementById('changeVoiceAudioPlayer');
+            if (audioEl) {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            }
+            const btnText = document.getElementById('changeVoiceAuditionBtnText');
+            if (btnText) btnText.innerText = 'Test Sample';
+            const btn = document.getElementById('changeVoiceAuditionBtn');
+            if (btn) btn.disabled = false;
+        }
+
+        function onChangeVoiceModalSelectChange(selectedVal) {
+            const customVoices = window.orgCustomVoicesCache || [];
+            const catalog = window.voiceCatalogCache || [];
+            const customMatch = customVoices.find(v => v.id === selectedVal);
+            const catalogMatch = catalog.find(v => v.id === selectedVal);
+            const voice = customMatch || catalogMatch;
+            if (!voice) return;
+
+            const isCustom = !!customMatch;
+            const typeBadge = document.getElementById('changeVoiceTypeBadge');
+            if (typeBadge) {
+                typeBadge.textContent = isCustom ? '⭐ Custom Persona' : '🌐 System Voice';
+                typeBadge.style.background = isCustom ? '#dbeafe' : '#f1f5f9';
+                typeBadge.style.color = isCustom ? '#1e40af' : '#475569';
+                typeBadge.style.borderColor = isCustom ? '#bfdbfe' : '#e2e8f0';
+            }
+
+            const genderBadge = document.getElementById('changeVoiceGenderBadge');
+            if (genderBadge) genderBadge.textContent = (voice.gender || 'female').toUpperCase();
+
+            const archBadge = document.getElementById('changeVoiceArchetypeBadge');
+            if (archBadge) archBadge.textContent = (voice.personality_label || voice.personality || 'STANDARD').toUpperCase();
+
+            const pitchRateBadge = document.getElementById('changeVoicePitchRateBadge');
+            const pitchStr = voice.pitch || voice.pitch_default || '+0Hz';
+            const rateStr = voice.rate || voice.rate_default || '+0%';
+            if (pitchRateBadge) pitchRateBadge.textContent = `Pitch ${pitchStr} • Speed ${rateStr}`;
+
+            const sampleEl = document.getElementById('changeVoiceSampleText');
+            if (sampleEl) {
+                const sampleText = voice.sample_phrase || 'Hello! This is a preview of my voice persona.';
+                sampleEl.textContent = `"${sampleText}"`;
+            }
+        }
+
+        async function auditionChangeVoiceModal() {
+            const selectEl = document.getElementById('changeVoiceModalSelect');
+            const selectedVal = selectEl ? selectEl.value : null;
+            const customVoices = window.orgCustomVoicesCache || [];
+            const catalog = window.voiceCatalogCache || [];
+            const voice = customVoices.find(v => v.id === selectedVal) || catalog.find(v => v.id === selectedVal) || {};
+
+            const voiceModel = voice.base_voice_id || voice.voice_model || voice.id || 'en-US-AvaNeural';
+            const gender = voice.gender || 'female';
+            const lang = voice.language || 'en';
+            const pitch = voice.pitch || voice.pitch_default || '+0Hz';
+            const rate = voice.rate || voice.rate_default || '+0%';
+            const testText = voice.sample_phrase || 'Hello! This is a preview of my voice persona.';
+
+            const btn = document.getElementById('changeVoiceAuditionBtn');
+            const btnText = document.getElementById('changeVoiceAuditionBtnText');
+            const audioEl = document.getElementById('changeVoiceAudioPlayer');
+
+            if (btnText) btnText.innerText = 'Synthesizing...';
+            if (btn) btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/voices/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice_model: voiceModel,
+                        pitch: pitch,
+                        rate: rate,
+                        gender: gender,
+                        language: lang,
+                        text: testText
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (audioEl && data.audio_url) {
+                        audioEl.src = data.audio_url;
+                        audioEl.play().catch(e => console.warn("Audition auto-play blocked:", e));
+                    }
+                } else {
+                    alert("Could not generate voice preview.");
+                }
+            } catch (err) {
+                console.error("Change voice preview error:", err);
+            } finally {
+                if (btnText) btnText.innerText = 'Test Sample';
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function applyChangeVoice() {
+            if (!activeAgent) return;
+            const selectEl = document.getElementById('changeVoiceModalSelect');
+            const selectedVal = selectEl ? selectEl.value : null;
+            if (!selectedVal) return;
+
+            const customVoices = window.orgCustomVoicesCache || [];
+            const catalog = window.voiceCatalogCache || [];
+            const customMatch = customVoices.find(v => v.id === selectedVal);
+            const catalogMatch = catalog.find(v => v.id === selectedVal);
+            const voiceData = customMatch || catalogMatch || {};
+
+            const voiceConfig = {
+                voice_id: voiceData.base_voice_id || voiceData.voice_model || voiceData.id || 'en-US-AvaNeural',
+                voice_name: voiceData.name || voiceData.display_name || voiceData.id,
+                custom_voice_id: customMatch ? customMatch.id : null,
+                gender: voiceData.gender || 'female',
+                age_group: voiceData.age_group || 'young_adult',
+                personality: voiceData.personality || 'friendly_warm',
+                pitch: voiceData.pitch || voiceData.pitch_default || '+0Hz',
+                rate: voiceData.rate || voiceData.rate_default || '+0%',
+                language: voiceData.language || 'en',
+                notes: voiceData.notes || voiceData.description || 'Configured via Quick Voice Switcher'
+            };
+
+            const applyBtn = document.getElementById('btnApplyChangeVoice');
+            if (applyBtn) {
+                applyBtn.disabled = true;
+                applyBtn.innerText = 'Saving...';
+            }
+
+            try {
+                const res = await fetch(`/api/agents/${activeAgent.id}/voice`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(voiceConfig)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const updatedVc = data.voice_config || voiceConfig;
+                    activeAgent.voice_config = updatedVc;
+
+                    const agentInList = allAgents.find(a => a.id === activeAgent.id);
+                    if (agentInList) agentInList.voice_config = updatedVc;
+
+                    updateActiveAgentDisplay();
+                    closeChangeVoiceModal();
+
+                    if (typeof appendSystemMessage === 'function') {
+                        appendSystemMessage(`Voice persona switched to: ${updatedVc.voice_name || updatedVc.voice_id} (${updatedVc.gender})`);
+                    }
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert("Failed to update voice: " + (err.detail || "Server error"));
+                }
+            } catch (err) {
+                console.error("Error applying voice:", err);
+                alert("Network error updating voice.");
+            } finally {
+                if (applyBtn) {
+                    applyBtn.disabled = false;
+                    applyBtn.innerText = 'Apply Voice';
+                }
+            }
         }
 
         function openCreateAgentModal() {
