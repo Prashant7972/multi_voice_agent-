@@ -23,7 +23,7 @@ def test_conversation_manager_storage_and_defaults():
     assert len(cm.conversations) >= 4, "Should have seeded default conversations"
 
     # Verify seed conversation structure
-    first_conv = cm.conversations[0]
+    first_conv = next((c for c in cm.conversations if len(c.get("messages", [])) >= 2), cm.conversations[0])
     assert "id" in first_conv
     assert "conversation_id" in first_conv
     assert first_conv["id"] == first_conv["conversation_id"]

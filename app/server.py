@@ -1200,6 +1200,10 @@ def resolve_effective_user_email(request: Request, user_email: Optional[str] = N
         is_demo = hasattr(request.state, "user") and request.state.user
         if is_test or is_demo:
             effective_email = user_email
+        else:
+            u = user_manager.get_user_by_email(user_email)
+            if u:
+                effective_email = u.get("email")
     return effective_email
 
 
@@ -1211,7 +1215,7 @@ def is_org_admin_owner_or_analyst(org_id: str, user_email: Optional[str]) -> boo
 
     # 1. Check organization-specific member role
     role = org_manager.get_user_role(org_id, user_email)
-    if role in ["owner", "admin", "analyst"]:
+    if role and (role.strip().lower() in ["owner", "admin", "analyst"]):
         return True
 
     # 2. Check if organization owner or creator

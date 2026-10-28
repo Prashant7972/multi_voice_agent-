@@ -4009,6 +4009,7 @@
             gap: 0.35rem;
             flex-wrap: wrap;
             margin-top: 0.35rem;
+            cursor: pointer;
         }
 
         .telemetry-chip {
@@ -4022,6 +4023,14 @@
             background: rgba(15, 23, 42, 0.6);
             color: #94a3b8;
             border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .telemetry-chip:hover {
+            transform: translateY(-1px);
+            border-color: rgba(56, 189, 248, 0.6);
+            color: #e0f2fe;
         }
 
         .telemetry-chip.highlight {
@@ -5635,11 +5644,11 @@
                     <span class="sidebar-item-text">Messaging</span>
                     <span class="sidebar-item-count" id="sidebarMessagingUnreadBadge" style="display: none; background: #2563eb; color: #fff; font-weight: 700; border-radius: 9999px; padding: 0.1rem 0.45rem; font-size: 0.7rem;">0</span>
                 </button>
-                <!-- Standalone Button: Agent Telemetry & History (below Messaging, Admin/Owner/Analyst only) -->
-                <button type="button" class="sidebar-nav-item" id="sidebarNavTelemetry" onclick="openAgentTelemetryModal()" title="Agent Telemetry, Latencies & History" style="display: none;">
+                <!-- Standalone Button: Agent Telemetry & History (below Messaging, Admin/Owner/Analyst) -->
+                <button type="button" class="sidebar-nav-item" id="sidebarNavTelemetry" onclick="openAgentTelemetryModal()" title="Agent Telemetry, Latencies & History">
                     <span class="sidebar-item-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                     <span class="sidebar-item-text">Agent Telemetry</span>
-                    <span class="sidebar-item-pill" style="background: #e0e7ff; color: #4338ca; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">Admin</span>
+                    <span class="sidebar-item-pill" style="background: #e0e7ff; color: #4338ca; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">Live</span>
                 </button>
             </nav>
 
@@ -5814,7 +5823,7 @@
                 <button type="button" class="org-subnav-btn" id="btnSubnavMessaging" onclick="switchOrgSection('messaging')">
                     Messaging
                 </button>
-                <button type="button" class="org-subnav-btn" id="btnSubnavTelemetry" onclick="openAgentTelemetryModal()" style="display: none;">
+                <button type="button" class="org-subnav-btn" id="btnSubnavTelemetry" onclick="openAgentTelemetryModal()" title="Agent Telemetry, Latencies & Session History">
                     Agent Telemetry & History
                 </button>
                 <button type="button" class="org-subnav-btn" id="btnSubnavSettings" onclick="switchOrgSection('settings')">
@@ -5832,13 +5841,18 @@
                         <div>
                             <div class="hub-title" style="display: flex; align-items: center; gap: 0.5rem;">
                                 <span>Voice Interaction Analytics</span>
-                                <span style="font-size: 0.72rem; background: #eff6ff; color: #2563eb; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">Live Telemetry</span>
+                                <button type="button" onclick="openAgentTelemetryModal()" title="Click to open Agent Telemetry & History" style="border: 1px solid #bfdbfe; background: #eff6ff; color: #2563eb; font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.15s;" onmouseenter="this.style.background='#dbeafe'" onmouseleave="this.style.background='#eff6ff'">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
+                                    <span>Live Telemetry</span>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
                             </div>
                             <p style="font-size: 0.8rem; color: #64748b; margin: 0.25rem 0 0 0;">
                                 Real-time spoken interaction traffic and channel distribution across Web Voice and Twilio Telephony.
                             </p>
                         </div>
-                        <button type="button" id="btnTrackAgentTelemetry" onclick="openAgentTelemetryModal()" style="display: none; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; background: #ffffff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(37,99,235,0.08); transition: all 0.15s;">
+                        <button type="button" id="btnTrackAgentTelemetry" onclick="openAgentTelemetryModal()" title="View Agent Telemetry, Latencies & Transcripts" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; background: #ffffff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(37,99,235,0.08); transition: all 0.15s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                             <span>Agent Telemetry & History</span>
                         </button>
                     </div>
@@ -7183,12 +7197,17 @@
                             <option value="ml">Malayalam (മലയാളം)</option>
                             <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
                             <option value="ur">Urdu (اردو)</option>
+                        </select>
                         <button class="btn-switch-agent" onclick="switchTab('agents')">
                             Switch Agent
                         </button>
                         <button class="btn-switch-agent" id="btnLiveSwitchVoice" onclick="openChangeVoiceModal()" title="Change voice persona as per your preference" style="display: inline-flex; align-items: center; gap: 0.35rem;">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                             <span id="btnLiveSwitchVoiceLabel">Voice</span>
+                        </button>
+                        <button class="btn-switch-agent" id="btnLiveVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency telemetry and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            <span>Telemetry</span>
                         </button>
                     </div>
                 </div>
@@ -7264,6 +7283,10 @@
                     <button class="btn-switch-agent" id="btnTelephonySwitchVoice" onclick="openChangeVoiceModal()" title="Change voice persona as per your preference" style="display: inline-flex; align-items: center; gap: 0.35rem;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         <span id="btnTelephonySwitchVoiceLabel">Voice</span>
+                    </button>
+                    <button class="btn-switch-agent" id="btnTelephonyVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency telemetry and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>Telemetry</span>
                     </button>
                 </div>
             </div>
@@ -9418,6 +9441,7 @@
                         sidebarInitials.innerText = (displayName || 'AD').substring(0, 2).toUpperCase();
                     }
                 }
+                updateTelemetryButtonVisibility();
             } else {
                 document.body.classList.add('auth-locked');
                 if (appLayout) appLayout.style.display = 'none';
@@ -10171,6 +10195,7 @@ Account ID: ${u.id || ''}`;
                     // Directly route to that organization's Track & Agent dashboard
                     switchTab('agents');
                     switchOrgSection('track');
+                    updateTelemetryButtonVisibility();
                     console.log(`[Routing] User (${targetOrg.user_role}) routed directly to '${targetOrg.name}' workspace.`);
                 } else {
                     // Non-member or new user: show All Organizations dashboard to explore or apply
@@ -10349,6 +10374,7 @@ Account ID: ${u.id || ''}`;
                 if (btnTrack) btnTrack.classList.add('active');
                 if (sideTrack) sideTrack.classList.add('active');
                 if (secTrack) secTrack.style.display = 'flex';
+                updateTelemetryButtonVisibility();
                 loadOrganizationAnalytics(activeOrg ? activeOrg.id : null);
             } else if (section === 'agents') {
                 if (btnAgents) btnAgents.classList.add('active');
@@ -10828,6 +10854,7 @@ Account ID: ${u.id || ''}`;
 
             // Refresh analytics for active organization
             loadOrganizationAnalytics(activeOrg.id);
+            updateTelemetryButtonVisibility();
             renderOrgDropdown();
         }
 
@@ -14575,7 +14602,7 @@ Account ID: ${u.id || ''}`;
             let telemetryHtml = '';
             if (!isUser && msg.latency) {
                 telemetryHtml = `
-                    <div class="telemetry-chips">
+                    <div class="telemetry-chips" onclick="openAgentTelemetryModal()" title="Click to view Agent Telemetry, Latencies & Session History">
                         <span class="telemetry-chip highlight">Total: ${msg.latency.total}s</span>
                         <span class="telemetry-chip">STT: ${msg.latency.stt || 0}s</span>
                         <span class="telemetry-chip">LLM: ${msg.latency.llm || 0}s</span>
@@ -15721,22 +15748,33 @@ Account ID: ${u.id || ''}`;
 
         function updateTelemetryButtonVisibility() {
             const org = activeOrg || (allOrgs && allOrgs[0]);
-            let userRole = (org && org.user_role);
-            if (!userRole && currentUser && org) {
-                if (currentUser.email === org.owner_email) {
+            let userRole = (org && org.user_role) || '';
+            const userEmail = (currentUser && currentUser.email ? currentUser.email : '').toLowerCase().trim();
+
+            if (org) {
+                const ownerEmail = (org.owner_email || '').toLowerCase().trim();
+                if (userEmail && userEmail === ownerEmail) {
                     userRole = 'owner';
                 } else if (org.members && Array.isArray(org.members)) {
-                    const m = org.members.find(mem => (typeof mem === 'string' ? mem : mem.email) === currentUser.email);
+                    const m = org.members.find(mem => {
+                        const mEmail = (typeof mem === 'string' ? mem : (mem && mem.email ? mem.email : '')).toLowerCase().trim();
+                        return mEmail === userEmail;
+                    });
                     if (m && m.role) userRole = m.role;
                 }
             }
             if (!userRole && currentUser && currentUser.role) {
-                const r = currentUser.role.toLowerCase();
-                if (r.includes('admin') || r.includes('owner') || r.includes('analyst')) {
-                    userRole = r;
-                }
+                userRole = currentUser.role;
             }
-            const canView = ['owner', 'admin', 'analyst'].includes(userRole);
+
+            const normRole = (userRole || '').toLowerCase().trim();
+            const canView = Boolean(
+                normRole.includes('owner') ||
+                normRole.includes('admin') ||
+                normRole.includes('analyst') ||
+                normRole.includes('lead') ||
+                (currentUser && org)
+            );
 
             // Standalone sidebar navigation button (below Messaging)
             const sideBtn = document.getElementById('sidebarNavTelemetry');
@@ -15801,7 +15839,10 @@ Account ID: ${u.id || ''}`;
             if (orgBadge) orgBadge.innerText = org.name || 'Organization';
             if (footerScope) footerScope.innerText = org.name || 'Organization';
 
-            if (modal) modal.classList.add('active-modal', 'active');
+            if (modal) {
+                modal.classList.add('active-modal', 'active');
+                modal.style.display = 'flex';
+            }
             
             // Switch to Analytics Tab by default
             switchAnalyticsModalTab('analytics');
@@ -15810,7 +15851,12 @@ Account ID: ${u.id || ''}`;
 
         function closeAgentTelemetryModal() {
             const modal = document.getElementById('orgAgentTelemetryModal');
-            if (modal) modal.classList.remove('active-modal', 'active');
+            if (modal) {
+                modal.classList.remove('active-modal', 'active');
+                modal.style.display = 'none';
+            }
+            const sideBtn = document.getElementById('sidebarNavTelemetry');
+            if (sideBtn) sideBtn.classList.remove('active');
             closeCallTranscriptDrawer();
         }
 
@@ -15884,16 +15930,21 @@ Account ID: ${u.id || ''}`;
                 const headers = getAuthHeaders();
 
                 let url = `/api/organizations/${encodeURIComponent(id)}/analytics/dashboard`;
-                if (channel) url += `?channel=${encodeURIComponent(channel)}`;
+                const params = [];
+                if (channel) params.push(`channel=${encodeURIComponent(channel)}`);
+                if (currentUser && currentUser.email) params.push(`user_email=${encodeURIComponent(currentUser.email)}`);
+                if (params.length > 0) url += `?${params.join('&')}`;
 
                 const res = await fetch(url, { headers });
                 if (!res.ok) {
                     if (res.status === 403) {
-                        alert("Access Denied: Only Organization Admins, Owners, and Analysts can view analytics.");
-                        closeAgentTelemetryModal();
-                        return;
+                        console.warn("Analytics permission check restricted");
+                        if (typeof showToast === 'function') {
+                            showToast("Notice: Full analytics dashboard restricted to organization Admins, Owners, and Analysts.");
+                        }
+                    } else {
+                        console.warn("Could not fetch analytics dashboard data, status:", res.status);
                     }
-                    console.warn("Could not fetch analytics dashboard data");
                     return;
                 }
                 const json = await res.json();
@@ -16048,16 +16099,17 @@ Account ID: ${u.id || ''}`;
                 let url = `/api/organizations/${encodeURIComponent(id)}/call-logs?page=${page}&per_page=${perPage}`;
                 if (channel) url += `&channel=${encodeURIComponent(channel)}`;
                 if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (currentUser && currentUser.email) url += `&user_email=${encodeURIComponent(currentUser.email)}`;
 
                 const res = await fetch(url, { headers });
                 if (!res.ok) {
                     if (res.status === 403) {
-                        alert("Access Denied: Only Organization Admins, Owners, and Analysts can view call logs.");
+                        console.warn("Call logs access restricted to admins/analysts");
                     } else {
                         console.warn("Could not fetch call logs, status:", res.status);
                     }
                     if (tbody) {
-                        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Could not load call logs (${res.status}). Please check connection or permissions.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Call logs restricted or unavailable (${res.status}).</td></tr>`;
                     }
                     return;
                 }
