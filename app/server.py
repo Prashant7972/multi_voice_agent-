@@ -58,6 +58,7 @@ from app.contacts import ContactsManager, COUNTRY_CODES
 from app.campaigns import CampaignManager
 from app.conversations import ConversationManager, generate_conversation_id
 from app.call_analysis import CallAnalyzer
+from app.maintenance import cleanup_old_audio_files
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.security import (
@@ -545,9 +546,18 @@ async def metrics_endpoint():
 @app.on_event("shutdown")
 def shutdown_event():
     logger.info("Initiating graceful shutdown of voice agent services...")
-    TunnelManager.get_instance().stop()
-    campaign_manager.stop_scheduler()
-    cleanup_old_audio_files(max_age_hours=24)
+    try:
+        TunnelManager.get_instance().stop()
+    except Exception as e:
+        logger.warning("Error stopping tunnel manager during shutdown: %s", e)
+    try:
+        campaign_manager.stop_scheduler()
+    except Exception as e:
+        logger.warning("Error stopping campaign scheduler during shutdown: %s", e)
+    try:
+        cleanup_old_audio_files(max_age_hours=24)
+    except Exception as e:
+        logger.warning("Error cleaning up old audio files during shutdown: %s", e)
     logger.info("Voice agent services cleanly shut down.")
 
 
