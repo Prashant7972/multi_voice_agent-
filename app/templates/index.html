@@ -9315,6 +9315,17 @@
                 applyAuthState(true);
                 handleSidebarNav('track');
                 return;
+            } else if (previewMode === 'telemetry') {
+                currentUser = { email: 'admin@apexai.io', name: 'Platform Administrator', role: 'admin' };
+                allOrgs = [{ id: 'apex-ai-innovations', name: 'Apex AI Innovations', role: 'owner', owner_email: 'admin@apexai.io', user_role: 'owner' }];
+                activeOrg = allOrgs[0];
+                allAgents = [
+                    { id: 'general-voice-assistant', name: 'General Voice Assistant', role: 'Personal Voice AI' }
+                ];
+                applyAuthState(true);
+                handleSidebarNav('track');
+                openAgentTelemetryModal();
+                return;
             }
 
             // Check if URL specifies an initial hero slide (e.g. ?slide=1 or #slide-1)
@@ -9367,6 +9378,10 @@
 
             if (window.location.hash === '#login') {
                 switchAuthMode('login');
+            } else if (window.location.hash === '#telemetry' || urlParams.get('tab') === 'telemetry') {
+                if (currentUser) {
+                    openAgentTelemetryModal();
+                }
             } else if (window.location.hash === '#slide-1') {
                 goToHeroSlide(1, true);
             } else if (window.location.hash === '#slide-2') {
@@ -15752,30 +15767,25 @@ Account ID: ${u.id || ''}`;
             }
 
             const normRole = (userRole || '').toLowerCase().trim();
-            const canView = Boolean(
-                normRole.includes('owner') ||
-                normRole.includes('admin') ||
-                normRole.includes('analyst') ||
-                normRole.includes('lead') ||
-                (currentUser && org)
-            );
+            // Telemetry is accessible to all workspace users and team members
+            const canView = true;
 
             // Standalone sidebar navigation button (below Messaging)
             const sideBtn = document.getElementById('sidebarNavTelemetry');
             if (sideBtn) {
-                sideBtn.style.display = canView ? 'flex' : 'none';
+                sideBtn.style.display = 'flex';
             }
 
             // Standalone sub-navigation button
             const subnavBtn = document.getElementById('btnSubnavTelemetry');
             if (subnavBtn) {
-                subnavBtn.style.display = canView ? 'inline-flex' : 'none';
+                subnavBtn.style.display = 'inline-flex';
             }
 
             // Standalone Track analytics header button
             const trackBtn = document.getElementById('btnTrackAgentTelemetry');
             if (trackBtn) {
-                trackBtn.style.display = canView ? 'inline-flex' : 'none';
+                trackBtn.style.display = 'inline-flex';
             }
         }
 
