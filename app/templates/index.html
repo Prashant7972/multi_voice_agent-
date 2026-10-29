@@ -7916,6 +7916,8 @@
                 </div>
             </div>
         </div>
+    </div>
+
     <!-- =========================================================
          MODAL: QUICK CHANGE VOICE PERSONA (Live Session & Telephony)
          ========================================================= -->
@@ -12339,7 +12341,11 @@ Account ID: ${u.id || ''}`;
 
         async function fetchVoiceCatalog() {
             if (window.voiceCatalogCache && window.voiceDemographicsCache) {
-                return { catalog: window.voiceCatalogCache, demographics: window.voiceDemographicsCache };
+                return { 
+                    catalog: window.voiceCatalogCache, 
+                    demographics: window.voiceDemographicsCache,
+                    custom_voices: window.orgCustomVoicesCache || []
+                };
             }
             try {
                 const orgId = (activeOrg ? activeOrg.id : 'apex-ai-innovations');
@@ -12430,8 +12436,20 @@ Account ID: ${u.id || ''}`;
         // -------------------------------------------------------------
         async function openChangeVoiceModal() {
             if (!activeAgent) {
+                if (typeof selectedAgentForLaunch !== 'undefined' && selectedAgentForLaunch) {
+                    activeAgent = selectedAgentForLaunch;
+                } else if (typeof allAgents !== 'undefined' && allAgents && allAgents.length > 0) {
+                    activeAgent = allAgents.find(a => a.is_active) || allAgents[0];
+                }
+            }
+            if (!activeAgent) {
                 alert("Please select or create an agent first.");
                 return;
+            }
+
+            const modalEl = document.getElementById('changeVoiceModal');
+            if (modalEl) {
+                modalEl.classList.add('active-modal');
             }
 
             const agentTitle = document.getElementById('changeVoiceModalAgentName');
@@ -12441,13 +12459,13 @@ Account ID: ${u.id || ''}`;
             const targetVoiceId = vc.custom_voice_id || vc.voice_id || vc.voice_name;
 
             const data = await fetchVoiceCatalog();
-            const catalog = data.catalog || [];
-            const customVoices = data.custom_voices || [];
+            const catalog = (data && data.catalog) || window.voiceCatalogCache || [];
+            const customVoices = (data && data.custom_voices) || window.orgCustomVoicesCache || [];
             const selectEl = document.getElementById('changeVoiceModalSelect');
             if (!selectEl) return;
 
             selectEl.innerHTML = '';
-            const orgName = activeOrg ? activeOrg.name : 'Organization';
+            const orgName = (typeof activeOrg !== 'undefined' && activeOrg) ? activeOrg.name : 'Organization';
 
             // 1. Group: Organization Custom Voices
             const customGroup = document.createElement('optgroup');
@@ -12493,7 +12511,7 @@ Account ID: ${u.id || ''}`;
             }
 
             onChangeVoiceModalSelectChange(selectEl.value);
-            document.getElementById('changeVoiceModal').classList.add('active-modal');
+            if (modalEl) modalEl.classList.add('active-modal');
         }
 
         function closeChangeVoiceModal() {
