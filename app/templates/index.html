@@ -7599,9 +7599,12 @@
                 <div class="status-sub" id="statusSub">Click the microphone to begin. Speak naturally to interact.</div>
 
                 <!-- Clean Automated Hands-Free Controls -->
-                <div class="controls-row" style="margin-top: 1.5rem; width: 100%; max-width: 240px; justify-content: center;">
-                    <button class="btn btn-primary" id="startBtn" onclick="toggleVoiceAssistant()" style="width: 100%; border-radius: 9999px; padding: 0.8rem 1.6rem; font-weight: 700; font-size: 0.92rem; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <div class="controls-row" style="margin-top: 1.5rem; width: 100%; max-width: 320px; justify-content: center; gap: 0.6rem;">
+                    <button class="btn btn-primary" id="startBtn" onclick="toggleVoiceAssistant()" style="flex: 1; border-radius: 9999px; padding: 0.8rem 1.4rem; font-weight: 700; font-size: 0.92rem; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <span id="btnIcon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span> <span id="btnText">Start Session</span>
+                    </button>
+                    <button class="btn" id="btnLiveEndSession" onclick="stopAssistant()" title="End Voice Session" style="display: none; border-radius: 9999px; padding: 0.8rem 1.1rem; font-weight: 600; font-size: 0.84rem; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: pointer;">
+                        End
                     </button>
                 </div>
 
@@ -8900,7 +8903,7 @@
         let pcmProcessor = null;
         let preRollPcmBuffers = [];
         let speechPcmBuffers = [];
-        const PRE_ROLL_MAX_SAMPLES = 12800;
+        const PRE_ROLL_MAX_SAMPLES = 48000;
         let preRollSampleCount = 0;
         let isProcessingTurn = false;
         let silenceThresholdSeconds = 0.8;
@@ -8918,7 +8921,7 @@
         let vadFilter = null;
         let allowBargeIn = true;
         let lastTurnFinishedTimestamp = 0;
-        let ambientFloor = 8;
+        let ambientFloor = 4;
         let currentRmsVolume = 0;
         let consecutiveResumeFrames = 0;
 
@@ -13957,6 +13960,29 @@ Account ID: ${u.id || ''}`;
             }
         }
 
+        function finishTurnAndSend() {
+            if (!isRunning || isProcessingTurn) return;
+            if (isAgentSpeaking && currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                isAgentSpeaking = false;
+                statusText.innerText = "Listening...";
+                statusSub.innerText = "Interrupted. Speak naturally or click to send.";
+                orbCore.className = 'orb-core listening';
+                return;
+            }
+            if (speechPcmBuffers.length === 0 && preRollPcmBuffers.length > 0) {
+                speechPcmBuffers = [...preRollPcmBuffers];
+            }
+            if (speechPcmBuffers.length === 0) {
+                statusSub.innerText = "Listening... Speak to the microphone before sending.";
+                return;
+            }
+            isSpeaking = false;
+            silenceStartTime = null;
+            stopAndSendAudio();
+        }
+
         async function toggleVoiceAssistant() {
             if (isStartingVoiceAssistant) {
                 cancelVoiceAssistantStart();
@@ -13965,7 +13991,7 @@ Account ID: ${u.id || ''}`;
             if (!isRunning) {
                 await startAssistant();
             } else {
-                stopAssistant();
+                finishTurnAndSend();
             }
         }
 
@@ -14053,10 +14079,10 @@ Account ID: ${u.id || ''}`;
                 
                 const source = audioContext.createMediaStreamSource(mediaStream);
 
-                // Highpass filter at 180Hz to strip rumble, laptop fans, desk vibration before analyser
+                // Gentle rumble filter at 70Hz (preserves human vocal fundamental frequencies 80Hz - 3500Hz)
                 vadFilter = audioContext.createBiquadFilter();
                 vadFilter.type = 'highpass';
-                vadFilter.frequency.value = 180;
+                vadFilter.frequency.value = 70;
                 source.connect(vadFilter);
 
                 analyser = audioContext.createAnalyser();
@@ -14114,15 +14140,17 @@ Account ID: ${u.id || ''}`;
                 if (startBtn) {
                     startBtn.style.opacity = '1';
                     startBtn.style.display = 'inline-flex';
-                    startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></span> <span id="btnText">Stop Session</span>';
-                    startBtn.style.background = 'rgba(239, 68, 68, 0.15)';
-                    startBtn.style.color = '#ef4444';
-                    startBtn.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-                    startBtn.style.boxShadow = 'none';
+                    startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></span> <span id="btnText">Done Speaking (Send)</span>';
+                    startBtn.style.background = '#2563eb';
+                    startBtn.style.color = '#ffffff';
+                    startBtn.style.border = 'none';
+                    startBtn.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.35)';
                 }
+                const liveEndBtn = document.getElementById('btnLiveEndSession');
+                if (liveEndBtn) liveEndBtn.style.display = 'inline-flex';
 
                 statusText.innerText = "Listening...";
-                statusSub.innerText = "Hands-free active. Speak anytime; pause when done.";
+                statusSub.innerText = "Speak naturally. Pause when done or click orb/button to send.";
                 orbCore.className = 'orb-core listening';
 
                 visualize();
@@ -14140,6 +14168,9 @@ Account ID: ${u.id || ''}`;
                     startBtn.style.border = '';
                     startBtn.style.boxShadow = '';
                 }
+                const liveEndBtn = document.getElementById('btnLiveEndSession');
+                if (liveEndBtn) liveEndBtn.style.display = 'none';
+
                 if (err.name === 'TimeoutError') {
                     statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Request Timed Out:</span> Please check your browser <strong>address bar (URL bar)</strong> for the microphone icon, select <strong>"Allow"</strong>, and click Start Session again.';
                 } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -14173,6 +14204,8 @@ Account ID: ${u.id || ''}`;
                 startBtn.style.border = '';
                 startBtn.style.boxShadow = '';
             }
+            const liveEndBtn = document.getElementById('btnLiveEndSession');
+            if (liveEndBtn) liveEndBtn.style.display = 'none';
 
             statusText.innerText = "Ready to Talk";
             statusSub.innerText = "Click the orb or Start Session to begin.";
@@ -14240,11 +14273,11 @@ Account ID: ${u.id || ''}`;
 
             for (let i = 0; i < numBars; i++) {
                 const freqVal = dataArray ? dataArray[i * 2] || 0 : 0;
-                const rmsBoost = Math.min(255, Math.round(currentRmsVolume * 650));
+                const rmsBoost = Math.min(255, Math.round(currentRmsVolume * 1100));
                 const rawVal = Math.max(freqVal, rmsBoost);
-                const targetHeight = (rawVal / 255) * 34;
-                // Fluid damping: smooth factor 0.28 eliminates jitter while maintaining real-time responsiveness
-                smoothVisualizerBars[i] += (targetHeight - smoothVisualizerBars[i]) * 0.28;
+                const targetHeight = (rawVal / 255) * 36;
+                // Fluid damping: smooth factor 0.32 provides active, responsive visual feedback on real mics
+                smoothVisualizerBars[i] += (targetHeight - smoothVisualizerBars[i]) * 0.32;
                 const barHeight = Math.max(smoothVisualizerBars[i], 1.5);
                 const angle = (i * 2 * Math.PI) / numBars;
 
@@ -14270,38 +14303,42 @@ Account ID: ${u.id || ''}`;
             silenceTimerInterval = setInterval(() => {
                 if (!isRunning || isAgentSpeaking || isProcessingTurn) return;
 
+                // Resume suspended AudioContext if needed
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume().catch(() => {});
+                }
+
                 const now = Date.now();
-                // 650ms cooldown post-turn or post-speech to let reverb settle and prevent immediate false re-triggers
-                const inCooldown = (now - lastTurnFinishedTimestamp < 650);
+                // 500ms cooldown post-turn or post-speech to let reverb settle and prevent immediate false re-triggers
+                const inCooldown = (now - lastTurnFinishedTimestamp < 500);
 
                 analyser.getByteFrequencyData(dataArray);
                 let vocalEnergy = 0;
-                const minBin = 1; // From ~100Hz upwards (captures full human vocal range)
+                const minBin = 1; // From ~70Hz upwards
                 const maxBin = Math.min(32, dataArray.length); // Up to ~3500Hz
                 for (let i = minBin; i < maxBin; i++) {
                     vocalEnergy += dataArray[i];
                 }
                 const freqVolume = vocalEnergy / (maxBin - minBin);
-                const rmsVolume = Math.min(100, Math.round(currentRmsVolume * 450));
+                const rmsVolume = Math.min(100, Math.round(currentRmsVolume * 950));
                 const vocalVolume = Math.max(freqVolume, rmsVolume);
 
                 if (!isSpeaking) {
-                    // Smoothly track background room noise baseline
-                    ambientFloor = 0.92 * ambientFloor + 0.08 * vocalVolume;
+                    // Smoothly track background room noise baseline, capped to prevent runaway
+                    ambientFloor = Math.min(14, Math.max(1, 0.95 * ambientFloor + 0.05 * vocalVolume));
 
-                    // In cooldown: adapt noise floor only, reject any premature speech trigger
+                    // In cooldown: adapt noise floor only, reject premature speech trigger
                     if (inCooldown) {
                         consecutiveSpeechFrames = 0;
                         return;
                     }
 
-                    // Adaptive speech onset: sensitive to conversational voice even with quiet laptop mics
-                    const speechTriggerLevel = Math.max(10, Math.round(ambientFloor + 5));
+                    // Adaptive speech onset: highly responsive to human voice on real microphones
+                    const speechTriggerLevel = Math.max(5, Math.round(ambientFloor + 3));
 
                     if (vocalVolume >= speechTriggerLevel) {
                         consecutiveSpeechFrames++;
-                        // 2 consecutive frames @ 80ms = 160ms confirms intentional speech onset
-                        if (consecutiveSpeechFrames >= 2) {
+                        if (consecutiveSpeechFrames >= 1) {
                             isSpeaking = true;
                             speechStartTimestamp = Date.now();
                             silenceStartTime = null;
@@ -14309,7 +14346,7 @@ Account ID: ${u.id || ''}`;
                             consecutiveResumeFrames = 0;
                             speechPcmBuffers = [...preRollPcmBuffers];
                             statusText.innerText = "Listening to you...";
-                            statusSub.innerText = "Recording voice... speak naturally.";
+                            statusSub.innerText = "Hearing your voice... speak naturally; pause or click button to send.";
                             orbCore.className = 'orb-core user-speaking';
                         }
                     } else {
@@ -14319,8 +14356,8 @@ Account ID: ${u.id || ''}`;
                     // User IS speaking: detect pause or end of turn
                     const speechDuration = Date.now() - (speechStartTimestamp || Date.now());
 
-                    // Safety ceiling: 12 seconds maximum speech
-                    if (speechDuration >= 12000) {
+                    // Safety ceiling: 15 seconds maximum speech
+                    if (speechDuration >= 15000) {
                         isSpeaking = false;
                         silenceStartTime = null;
                         consecutiveResumeFrames = 0;
@@ -14328,11 +14365,9 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    const speechTriggerLevel = Math.max(10, Math.round(ambientFloor + 5));
-                    // Turn-taking pause threshold: volume dropping back near ambient baseline
-                    const pauseThreshold = Math.max(6, Math.round(ambientFloor + 2));
-                    // Low-latency conversational turn-taking: 450ms for complete sentences (>1.2s), 650ms for short commands
-                    const requiredSilence = (speechDuration > 1200) ? 450 : 650;
+                    const speechTriggerLevel = Math.max(5, Math.round(ambientFloor + 3));
+                    const pauseThreshold = Math.max(3, Math.round(ambientFloor + 1));
+                    const requiredSilence = (speechDuration > 1200) ? 550 : 750;
 
                     if (vocalVolume < pauseThreshold) {
                         consecutiveResumeFrames = 0;
@@ -14348,14 +14383,14 @@ Account ID: ${u.id || ''}`;
                             return;
                         }
                     } else if (vocalVolume >= speechTriggerLevel) {
-                        // User clearly and deliberately resumed speaking
+                        // User clearly resumed speaking
                         consecutiveResumeFrames++;
-                        if (consecutiveResumeFrames >= 2) {
+                        if (consecutiveResumeFrames >= 1) {
                             silenceStartTime = null;
                             consecutiveResumeFrames = 0;
                         }
                     } else {
-                        // Volume is hovering between pauseThreshold and speechTriggerLevel
+                        // Volume hovering between pauseThreshold and speechTriggerLevel
                         consecutiveResumeFrames = 0;
                         if (silenceStartTime) {
                             const silenceElapsed = Date.now() - silenceStartTime;
@@ -14380,7 +14415,16 @@ Account ID: ${u.id || ''}`;
             statusSub.innerText = `Consulting local Gemma 3 for ${activeAgent ? activeAgent.name : 'AI'}...`;
             orbCore.className = 'orb-core thinking';
 
-            const capturedBuffers = [...speechPcmBuffers];
+            if (startBtn) {
+                startBtn.style.opacity = '0.7';
+                const btnTxt = startBtn.querySelector('#btnText');
+                if (btnTxt) btnTxt.innerText = 'Thinking...';
+            }
+
+            let capturedBuffers = [...speechPcmBuffers];
+            if (capturedBuffers.length === 0 && preRollPcmBuffers.length > 0) {
+                capturedBuffers = [...preRollPcmBuffers];
+            }
             speechPcmBuffers = [];
             preRollPcmBuffers = [];
             preRollSampleCount = 0;
@@ -14396,6 +14440,11 @@ Account ID: ${u.id || ''}`;
                 statusText.innerText = "Listening...";
                 statusSub.innerText = "Didn't catch that clearly. Speak directly to microphone.";
                 orbCore.className = 'orb-core listening';
+                if (startBtn) {
+                    startBtn.style.opacity = '1';
+                    const btnTxt = startBtn.querySelector('#btnText');
+                    if (btnTxt) btnTxt.innerText = 'Done Speaking (Send)';
+                }
                 return;
             }
 
@@ -14515,14 +14564,24 @@ Account ID: ${u.id || ''}`;
                     playAgentReply(data.audio_url, data.detected_language);
                 } else {
                     statusText.innerText = "Listening...";
-                    statusSub.innerText = "Speak naturally. Pause when done.";
+                    statusSub.innerText = "Speak naturally. Pause when done or click button to send.";
                     orbCore.className = 'orb-core listening';
+                    if (startBtn) {
+                        startBtn.style.opacity = '1';
+                        const btnTxt = startBtn.querySelector('#btnText');
+                        if (btnTxt) btnTxt.innerText = 'Done Speaking (Send)';
+                    }
                 }
             } catch (e) {
                 console.error("Voice chat error:", e);
                 statusText.innerText = "Listening...";
                 statusSub.innerText = "Could not reach local model. Check if Ollama is running ('ollama serve').";
                 orbCore.className = 'orb-core listening';
+                if (startBtn) {
+                    startBtn.style.opacity = '1';
+                    const btnTxt = startBtn.querySelector('#btnText');
+                    if (btnTxt) btnTxt.innerText = 'Done Speaking (Send)';
+                }
             } finally {
                 isProcessingTurn = false;
                 lastTurnFinishedTimestamp = Date.now();
@@ -14545,6 +14604,11 @@ Account ID: ${u.id || ''}`;
 
             currentAudio.onplay = () => {
                 speechPlayStartTime = Date.now();
+                if (startBtn) {
+                    startBtn.style.opacity = '1';
+                    const btnTxt = startBtn.querySelector('#btnText');
+                    if (btnTxt) btnTxt.innerText = 'Interrupt Agent';
+                }
                 monitorBargeIn();
             };
 
@@ -14559,8 +14623,13 @@ Account ID: ${u.id || ''}`;
                 lastTurnFinishedTimestamp = Date.now();
                 if (isRunning) {
                     statusText.innerText = "Listening...";
-                    statusSub.innerText = "Speak your response or ask a follow-up question.";
+                    statusSub.innerText = "Speak naturally. Pause when done or click button to send.";
                     orbCore.className = 'orb-core listening';
+                    if (startBtn) {
+                        startBtn.style.opacity = '1';
+                        const btnTxt = startBtn.querySelector('#btnText');
+                        if (btnTxt) btnTxt.innerText = 'Done Speaking (Send)';
+                    }
                 } else {
                     statusText.innerText = "Ready to Talk";
                     orbCore.className = 'orb-core';
