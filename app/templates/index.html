@@ -10303,6 +10303,16 @@ Account ID: ${u.id || ''}`;
                 stopConversationPolling();
             }
 
+            // Release microphone resources cleanly if navigating away from live voice view
+            if (tabName !== 'voice') {
+                if (typeof isRunning !== 'undefined' && isRunning && typeof stopAssistant === 'function') {
+                    stopAssistant();
+                }
+                if (typeof isStartingVoiceAssistant !== 'undefined' && isStartingVoiceAssistant && typeof cancelVoiceAssistantStart === 'function') {
+                    cancelVoiceAssistantStart();
+                }
+            }
+
             document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-nav-item').forEach(el => el.classList.remove('active'));
@@ -13894,8 +13904,64 @@ Account ID: ${u.id || ''}`;
 
         let isStartingVoiceAssistant = false;
 
+        function getUserMediaWithTimeout(constraints, timeoutMs = 9000) {
+            return new Promise((resolve, reject) => {
+                let timer = setTimeout(() => {
+                    timer = null;
+                    const err = new Error("Microphone request timed out. Please check if your browser showed a permission popup near the address bar, or if another app is locking the mic.");
+                    err.name = "TimeoutError";
+                    reject(err);
+                }, timeoutMs);
+
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(stream => {
+                        if (timer) {
+                            clearTimeout(timer);
+                            timer = null;
+                            resolve(stream);
+                        } else {
+                            try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                        }
+                    })
+                    .catch(err => {
+                        if (timer) {
+                            clearTimeout(timer);
+                            timer = null;
+                            reject(err);
+                        }
+                    });
+            });
+        }
+
+        function cancelVoiceAssistantStart() {
+            isStartingVoiceAssistant = false;
+            if (mediaStream) {
+                try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                mediaStream = null;
+            }
+            if (audioContext) {
+                try { audioContext.close(); } catch (e) {}
+                audioContext = null;
+            }
+            statusText.innerText = "Ready to Talk";
+            statusSub.innerText = "Click the orb or Start Session to begin. Speak naturally to interact.";
+            orbCore.className = 'orb-core';
+            if (startBtn) {
+                startBtn.style.opacity = '1';
+                startBtn.style.display = 'inline-flex';
+                startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span> <span id="btnText">Start Session</span>';
+                startBtn.style.background = '';
+                startBtn.style.color = '';
+                startBtn.style.border = '';
+                startBtn.style.boxShadow = '';
+            }
+        }
+
         async function toggleVoiceAssistant() {
-            if (isStartingVoiceAssistant) return;
+            if (isStartingVoiceAssistant) {
+                cancelVoiceAssistantStart();
+                return;
+            }
             if (!isRunning) {
                 await startAssistant();
             } else {
@@ -13904,30 +13970,74 @@ Account ID: ${u.id || ''}`;
         }
 
         async function startAssistant() {
+            if (isStartingVoiceAssistant) {
+                cancelVoiceAssistantStart();
+                return;
+            }
             isStartingVoiceAssistant = true;
+
+            // Release any stale mediaStream or audioContext from a prior turn/session
+            if (mediaStream) {
+                try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                mediaStream = null;
+            }
+            if (audioContext) {
+                try { audioContext.close(); } catch (e) {}
+                audioContext = null;
+            }
+
             if (startBtn) {
-                startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg></span> <span id="btnText">Connecting Mic...</span>';
-                startBtn.style.opacity = '0.85';
+                startBtn.innerHTML = '<span id="btnIcon" style="display:inline-flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg></span> <span id="btnText">Connecting Mic... (Click to Cancel)</span>';
+                startBtn.style.opacity = '0.9';
+                startBtn.style.cursor = 'pointer';
             }
             statusText.innerText = "Requesting Microphone...";
-            statusSub.innerText = "Connecting audio input hardware... please grant permission if prompted.";
+            statusSub.innerHTML = 'Connecting audio input hardware... <strong>Check your browser URL bar for the microphone prompt</strong>. <a href="javascript:void(0)" onclick="cancelVoiceAssistantStart()" style="color:#2563eb; text-decoration: underline; margin-left: 6px;">Cancel</a>';
 
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error("Your browser or connection does not support microphone capture (requires localhost or HTTPS).");
                 }
+
+                // Query Permissions API if supported to detect if blocked upfront
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const perm = await navigator.permissions.query({ name: 'microphone' });
+                        if (perm && perm.state === 'denied') {
+                            const err = new Error("Microphone permission is blocked in your browser settings.");
+                            err.name = "NotAllowedError";
+                            throw err;
+                        }
+                    } catch (pe) {
+                        if (pe.name === 'NotAllowedError') throw pe;
+                    }
+                }
+
                 try {
-                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                    mediaStream = await getUserMediaWithTimeout({
                         audio: {
                             echoCancellation: true,
                             noiseSuppression: true,
                             autoGainControl: true,
                         }
-                    });
+                    }, 10000);
                 } catch (constraintErr) {
+                    if (constraintErr.name === 'TimeoutError' || constraintErr.name === 'NotAllowedError') {
+                        throw constraintErr;
+                    }
                     console.warn("Retrying getUserMedia with basic audio constraint:", constraintErr);
-                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaStream = await getUserMediaWithTimeout({ audio: true }, 8000);
                 }
+
+                // If user clicked cancel during prompt
+                if (!isStartingVoiceAssistant) {
+                    if (mediaStream) {
+                        try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                        mediaStream = null;
+                    }
+                    return;
+                }
+
                 const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
                 try {
                     audioContext = new AudioCtxClass({ sampleRate: 16000, latencyHint: 'interactive' });
@@ -13935,7 +14045,10 @@ Account ID: ${u.id || ''}`;
                     audioContext = new AudioCtxClass();
                 }
                 if (audioContext.state === 'suspended') {
-                    await audioContext.resume();
+                    await Promise.race([
+                        audioContext.resume(),
+                        new Promise(resolve => setTimeout(resolve, 3000))
+                    ]);
                 }
                 
                 const source = audioContext.createMediaStreamSource(mediaStream);
@@ -14027,7 +14140,9 @@ Account ID: ${u.id || ''}`;
                     startBtn.style.border = '';
                     startBtn.style.boxShadow = '';
                 }
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                if (err.name === 'TimeoutError') {
+                    statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Request Timed Out:</span> Please check your browser <strong>address bar (URL bar)</strong> for the microphone icon, select <strong>"Allow"</strong>, and click Start Session again.';
+                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                     statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Permission Blocked:</span> Click the <strong>microphone icon</strong> in the browser address bar, select <strong>"Allow"</strong>, and refresh the page.';
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                     statusSub.innerHTML = '<span style="color: #ef4444; font-weight: 600;">No Mic Found:</span> Please plug in or enable an audio input device in system settings.';
