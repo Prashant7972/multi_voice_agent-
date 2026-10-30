@@ -325,6 +325,88 @@ async def jwt_auth_middleware(request: Request, call_next):
 conversation_history: list = conversation_manager.get_recent_messages()
 conversation_counter: int = max([m.get("id", 0) for m in conversation_history], default=0)
 
+
+class ConversationTranscriptWSManager:
+    """Manages real-time WebSocket connections for live agent transcript streaming."""
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+        if websocket not in self.active_connections:
+            self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast_message(self, message: dict):
+        dead_connections = []
+        payload = {"type": "new_message", "message": message}
+        for ws in list(self.active_connections):
+            try:
+                await ws.send_json(payload)
+            except Exception:
+                dead_connections.append(ws)
+        for dead in dead_connections:
+            self.disconnect(dead)
+
+    async def broadcast_clear(self):
+        dead_connections = []
+        payload = {"type": "clear"}
+        for ws in list(self.active_connections):
+            try:
+                await ws.send_json(payload)
+            except Exception:
+                dead_connections.append(ws)
+        for dead in dead_connections:
+            self.disconnect(dead)
+
+
+conversation_ws_manager = ConversationTranscriptWSManager()
+
+
+def broadcast_conversation_turn(msg: dict):
+    """Safely dispatches a new conversation turn to all connected WebSockets."""
+    if not conversation_ws_manager.active_connections:
+        return
+    loop = conversation_ws_manager._loop
+    if loop and loop.is_running():
+        try:
+            asyncio.run_coroutine_threadsafe(conversation_ws_manager.broadcast_message(msg), loop)
+            return
+        except Exception as e:
+            logger.debug("Error in threadsafe broadcast: %s", e)
+    try:
+        cur_loop = asyncio.get_running_loop()
+        cur_loop.create_task(conversation_ws_manager.broadcast_message(msg))
+    except RuntimeError:
+        pass
+
+
+def broadcast_conversation_clear():
+    """Safely dispatches a clear event to all connected WebSockets."""
+    if not conversation_ws_manager.active_connections:
+        return
+    loop = conversation_ws_manager._loop
+    if loop and loop.is_running():
+        try:
+            asyncio.run_coroutine_threadsafe(conversation_ws_manager.broadcast_clear(), loop)
+            return
+        except Exception as e:
+            logger.debug("Error in threadsafe clear broadcast: %s", e)
+    try:
+        cur_loop = asyncio.get_running_loop()
+        cur_loop.create_task(conversation_ws_manager.broadcast_clear())
+    except RuntimeError:
+        pass
+
+
 # Organization-scoped Agent Test Records store
 agent_test_records: list = [
     {
@@ -409,6 +491,7 @@ def add_conversation_message(
     msg["conversation_id"] = turn_res["conversation_id"]
     conversation_counter = msg["id"]
     conversation_history.append(msg)
+    broadcast_conversation_turn(msg)
 
     if role == "assistant":
         try:
@@ -3969,6 +4052,30 @@ async def get_conversation(after: int = 0):
     return JSONResponse({"messages": msgs})
 
 
+@app.websocket("/ws/conversation")
+async def conversation_websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time live conversation transcript streaming.
+    Eliminates periodic HTTP polling by pushing new user and assistant turns instantly.
+    """
+    await conversation_ws_manager.connect(websocket)
+    try:
+        global conversation_history
+        await websocket.send_json({
+            "type": "init",
+            "messages": list(conversation_history)
+        })
+        while True:
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        conversation_ws_manager.disconnect(websocket)
+    except Exception as e:
+        logger.debug("Conversation websocket disconnected: %s", e)
+        conversation_ws_manager.disconnect(websocket)
+
+
 @app.post("/api/clear")
 async def clear_chat():
     global llm, conversation_history, memory_manager
@@ -3976,6 +4083,7 @@ async def clear_chat():
         llm.clear_history()
     conversation_history.clear()
     memory_manager.clear()
+    broadcast_conversation_clear()
     return JSONResponse({"status": "cleared"})
 
 

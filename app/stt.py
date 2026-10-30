@@ -51,9 +51,9 @@ LANGUAGE_INITIAL_PROMPTS = {
 }
 
 MULTILINGUAL_AUTO_PROMPT = (
-    "नमस्कार, तुम्ही कसे आहात? हे मराठी संभाषण आहे. मला AI, तंत्रज्ञान आणि माहिती सांगा. "
-    "नमस्ते, आप कैसे हैं? यह हिंदी वार्तालाप है। "
     "Hello, how are you today? This is an English conversation. "
+    "नमस्ते, आप कैसे हैं? यह हिंदी वार्तालाप है। "
+    "नमस्कार, तुम्ही कसे आहात? हे मराठी संभाषण आहे. मला AI, तंत्रज्ञान आणि माहिती सांगा. "
     "Hola, ¿cómo estás? Bonjour, comment allez-vous? "
     "こんにちは、お元気ですか？"
 )

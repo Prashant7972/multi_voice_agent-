@@ -8900,7 +8900,7 @@
         let pcmProcessor = null;
         let preRollPcmBuffers = [];
         let speechPcmBuffers = [];
-        const PRE_ROLL_MAX_SAMPLES = 48000;
+        const PRE_ROLL_MAX_SAMPLES = 12800;
         let preRollSampleCount = 0;
         let isProcessingTurn = false;
         let silenceThresholdSeconds = 0.8;
@@ -14053,10 +14053,10 @@ Account ID: ${u.id || ''}`;
                 
                 const source = audioContext.createMediaStreamSource(mediaStream);
 
-                // Gentle rumble filter at 70Hz (preserves human vocal fundamental frequencies 80Hz - 3500Hz)
+                // Rumble filter at 120Hz (strips laptop fan hum & desk vibration while preserving vocal formants)
                 vadFilter = audioContext.createBiquadFilter();
                 vadFilter.type = 'highpass';
-                vadFilter.frequency.value = 70;
+                vadFilter.frequency.value = 120;
                 source.connect(vadFilter);
 
                 analyser = audioContext.createAnalyser();
@@ -14280,20 +14280,13 @@ Account ID: ${u.id || ''}`;
                 // 500ms cooldown post-turn or post-speech to let reverb settle and prevent immediate false re-triggers
                 const inCooldown = (now - lastTurnFinishedTimestamp < 500);
 
-                analyser.getByteFrequencyData(dataArray);
-                let vocalEnergy = 0;
-                const minBin = 1; // From ~70Hz upwards
-                const maxBin = Math.min(32, dataArray.length); // Up to ~3500Hz
-                for (let i = minBin; i < maxBin; i++) {
-                    vocalEnergy += dataArray[i];
-                }
-                const freqVolume = vocalEnergy / (maxBin - minBin);
-                const rmsVolume = Math.min(100, Math.round(currentRmsVolume * 950));
-                const vocalVolume = Math.max(freqVolume, rmsVolume);
+                // Real-time RMS volume scaled to a clean 0-100 range:
+                // Ambient silence: 0-3 | Whispering: 8-15 | Normal speech: 25-60 | Loud: 70-100
+                const vocalVolume = Math.min(100, Math.round(currentRmsVolume * 700));
 
                 if (!isSpeaking) {
-                    // Smoothly track background room noise baseline, capped to prevent runaway
-                    ambientFloor = Math.min(14, Math.max(1, 0.95 * ambientFloor + 0.05 * vocalVolume));
+                    // Smoothly track background room noise baseline (typically 1-4)
+                    ambientFloor = 0.90 * ambientFloor + 0.10 * vocalVolume;
 
                     // In cooldown: adapt noise floor only, reject premature speech trigger
                     if (inCooldown) {
@@ -14301,12 +14294,13 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    // Adaptive speech onset: highly responsive to human voice on real microphones
-                    const speechTriggerLevel = Math.max(5, Math.round(ambientFloor + 3));
+                    // Adaptive speech onset: requires clear vocal energy above room baseline
+                    const speechTriggerLevel = Math.max(9, Math.round(ambientFloor + 6));
 
                     if (vocalVolume >= speechTriggerLevel) {
                         consecutiveSpeechFrames++;
-                        if (consecutiveSpeechFrames >= 1) {
+                        // 2 consecutive frames @ 80ms = 160ms confirms intentional human voice onset
+                        if (consecutiveSpeechFrames >= 2) {
                             isSpeaking = true;
                             speechStartTimestamp = Date.now();
                             silenceStartTime = null;
@@ -14321,7 +14315,7 @@ Account ID: ${u.id || ''}`;
                         consecutiveSpeechFrames = 0;
                     }
                 } else {
-                    // User IS speaking: detect pause or end of turn
+                    // User IS speaking: detect pause or natural end of sentence
                     const speechDuration = Date.now() - (speechStartTimestamp || Date.now());
 
                     // Safety ceiling: 15 seconds maximum speech
@@ -14333,9 +14327,10 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    const speechTriggerLevel = Math.max(5, Math.round(ambientFloor + 3));
-                    const pauseThreshold = Math.max(3, Math.round(ambientFloor + 1));
-                    const requiredSilence = (speechDuration > 1200) ? 550 : 750;
+                    const speechTriggerLevel = Math.max(9, Math.round(ambientFloor + 6));
+                    const pauseThreshold = Math.max(4, Math.round(ambientFloor + 2));
+                    // Conversational turn-taking: 550ms for normal sentences, 700ms for short phrases
+                    const requiredSilence = (speechDuration > 1200) ? 550 : 700;
 
                     if (vocalVolume < pauseThreshold) {
                         consecutiveResumeFrames = 0;
@@ -14351,14 +14346,14 @@ Account ID: ${u.id || ''}`;
                             return;
                         }
                     } else if (vocalVolume >= speechTriggerLevel) {
-                        // User clearly resumed speaking
+                        // User clearly resumed speaking: cancel silence timer
                         consecutiveResumeFrames++;
-                        if (consecutiveResumeFrames >= 1) {
+                        if (consecutiveResumeFrames >= 2) {
                             silenceStartTime = null;
                             consecutiveResumeFrames = 0;
                         }
                     } else {
-                        // Volume hovering between pauseThreshold and speechTriggerLevel
+                        // Hovering in transition zone: if already in silence, let silence continue
                         consecutiveResumeFrames = 0;
                         if (silenceStartTime) {
                             const silenceElapsed = Date.now() - silenceStartTime;
