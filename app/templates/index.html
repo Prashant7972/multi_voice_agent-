@@ -5645,9 +5645,9 @@
                     <span class="sidebar-item-count" id="sidebarMessagingUnreadBadge" style="display: none; background: #2563eb; color: #fff; font-weight: 700; border-radius: 9999px; padding: 0.1rem 0.45rem; font-size: 0.7rem;">0</span>
                 </button>
                 <!-- Standalone Button: Agent Telemetry & History (below Messaging, Admin/Owner/Analyst) -->
-                <button type="button" class="sidebar-nav-item" id="sidebarNavTelemetry" onclick="handleSidebarNav('telemetry')" title="Agent Telemetry & Analytics">
+                <button type="button" class="sidebar-nav-item" id="sidebarNavTelemetry" onclick="handleSidebarNav('telemetry')" title="Agent Analytics (Agent Telemetry & Performance)">
                     <span class="sidebar-item-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-                    <span class="sidebar-item-text">Agent Telemetry</span>
+                    <span class="sidebar-item-text">Agent Analytics</span>
                     <span class="sidebar-item-pill" style="background: #e0e7ff; color: #4338ca; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 700;">Live</span>
                 </button>
             </nav>
@@ -5823,8 +5823,8 @@
                 <button type="button" class="org-subnav-btn" id="btnSubnavMessaging" onclick="switchOrgSection('messaging')">
                     Messaging
                 </button>
-                <button type="button" class="org-subnav-btn" id="btnSubnavTelemetry" onclick="switchOrgSection('telemetry')" title="Agent Telemetry, Latencies & Session History">
-                    Agent Telemetry & History
+                <button type="button" class="org-subnav-btn" id="btnSubnavTelemetry" onclick="switchOrgSection('telemetry')" title="Agent Analytics, Latencies & Session History">
+                    Agent Analytics
                 </button>
                 <button type="button" class="org-subnav-btn" id="btnSubnavSettings" onclick="switchOrgSection('settings')">
                     Settings & Notifications
@@ -5841,9 +5841,9 @@
                         <div>
                             <div class="hub-title" style="display: flex; align-items: center; gap: 0.5rem;">
                                 <span>Voice Interaction Analytics</span>
-                                <button type="button" onclick="openAgentTelemetryModal()" title="Click to open Agent Telemetry & History" style="border: 1px solid #bfdbfe; background: #eff6ff; color: #2563eb; font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.15s;" onmouseenter="this.style.background='#dbeafe'" onmouseleave="this.style.background='#eff6ff'">
+                                <button type="button" onclick="openAgentTelemetryModal()" title="Click to open Agent Analytics & History" style="border: 1px solid #bfdbfe; background: #eff6ff; color: #2563eb; font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 9999px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.15s;" onmouseenter="this.style.background='#dbeafe'" onmouseleave="this.style.background='#eff6ff'">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
-                                    <span>Live Telemetry</span>
+                                    <span>Live Analytics</span>
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
                             </div>
@@ -5851,9 +5851,9 @@
                                 Real-time spoken interaction traffic and channel distribution across Web Voice and Twilio Telephony.
                             </p>
                         </div>
-                        <button type="button" id="btnTrackAgentTelemetry" onclick="openAgentTelemetryModal()" title="View Agent Telemetry, Latencies & Transcripts" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; background: #ffffff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(37,99,235,0.08); transition: all 0.15s;">
+                        <button type="button" id="btnTrackAgentTelemetry" onclick="openAgentTelemetryModal()" title="View Agent Analytics, Latencies & Transcripts" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; background: #ffffff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.5rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(37,99,235,0.08); transition: all 0.15s;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            <span>Agent Telemetry & History</span>
+                            <span>Agent Analytics</span>
                         </button>
                     </div>
                 </div>
@@ -7168,7 +7168,7 @@
                         </div>
                         <div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                                <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Agent Telemetry & Analytics</h2>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Agent Analytics</h2>
                                 <span id="telemetryOrgNameBadge" style="font-size: 0.72rem; background: #eff6ff; color: #1d4ed8; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 9999px; border: 1px solid #bfdbfe;">Apex AI Innovations</span>
                                 <span style="font-size: 0.7rem; background: #f0fdf4; color: #15803d; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e;"></span> Live Scoped</span>
                             </div>
@@ -7189,7 +7189,7 @@
                             </select>
                         </div>
 
-                        <button type="button" onclick="refreshAnalyticsModalData()" title="Refresh Telemetry Data" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 700; background: #ffffff; color: #334155; border: 1px solid #cbd5e1; border-radius: 0.45rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <button type="button" onclick="refreshAnalyticsModalData()" title="Refresh Analytics Data" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 700; background: #ffffff; color: #334155; border: 1px solid #cbd5e1; border-radius: 0.45rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                             <span>Refresh</span>
                         </button>
@@ -7200,7 +7200,7 @@
                 <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; background: #ffffff; border-radius: 0.75rem 0.75rem 0 0; padding: 0.5rem 1rem 0 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow-x: auto;">
                     <button type="button" class="analytics-tab-btn active" id="tabTelemetryLatencies" onclick="switchAnalyticsModalTab('latencies')" style="background: none; border: none; border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 800; font-size: 0.85rem; padding: 0.65rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.45rem; white-space: nowrap;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        <span>Agent Telemetry & Latencies</span>
+                        <span>Agent Analytics & Latencies</span>
                     </button>
                     <button type="button" class="analytics-tab-btn" id="tabTelemetryAnalytics" onclick="switchAnalyticsModalTab('analytics')" style="background: none; border: none; border-bottom: 3px solid transparent; color: #64748b; font-weight: 700; font-size: 0.85rem; padding: 0.65rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.45rem; white-space: nowrap;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -7446,8 +7446,8 @@
                         </div>
                     </div>
 
-                    <!-- Persistent conversation feed container -->
-                    <div id="telemetryConversationFeed" style="display: flex; flex-direction: column; gap: 0.65rem; margin-top: 0.5rem;"></div>
+                    <!-- Persistent conversation feed container (hidden: keeping table clean without redundant cards below) -->
+                    <div id="telemetryConversationFeed" style="display: none;"></div>
 
                     <!-- Slide-over Drawer: Transcript Viewer -->
                     <div id="modalTranscriptDrawer">
@@ -7581,9 +7581,9 @@
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                             <span id="btnLiveSwitchVoiceLabel">Voice</span>
                         </button>
-                        <button class="btn-switch-agent" id="btnLiveVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency telemetry and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <button class="btn-switch-agent" id="btnLiveVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency analytics and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            <span>Telemetry</span>
+                            <span>Analytics</span>
                         </button>
                     </div>
                 </div>
@@ -7660,9 +7660,9 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         <span id="btnTelephonySwitchVoiceLabel">Voice</span>
                     </button>
-                    <button class="btn-switch-agent" id="btnTelephonyVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency telemetry and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                    <button class="btn-switch-agent" id="btnTelephonyVoiceTelemetry" onclick="openAgentTelemetryModal()" title="View live latency analytics and call history" style="display: inline-flex; align-items: center; gap: 0.35rem;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        <span>Telemetry</span>
+                        <span>Analytics</span>
                     </button>
                 </div>
             </div>
@@ -14877,7 +14877,7 @@ Account ID: ${u.id || ''}`;
             let telemetryHtml = '';
             if (!isUser && msg.latency) {
                 telemetryHtml = `
-                    <div class="telemetry-chips" onclick="openAgentTelemetryModal()" title="Click to view Agent Telemetry, Latencies & Session History">
+                    <div class="telemetry-chips" onclick="openAgentTelemetryModal()" title="Click to view Agent Analytics, Latencies & Session History">
                         <span class="telemetry-chip highlight">Total: ${msg.latency.total}s</span>
                         <span class="telemetry-chip">STT: ${msg.latency.stt || 0}s</span>
                         <span class="telemetry-chip">LLM: ${msg.latency.llm || 0}s</span>
@@ -16837,27 +16837,9 @@ Account ID: ${u.id || ''}`;
                 });
             }
 
-            // Also render conversation feed if container is present
+            // Clear conversation feed container to keep call logs table clean without redundant cards below
             const feed = document.getElementById('telemetryConversationFeed');
-            const convs = data.conversations || [];
-            if (feed && convs.length > 0) {
-                feed.innerHTML = '';
-                convs.slice(0, 10).forEach(c => {
-                    const item = document.createElement('div');
-                    item.style.cssText = "background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;";
-                    item.innerHTML = `
-                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <strong style="font-family: monospace; font-size: 0.75rem; color: #2563eb;">${escapeHtml(c.id || c.conversation_id)}</strong>
-                                <span style="font-size: 0.7rem; background: #eff6ff; color: #1d4ed8; padding: 0.1rem 0.45rem; border-radius: 9999px; font-weight: 700;">${escapeHtml(c.channel || 'Voice')}</span>
-                            </div>
-                            <span style="font-size: 0.74rem; color: #475569;">${escapeHtml(c.agent_name || 'Agent')} • ${c.turns_count || (c.messages ? c.messages.length : 0)} turns • ${escapeHtml(c.aht_formatted || '0m 0s')}</span>
-                        </div>
-                        <button type="button" onclick="openCallTranscriptDrawer('${escapeHtml(c.id || c.conversation_id)}')" style="padding: 0.35rem 0.65rem; font-size: 0.74rem; font-weight: 700; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0.35rem; cursor: pointer;">View Transcript</button>
-                    `;
-                    feed.appendChild(item);
-                });
-            }
+            if (feed) feed.innerHTML = '';
         }
 
 
