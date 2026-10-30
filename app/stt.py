@@ -177,8 +177,9 @@ class STTClient:
                         data = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
                         if len(data) > 0:
                             max_amp = float(np.max(np.abs(data)))
-                            if 0.005 < max_amp < 0.6:
-                                gain = min(8.0, 0.85 / max_amp)
+                            # Never amplify low ambient room hiss or fan noise (< 0.025)
+                            if 0.025 <= max_amp < 0.6:
+                                gain = min(5.0, 0.85 / max_amp)
                                 return np.clip(data * gain, -1.0, 1.0)
                             return data
         except Exception as e:
@@ -237,7 +238,14 @@ class STTClient:
         self.last_detected_language = detected
         self.last_language_probability = getattr(info, "language_probability", 1.0) if info else 1.0
 
-        transcription = " ".join([segment.text.strip() for segment in segments]).strip()
+        valid_segments = []
+        for segment in segments:
+            if getattr(segment, "no_speech_prob", 0.0) > 0.60:
+                continue
+            txt = segment.text.strip()
+            if txt:
+                valid_segments.append(txt)
+        transcription = " ".join(valid_segments).strip()
         if is_hallucinated_repetition(transcription):
             logger.warning("STT detected hallucinated repetition loop %r; discarding.", transcription[:60])
             return ""

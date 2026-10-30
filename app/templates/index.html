@@ -8921,6 +8921,8 @@
         let ambientFloor = 4;
         let currentRmsVolume = 0;
         let consecutiveResumeFrames = 0;
+        let turnPeakVolume = 0;
+        let turnSpeechFrames = 0;
 
         // Barge-In State
         let currentAudio = null;
@@ -14085,6 +14087,8 @@ Account ID: ${u.id || ''}`;
                 speechResumeFrames = 0;
                 speechStartTimestamp = null;
                 silenceStartTime = null;
+                turnPeakVolume = 0;
+                turnSpeechFrames = 0;
 
                 pcmProcessor.onaudioprocess = (e) => {
                     if (!isRunning || isAgentSpeaking || isProcessingTurn) return;
@@ -14294,18 +14298,21 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    // Adaptive speech onset: requires clear vocal energy above room baseline
-                    const speechTriggerLevel = Math.max(9, Math.round(ambientFloor + 6));
+                    // Adaptive speech onset: requires real human vocal energy well above room baseline
+                    // Normal speech is 25-60, soft speech is 18-22, ambient room/fan noise is 1-8.
+                    const speechTriggerLevel = Math.max(16, Math.round(ambientFloor + 8));
 
                     if (vocalVolume >= speechTriggerLevel) {
                         consecutiveSpeechFrames++;
-                        // 2 consecutive frames @ 80ms = 160ms confirms intentional human voice onset
-                        if (consecutiveSpeechFrames >= 2) {
+                        // 3 consecutive frames @ 80ms = 240ms confirms sustained human phonemes (filters clicks, puffs, mic pops)
+                        if (consecutiveSpeechFrames >= 3) {
                             isSpeaking = true;
                             speechStartTimestamp = Date.now();
                             silenceStartTime = null;
                             consecutiveSpeechFrames = 0;
                             consecutiveResumeFrames = 0;
+                            turnPeakVolume = vocalVolume;
+                            turnSpeechFrames = 1;
                             speechPcmBuffers = [...preRollPcmBuffers];
                             statusText.innerText = "Listening to you...";
                             statusSub.innerText = "Recording voice... speak naturally.";
@@ -14317,6 +14324,14 @@ Account ID: ${u.id || ''}`;
                 } else {
                     // User IS speaking: detect pause or natural end of sentence
                     const speechDuration = Date.now() - (speechStartTimestamp || Date.now());
+                    turnPeakVolume = Math.max(turnPeakVolume, vocalVolume);
+
+                    const speechTriggerLevel = Math.max(16, Math.round(ambientFloor + 8));
+                    const pauseThreshold = Math.max(5, Math.round(ambientFloor + 2));
+
+                    if (vocalVolume >= speechTriggerLevel) {
+                        turnSpeechFrames++;
+                    }
 
                     // Safety ceiling: 15 seconds maximum speech
                     if (speechDuration >= 15000) {
@@ -14327,8 +14342,6 @@ Account ID: ${u.id || ''}`;
                         return;
                     }
 
-                    const speechTriggerLevel = Math.max(9, Math.round(ambientFloor + 6));
-                    const pauseThreshold = Math.max(4, Math.round(ambientFloor + 2));
                     // Conversational turn-taking: 550ms for normal sentences, 700ms for short phrases
                     const requiredSilence = (speechDuration > 1200) ? 550 : 700;
 
@@ -14339,6 +14352,22 @@ Account ID: ${u.id || ''}`;
                         }
                         const silenceElapsed = Date.now() - silenceStartTime;
                         if (silenceElapsed >= requiredSilence) {
+                            // Guard against phantom acoustic blips:
+                            // If peak vocal volume was under 18 or actual vocal frames < 3 or speech duration < 400ms,
+                            // this was just a chair squeak, breath, or room noise—NOT human speech.
+                            if (turnPeakVolume < 18 || turnSpeechFrames < 3 || speechDuration < 400) {
+                                isSpeaking = false;
+                                silenceStartTime = null;
+                                consecutiveResumeFrames = 0;
+                                turnPeakVolume = 0;
+                                turnSpeechFrames = 0;
+                                speechPcmBuffers = [];
+                                statusText.innerText = "Listening...";
+                                statusSub.innerText = "Hands-free active. Speak anytime; pause when done.";
+                                orbCore.className = 'orb-core listening';
+                                return;
+                            }
+
                             isSpeaking = false;
                             silenceStartTime = null;
                             consecutiveResumeFrames = 0;
@@ -14358,6 +14387,19 @@ Account ID: ${u.id || ''}`;
                         if (silenceStartTime) {
                             const silenceElapsed = Date.now() - silenceStartTime;
                             if (silenceElapsed >= requiredSilence) {
+                                if (turnPeakVolume < 18 || turnSpeechFrames < 3 || speechDuration < 400) {
+                                    isSpeaking = false;
+                                    silenceStartTime = null;
+                                    consecutiveResumeFrames = 0;
+                                    turnPeakVolume = 0;
+                                    turnSpeechFrames = 0;
+                                    speechPcmBuffers = [];
+                                    statusText.innerText = "Listening...";
+                                    statusSub.innerText = "Hands-free active. Speak anytime; pause when done.";
+                                    orbCore.className = 'orb-core listening';
+                                    return;
+                                }
+
                                 isSpeaking = false;
                                 silenceStartTime = null;
                                 consecutiveResumeFrames = 0;
@@ -14372,11 +14414,6 @@ Account ID: ${u.id || ''}`;
 
         async function stopAndSendAudio() {
             if (isProcessingTurn) return;
-            isProcessingTurn = true;
-
-            statusText.innerText = "Thinking...";
-            statusSub.innerText = `Consulting local Gemma 3 for ${activeAgent ? activeAgent.name : 'AI'}...`;
-            orbCore.className = 'orb-core thinking';
 
             let capturedBuffers = [...speechPcmBuffers];
             if (capturedBuffers.length === 0 && preRollPcmBuffers.length > 0) {
@@ -14385,27 +14422,56 @@ Account ID: ${u.id || ''}`;
             speechPcmBuffers = [];
             preRollPcmBuffers = [];
             preRollSampleCount = 0;
+            turnPeakVolume = 0;
+            turnSpeechFrames = 0;
 
             let totalSamples = 0;
             for (let i = 0; i < capturedBuffers.length; i++) {
                 totalSamples += capturedBuffers[i].length;
             }
 
-            if (totalSamples < 3200) { // < 0.2s of audio
+            // Require at least 0.35s of audio (5600 samples @ 16kHz)
+            if (totalSamples < 5600) {
                 isProcessingTurn = false;
                 lastTurnFinishedTimestamp = Date.now();
                 statusText.innerText = "Listening...";
-                statusSub.innerText = "Didn't catch that clearly. Speak directly to microphone.";
+                statusSub.innerText = "Hands-free active. Speak anytime; pause when done.";
                 orbCore.className = 'orb-core listening';
                 return;
             }
 
             const flatSamples = new Float32Array(totalSamples);
             let sampleOffset = 0;
+            let maxAmp = 0;
+            let sumSq = 0;
             for (let i = 0; i < capturedBuffers.length; i++) {
-                flatSamples.set(capturedBuffers[i], sampleOffset);
-                sampleOffset += capturedBuffers[i].length;
+                const buf = capturedBuffers[i];
+                flatSamples.set(buf, sampleOffset);
+                sampleOffset += buf.length;
+                for (let j = 0; j < buf.length; j++) {
+                    const a = Math.abs(buf[j]);
+                    if (a > maxAmp) maxAmp = a;
+                    sumSq += a * a;
+                }
             }
+            const rms = Math.sqrt(sumSq / totalSamples);
+
+            // Gating: If audio has no genuine human acoustic energy (max amplitude < 0.035 and rms < 0.008),
+            // it is pure ambient room silence/fan hum. Do NOT enter Thinking... or make an API request!
+            if (maxAmp < 0.035 && rms < 0.008) {
+                isProcessingTurn = false;
+                lastTurnFinishedTimestamp = Date.now();
+                statusText.innerText = "Listening...";
+                statusSub.innerText = "Hands-free active. Speak anytime; pause when done.";
+                orbCore.className = 'orb-core listening';
+                return;
+            }
+
+            // Confirmed genuine speech: transition to Thinking... and send
+            isProcessingTurn = true;
+            statusText.innerText = "Thinking...";
+            statusSub.innerText = `Consulting local Gemma 3 for ${activeAgent ? activeAgent.name : 'AI'}...`;
+            orbCore.className = 'orb-core thinking';
 
             const wavBlob = encodeWAV(flatSamples, 16000);
 

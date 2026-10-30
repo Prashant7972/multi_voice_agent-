@@ -3755,6 +3755,34 @@ async def chat_endpoint(
         await asyncio.to_thread(_save_upload_file_sync, audio_file, upload_path)
         user_wav_path = await asyncio.to_thread(_convert_audio_to_wav_sync, upload_path, user_wav_path)
 
+        # Pre-STT Silence Guard: instantly reject ambient room noise without invoking STT/LLM
+        try:
+            import wave
+            import numpy as np
+            def _check_silence_sync(p):
+                with wave.open(str(p), "rb") as wf:
+                    frames = wf.readframes(wf.getnframes())
+                    samples = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
+                    if len(samples) > 0:
+                        peak = float(np.max(np.abs(samples)))
+                        rms = float(np.sqrt(np.mean(samples ** 2)))
+                        return peak, rms
+                    return 0.0, 0.0
+            peak_amp, rms_amp = await asyncio.to_thread(_check_silence_sync, user_wav_path)
+            if peak_amp < 0.020 and rms_amp < 0.005:
+                logger.info("[VOICE-CHAT] Upload audio is ambient silence (peak=%.4f, rms=%.4f). Skipping STT/LLM.", peak_amp, rms_amp)
+                return JSONResponse({
+                    "user_text": "",
+                    "reply_text": "",
+                    "audio_url": None,
+                    "user_audio_url": None,
+                    "status": "no_speech_detected",
+                    "message": "No clear speech detected. Please speak closer to your microphone.",
+                    "latency": {"stt": 0, "llm": 0, "tts": 0, "total": 0}
+                })
+        except Exception as e:
+            logger.debug("Pre-STT silence check: %s", e)
+
         # Step 1: STT (Speech to Text with Dynamic Language Auto-Detection & Native Script Enforcement)
         t_stt_start = time.time()
         user_text = ""
