@@ -75,7 +75,7 @@ class EmailService:
         </head>
         <body>
           <div class="container">
-            <div class="logo">🏢</div>
+            <div class="logo" style="display:inline-block; font-weight:800; font-size:16px; letter-spacing:1px; color:#2563eb; background:#eff6ff; padding:6px 14px; border-radius:8px; border:1px solid #bfdbfe;">APEX AI</div>
             <h1 class="title">{"Verify Your Account" if purpose == "registration" else "Password Reset Request"}</h1>
             <p class="desc">
               {"Thank you for registering with Apex AI Organizations. Enter this verification code to set up your password and access your organization dashboard." if purpose == "registration" else "We received a request to reset your password for Apex AI Organizations. Use the code below to complete the reset."}

@@ -7,6 +7,7 @@ Includes:
 - Streaming sentence tokenizer for low-latency TTS
 """
 import os
+import sys
 import re
 import time
 import threading
@@ -64,7 +65,7 @@ def enforce_rate_limit(request: Request, limit: int = 60, window_seconds: int = 
     FastAPI dependency/helper enforcing rate limits per client IP and endpoint.
     Exempts automated test runs unless explicitly flagged.
     """
-    if os.getenv("PYTEST_CURRENT_TEST") and not os.getenv("TESTING_RATE_LIMIT"):
+    if ("pytest" in sys.modules or os.getenv("PYTEST_CURRENT_TEST")) and not os.getenv("TESTING_RATE_LIMIT"):
         return
 
     client_ip = "127.0.0.1"

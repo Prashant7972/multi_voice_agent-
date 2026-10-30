@@ -32,7 +32,13 @@ from app.config import (
 )
 from app.stt import STTClient
 from app.llm import LLMClient, clean_multilingual_speech
-from app.tts import TTSClient, VOICE_CATALOG, VOICE_DEMOGRAPHICS
+from app.tts import (
+    TTSClient,
+    VOICE_CATALOG,
+    VOICE_DEMOGRAPHICS,
+    LANGUAGE_DEMOGRAPHIC_VOICES,
+    resolve_voice_for_language,
+)
 from app.twilio_handler import TwilioService, TwilioMediaStreamSession
 from app.tunnel import TunnelManager
 from app.pipecat_agent import PipecatNeuralVAD, VADState
@@ -52,6 +58,8 @@ from app.contacts import ContactsManager, COUNTRY_CODES
 from app.campaigns import CampaignManager
 from app.conversations import ConversationManager, generate_conversation_id
 from app.call_analysis import CallAnalyzer
+from app.maintenance import cleanup_old_audio_files
+from app.voices import VoiceManager
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.security import (
@@ -80,10 +88,10 @@ def custom_openapi():
         title="Apex Voice AI — Interactive Swagger API",
         version="2.0.0",
         description=(
-            "### 🎙️ Apex Voice AI Platform REST & Telephony API\n\n"
+            "### Apex Voice AI Platform REST & Telephony API\n\n"
             "Interactive Swagger documentation and sandbox for testing all 92+ operational endpoints.\n\n"
-            "#### 🔑 How to Authorize & Test Endpoints:\n"
-            "1. Click the green **Authorize 🔓** button below.\n"
+            "#### How to Authorize & Test Endpoints:\n"
+            "1. Click the green **Authorize** button below.\n"
             "2. In **BearerAuth**, paste your JWT Access Token from `/api/auth/login` (or copy from the Web UI `localStorage`).\n"
             "3. Alternatively, in **DemoModeAuth**, enter `true` to authenticate via local development demo mode.\n"
             "4. Choose any endpoint, click **Try it out**, fill parameters, and hit **Execute**."
@@ -162,6 +170,7 @@ contacts_manager = ContactsManager.get_instance()
 campaign_manager = CampaignManager.get_instance()
 conversation_manager = ConversationManager.get_instance()
 call_analyzer = CallAnalyzer.get_instance()
+voice_manager = VoiceManager.get_instance()
 
 
 class ConversationMemoryManager:
@@ -316,6 +325,88 @@ async def jwt_auth_middleware(request: Request, call_next):
 conversation_history: list = conversation_manager.get_recent_messages()
 conversation_counter: int = max([m.get("id", 0) for m in conversation_history], default=0)
 
+
+class ConversationTranscriptWSManager:
+    """Manages real-time WebSocket connections for live agent transcript streaming."""
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+        if websocket not in self.active_connections:
+            self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast_message(self, message: dict):
+        dead_connections = []
+        payload = {"type": "new_message", "message": message}
+        for ws in list(self.active_connections):
+            try:
+                await ws.send_json(payload)
+            except Exception:
+                dead_connections.append(ws)
+        for dead in dead_connections:
+            self.disconnect(dead)
+
+    async def broadcast_clear(self):
+        dead_connections = []
+        payload = {"type": "clear"}
+        for ws in list(self.active_connections):
+            try:
+                await ws.send_json(payload)
+            except Exception:
+                dead_connections.append(ws)
+        for dead in dead_connections:
+            self.disconnect(dead)
+
+
+conversation_ws_manager = ConversationTranscriptWSManager()
+
+
+def broadcast_conversation_turn(msg: dict):
+    """Safely dispatches a new conversation turn to all connected WebSockets."""
+    if not conversation_ws_manager.active_connections:
+        return
+    loop = conversation_ws_manager._loop
+    if loop and loop.is_running():
+        try:
+            asyncio.run_coroutine_threadsafe(conversation_ws_manager.broadcast_message(msg), loop)
+            return
+        except Exception as e:
+            logger.debug("Error in threadsafe broadcast: %s", e)
+    try:
+        cur_loop = asyncio.get_running_loop()
+        cur_loop.create_task(conversation_ws_manager.broadcast_message(msg))
+    except RuntimeError:
+        pass
+
+
+def broadcast_conversation_clear():
+    """Safely dispatches a clear event to all connected WebSockets."""
+    if not conversation_ws_manager.active_connections:
+        return
+    loop = conversation_ws_manager._loop
+    if loop and loop.is_running():
+        try:
+            asyncio.run_coroutine_threadsafe(conversation_ws_manager.broadcast_clear(), loop)
+            return
+        except Exception as e:
+            logger.debug("Error in threadsafe clear broadcast: %s", e)
+    try:
+        cur_loop = asyncio.get_running_loop()
+        cur_loop.create_task(conversation_ws_manager.broadcast_clear())
+    except RuntimeError:
+        pass
+
+
 # Organization-scoped Agent Test Records store
 agent_test_records: list = [
     {
@@ -400,6 +491,7 @@ def add_conversation_message(
     msg["conversation_id"] = turn_res["conversation_id"]
     conversation_counter = msg["id"]
     conversation_history.append(msg)
+    broadcast_conversation_turn(msg)
 
     if role == "assistant":
         try:
@@ -539,9 +631,18 @@ async def metrics_endpoint():
 @app.on_event("shutdown")
 def shutdown_event():
     logger.info("Initiating graceful shutdown of voice agent services...")
-    TunnelManager.get_instance().stop()
-    campaign_manager.stop_scheduler()
-    cleanup_old_audio_files(max_age_hours=24)
+    try:
+        TunnelManager.get_instance().stop()
+    except Exception as e:
+        logger.warning("Error stopping tunnel manager during shutdown: %s", e)
+    try:
+        campaign_manager.stop_scheduler()
+    except Exception as e:
+        logger.warning("Error stopping campaign scheduler during shutdown: %s", e)
+    try:
+        cleanup_old_audio_files(max_age_hours=24)
+    except Exception as e:
+        logger.warning("Error cleaning up old audio files during shutdown: %s", e)
     logger.info("Voice agent services cleanly shut down.")
 
 
@@ -1182,6 +1283,10 @@ def resolve_effective_user_email(request: Request, user_email: Optional[str] = N
         is_demo = hasattr(request.state, "user") and request.state.user
         if is_test or is_demo:
             effective_email = user_email
+        else:
+            u = user_manager.get_user_by_email(user_email)
+            if u:
+                effective_email = u.get("email")
     return effective_email
 
 
@@ -1193,7 +1298,7 @@ def is_org_admin_owner_or_analyst(org_id: str, user_email: Optional[str]) -> boo
 
     # 1. Check organization-specific member role
     role = org_manager.get_user_role(org_id, user_email)
-    if role in ["owner", "admin", "analyst"]:
+    if role and (role.strip().lower() in ["owner", "admin", "analyst"]):
         return True
 
     # 2. Check if organization owner or creator
@@ -2962,6 +3067,7 @@ async def get_voice_catalog():
     return JSONResponse({
         "catalog": VOICE_CATALOG,
         "demographics": VOICE_DEMOGRAPHICS,
+        "language_demographics": LANGUAGE_DEMOGRAPHIC_VOICES,
     })
 
 
@@ -2980,6 +3086,7 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
     pitch = payload.get("pitch", "+0Hz")
     rate = payload.get("rate", "+0%")
     language = payload.get("language") or "en"
+    gender = payload.get("gender")
 
     if not text:
         # Pick sample phrase from catalog if available, or default
@@ -3003,6 +3110,7 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
             voice_model=voice_model,
             pitch=pitch,
             rate=rate,
+            gender=gender,
         )
         return JSONResponse({
             "success": True,
@@ -3011,6 +3119,8 @@ async def preview_voice(payload: Dict[str, Any] = Body(...)):
             "voice_model": voice_model,
             "pitch": pitch,
             "rate": rate,
+            "gender": gender,
+            "language": language,
             "text": text,
         })
     except Exception as e:
@@ -3044,6 +3154,91 @@ async def update_agent_voice_config(agent_id: str, payload: Dict[str, Any] = Bod
         "agent_id": agent_id,
         "agent": updated,
         "voice_config": updated.get("voice_config"),
+    })
+
+
+# -------------------------------------------------------------
+# Organization-Scoped Voice Studio Endpoints
+# -------------------------------------------------------------
+@app.get("/api/organizations/{org_id}/voices")
+async def get_organization_voices(org_id: str):
+    """Returns custom voices for a specific organization alongside system catalog presets."""
+    clean_org = org_id.strip().lower()
+    custom_voices = voice_manager.list_voices(clean_org)
+    return JSONResponse({
+        "success": True,
+        "org_id": clean_org,
+        "custom_voices": custom_voices,
+        "catalog": VOICE_CATALOG,
+        "demographics": VOICE_DEMOGRAPHICS,
+        "language_demographics": LANGUAGE_DEMOGRAPHIC_VOICES,
+    })
+
+
+@app.post("/api/organizations/{org_id}/voices")
+async def create_organization_voice(request: Request, org_id: str, payload: Dict[str, Any] = Body(...)):
+    """Creates and saves a new named custom voice persona for an organization."""
+    clean_org = org_id.strip().lower()
+    name = (payload.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Voice persona name cannot be empty")
+
+    user_email = (getattr(request.state, "user", None) or {}).get("email") or payload.get("user_email") or "admin@apexai.io"
+    new_voice = voice_manager.create_voice(clean_org, payload, created_by=user_email)
+
+    # Optional: directly link / assign to an agent if requested
+    assigned_agent = None
+    agent_id = payload.get("agent_id")
+    if agent_id:
+        target_agent = agent_manager.get_agent(agent_id)
+        if target_agent:
+            vc_payload = {
+                "voice_id": new_voice["base_voice_id"],
+                "voice_name": new_voice["name"],
+                "gender": new_voice["gender"],
+                "age_group": new_voice["age_group"],
+                "personality": new_voice["personality"],
+                "pitch": new_voice["pitch"],
+                "rate": new_voice["rate"],
+                "language": new_voice["language"],
+                "notes": new_voice["notes"],
+            }
+            assigned_agent = agent_manager.update_agent_voice(agent_id, vc_payload)
+
+    return JSONResponse({
+        "success": True,
+        "voice": new_voice,
+        "assigned_agent": assigned_agent,
+    })
+
+
+@app.delete("/api/organizations/{org_id}/voices/{voice_id}")
+async def delete_organization_voice(org_id: str, voice_id: str):
+    """Deletes a custom voice persona from an organization."""
+    clean_org = org_id.strip().lower()
+    deleted = voice_manager.delete_voice(clean_org, voice_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Custom voice persona not found in organization")
+    return JSONResponse({
+        "success": True,
+        "deleted_id": voice_id,
+        "org_id": clean_org,
+    })
+
+
+@app.delete("/api/organizations/{org_id}/voices")
+async def delete_organization_voices_batch(org_id: str, payload: Dict[str, Any] = Body(...)):
+    """Deletes multiple custom voice personas by IDs within an organization."""
+    clean_org = org_id.strip().lower()
+    voice_ids = payload.get("voice_ids", [])
+    if not isinstance(voice_ids, list):
+        raise HTTPException(status_code=400, detail="voice_ids must be a list of string IDs")
+
+    count = voice_manager.delete_voices_batch(clean_org, voice_ids)
+    return JSONResponse({
+        "success": True,
+        "deleted_count": count,
+        "org_id": clean_org,
     })
 
 
@@ -3385,18 +3580,21 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
     voice_model = payload.get("voice_model")
     pitch = payload.get("pitch")
     rate = payload.get("rate")
+    gender = payload.get("gender")
     agent_id = payload.get("agent_id")
 
     if not text:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
-    if not voice_model and agent_id:
+    if agent_id:
         agent = agent_manager.get_agent(agent_id)
         if agent and agent.get("voice_config"):
             vc = agent["voice_config"]
-            voice_model = vc.get("voice_id")
+            if not voice_model:
+                voice_model = vc.get("voice_id")
             pitch = pitch or vc.get("pitch")
             rate = rate or vc.get("rate")
+            gender = gender or vc.get("gender")
             language = language or vc.get("language", "en")
 
     reply_wav_path = AUDIO_DIR / f"reply_{int(time.time() * 1000)}.wav"
@@ -3410,6 +3608,7 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
                 voice_model=voice_model,
                 pitch=pitch,
                 rate=rate,
+                gender=gender,
             )
             return JSONResponse({
                 "success": True,
@@ -3418,6 +3617,7 @@ async def tts_endpoint(payload: Dict[str, Any] = Body(...)):
                 "voice_model": voice_model,
                 "pitch": pitch,
                 "rate": rate,
+                "gender": gender,
             })
         return JSONResponse({"success": False, "error": "TTS engine not initialized"}, status_code=503)
     except Exception as e:
@@ -3762,11 +3962,13 @@ async def chat_endpoint(
                 agent_voice_id = None
                 agent_pitch = None
                 agent_rate = None
+                agent_gender = None
                 if active_agent and isinstance(active_agent, dict):
                     vc = active_agent.get("voice_config") or {}
                     agent_voice_id = vc.get("voice_id")
                     agent_pitch = vc.get("pitch")
                     agent_rate = vc.get("rate")
+                    agent_gender = vc.get("gender")
 
                 await asyncio.to_thread(
                     tts.synthesize,
@@ -3776,6 +3978,7 @@ async def chat_endpoint(
                     voice_model=agent_voice_id,
                     pitch=agent_pitch,
                     rate=agent_rate,
+                    gender=agent_gender,
                 )
         except Exception as e:
             logger.error("Audio route TTS error: %s", e)
@@ -3849,6 +4052,30 @@ async def get_conversation(after: int = 0):
     return JSONResponse({"messages": msgs})
 
 
+@app.websocket("/ws/conversation")
+async def conversation_websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time live conversation transcript streaming.
+    Eliminates periodic HTTP polling by pushing new user and assistant turns instantly.
+    """
+    await conversation_ws_manager.connect(websocket)
+    try:
+        global conversation_history
+        await websocket.send_json({
+            "type": "init",
+            "messages": list(conversation_history)
+        })
+        while True:
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        conversation_ws_manager.disconnect(websocket)
+    except Exception as e:
+        logger.debug("Conversation websocket disconnected: %s", e)
+        conversation_ws_manager.disconnect(websocket)
+
+
 @app.post("/api/clear")
 async def clear_chat():
     global llm, conversation_history, memory_manager
@@ -3856,6 +4083,7 @@ async def clear_chat():
         llm.clear_history()
     conversation_history.clear()
     memory_manager.clear()
+    broadcast_conversation_clear()
     return JSONResponse({"status": "cleared"})
 
 
@@ -4443,6 +4671,7 @@ async def twiml_incoming(request: Request):
                 voice_model=tg_vc.get("voice_id"),
                 pitch=tg_vc.get("pitch"),
                 rate=tg_vc.get("rate"),
+                gender=tg_vc.get("gender"),
             )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'
@@ -4633,6 +4862,7 @@ async def twiml_respond(request: Request):
                 voice_model=tg_vc.get("voice_id"),
                 pitch=tg_vc.get("pitch"),
                 rate=tg_vc.get("rate"),
+                gender=tg_vc.get("gender"),
             )
             audio_url = f"{public_base}/api/audio/{reply_filename}"
             speech_tag = f'<Play>{audio_url}</Play>'

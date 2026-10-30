@@ -81,7 +81,7 @@ class MessagingManager:
                 "created_at": now - 3600,
                 "updated_at": now - 3600,
                 "last_message": {
-                    "text": "Welcome to the Apex Voice AI team messaging space! 🚀",
+                    "text": "Welcome to the Apex Voice AI team messaging space!",
                     "sender_name": "Platform Administrator",
                     "timestamp": now - 3600,
                 },
@@ -94,12 +94,9 @@ class MessagingManager:
                 "org_id": default_org_id,
                 "sender_email": default_admin,
                 "sender_name": "Platform Administrator",
-                "text": "Welcome to the Apex Voice AI team messaging space! Share documents, images, videos, and collaborate with your team in real time. 🚀",
+                "text": "Welcome to the Apex Voice AI team messaging space! Share documents, images, videos, and collaborate with your team in real time.",
                 "attachments": [],
-                "reactions": {
-                    "🚀": [default_admin],
-                    "👍": [default_admin]
-                },
+                "reactions": {},
                 "created_at": now - 3600,
             }
         ]
@@ -224,7 +221,7 @@ class MessagingManager:
             conversation_id=conv_id,
             sender_email="system@apexai.io",
             sender_name="System",
-            text=f"🎉 {creator_email.split('@')[0].title()} created the group '{name}'. Welcome!",
+            text=f"{creator_email.split('@')[0].title()} created the group '{name}'.",
         )
 
         self.save()
@@ -318,7 +315,7 @@ class MessagingManager:
             conversation_id=conversation_id,
             sender_email="system@apexai.io",
             sender_name="System",
-            text=f"➕ {actor_email.split('@')[0].title()} added {new_member_email.split('@')[0].title()} to the group.",
+            text=f"{actor_email.split('@')[0].title()} added {new_member_email.split('@')[0].title()} to the group.",
         )
 
         self.save()
@@ -369,7 +366,7 @@ class MessagingManager:
 
         act_name = actor_email.split("@")[0].title()
         tar_name = target_email.split("@")[0].title()
-        system_text = f"👋 {tar_name} left the group." if is_self_leaving else f"🚫 {act_name} removed {tar_name} from the group."
+        system_text = f"{tar_name} left the group." if is_self_leaving else f"{act_name} removed {tar_name} from the group."
 
         self.save_message(
             org_id=org_id,
@@ -422,7 +419,7 @@ class MessagingManager:
                 conversation_id=conversation_id,
                 sender_email="system@apexai.io",
                 sender_name="System",
-                text=f"🛡️ {actor_email.split('@')[0].title()} promoted {target_email.split('@')[0].title()} to Group Admin.",
+                text=f"{actor_email.split('@')[0].title()} promoted {target_email.split('@')[0].title()} to Group Admin.",
             )
             self.save()
 
@@ -482,7 +479,7 @@ class MessagingManager:
         # Update conversation metadata
         for c in self.conversations:
             if c.get("id") == conversation_id and c.get("org_id") == org_id:
-                snippet = text.strip() if text else ("📎 Shared attachment" if attachments else "")
+                snippet = text.strip() if text else ("Shared attachment" if attachments else "")
                 c["last_message"] = {
                     "text": snippet[:80],
                     "sender_name": new_msg["sender_name"],
@@ -601,7 +598,7 @@ class MessagingManager:
             conversation_id=conversation_id,
             sender_email="system@apexai.io",
             sender_name="System",
-            text=f"🧹 Chat history was cleared by {actor_name}.",
+            text=f"Chat history was cleared by {actor_name}.",
         )
 
         self.save()
@@ -648,7 +645,7 @@ class MessagingManager:
         for c in self.conversations:
             if c.get("id") == conversation_id and c.get("org_id") == org_id:
                 if last_m:
-                    snippet = last_m.get("text", "") or "📎 Shared attachment"
+                    snippet = last_m.get("text", "") or "Shared attachment"
                     c["last_message"] = {
                         "text": snippet[:80],
                         "sender_name": last_m.get("sender_name", "User"),
